@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  highlight-db:
+    image: mysql:8.0
+    container_name: highlight-db
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - highlight-network
+
+  highlight-backend:
+    build: .
+    container_name: highlight-backend
+    depends_on:
+      - highlight-db
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: ${SERVER_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DDL_AUTO: ${DB_DDL_AUTO}
+      DB_SHOW_SQL: ${DB_SHOW_SQL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRE_TIME: ${JWT_ACCESS_TOKEN_EXPIRE_TIME}
+      JWT_REFRESH_TOKEN_EXPIRE_TIME: ${JWT_REFRESH_TOKEN_EXPIRE_TIME}
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    networks:
+      - highlight-network
+
+volumes:
+  mysql_data:
+
+networks:
+  highlight-network:
+    driver: bridge
