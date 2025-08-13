@@ -50,7 +50,15 @@ public enum ErrorCode {
     /** 잘못된 로그인 정보 */
     INVALID_LOGIN_CREDENTIALS(HttpStatus.UNAUTHORIZED, "ADMIN_002", "아이디 또는 비밀번호가 올바르지 않습니다."),
     /** 비활성화된 관리자 계정 */
-    INACTIVE_ADMIN_ACCOUNT(HttpStatus.FORBIDDEN, "ADMIN_003", "비활성화된 관리자 계정입니다.");
+    INACTIVE_ADMIN_ACCOUNT(HttpStatus.FORBIDDEN, "ADMIN_003", "비활성화된 관리자 계정입니다."),
+    /** 중복된 관리자 ID */
+    DUPLICATE_ADMIN_ID(HttpStatus.CONFLICT, "ADMIN_004", "이미 존재하는 관리자 ID입니다."),
+    /** 권한 부족 */
+    INSUFFICIENT_PERMISSION(HttpStatus.FORBIDDEN, "ADMIN_005", "해당 작업을 수행할 권한이 없습니다."),
+    /** 본인 계정 비활성화 불가 */
+    CANNOT_DEACTIVATE_SELF(HttpStatus.BAD_REQUEST, "ADMIN_006", "본인 계정은 비활성화할 수 없습니다."),
+    /** 본인 계정 삭제 불가 */
+    CANNOT_DELETE_SELF(HttpStatus.BAD_REQUEST, "ADMIN_007", "본인 계정은 삭제할 수 없습니다.");
     
     /**
      * HTTP 상태 코드
