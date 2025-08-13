@@ -61,6 +61,13 @@ public class SecurityConfig {
                         "/error"                  // 에러 페이지
                     ).permitAll()
                     
+                    // 백오피스 관리자 전용 API (인증 필요)
+                    .requestMatchers(
+                        "/api/admin-management/**", // 관리자 계정 관리 API
+                        "/api/products/**",          // 상품 관리 API  
+                        "/api/auctions/**"           // 경매 관리 API
+                    ).authenticated()
+                    
                     // 그 외 모든 요청은 인증 필요
                     .anyRequest().authenticated()
                 )
