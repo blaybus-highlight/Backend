@@ -67,7 +67,26 @@ public enum ErrorCode {
     /** 상품 소개 길이 초과 */
     INVALID_PRODUCT_DESCRIPTION_LENGTH(HttpStatus.BAD_REQUEST, "PRODUCT_002", "상품 소개는 25자를 초과할 수 없습니다."),
     /** 경매 중인 상품 삭제 불가 */
-    CANNOT_DELETE_AUCTION_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_003", "경매 중인 상품은 삭제할 수 없습니다.");
+    CANNOT_DELETE_AUCTION_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_003", "경매 중인 상품은 삭제할 수 없습니다."),
+    
+    
+    // ===== 경매 관련 에러 =====
+    /** 경매를 찾을 수 없음 */
+    AUCTION_NOT_FOUND(HttpStatus.NOT_FOUND, "AUCTION_001", "경매를 찾을 수 없습니다."),
+    /** 상품이 이미 경매에 등록됨 */
+    PRODUCT_ALREADY_IN_AUCTION(HttpStatus.CONFLICT, "AUCTION_002", "이미 경매에 등록된 상품입니다."),
+    /** 경매 가능하지 않은 상품 상태 */
+    INVALID_PRODUCT_STATUS_FOR_AUCTION(HttpStatus.BAD_REQUEST, "AUCTION_003", "경매 가능한 상품 상태가 아닙니다."),
+    /** 경매 시작 불가 */
+    CANNOT_START_AUCTION(HttpStatus.BAD_REQUEST, "AUCTION_004", "경매를 시작할 수 없는 상태입니다."),
+    /** 경매 종료 불가 */
+    CANNOT_END_AUCTION(HttpStatus.BAD_REQUEST, "AUCTION_005", "경매를 종료할 수 없는 상태입니다."),
+    /** 유효하지 않은 경매 시작 시간 */
+    INVALID_AUCTION_START_TIME(HttpStatus.BAD_REQUEST, "AUCTION_006", "경매 시작 시간이 유효하지 않습니다."),
+    /** 유효하지 않은 경매 종료 시간 */
+    INVALID_AUCTION_END_TIME(HttpStatus.BAD_REQUEST, "AUCTION_007", "경매 종료 시간이 유효하지 않습니다."),
+    /** 경매 진행 시간 부족 */
+    AUCTION_DURATION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AUCTION_008", "경매 진행 시간은 최소 10분 이상이어야 합니다.");
     
     /**
      * HTTP 상태 코드
