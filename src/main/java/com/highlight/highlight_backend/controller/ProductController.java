@@ -7,6 +7,7 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,7 @@ public class ProductController {
     @Operation(summary = "상품 등록", 
                description = "새로운 경매 상품을 등록합니다. 상품 사진, 상품명, 상품소개(25자), 히스토리, 기본 정보, 기대효과, 상세 정보, 시작가, 입장료 등을 입력할 수 있습니다.")
     public ResponseEntity<ResponseDto<ProductResponseDto>> createProduct(
-            @RequestBody ProductCreateRequestDto request,
+            @Valid @RequestBody ProductCreateRequestDto request,
             Authentication authentication) {
         
         Long adminId = (Long) authentication.getPrincipal();
@@ -119,7 +120,7 @@ public class ProductController {
                description = "기존 상품의 정보를 수정합니다. 상품 사진, 상품명, 상품소개, 히스토리, 기본 정보, 기대효과, 상세 정보, 시작가, 입장료 등을 수정할 수 있습니다.")
     public ResponseEntity<ResponseDto<ProductResponseDto>> updateProduct(
             @PathVariable Long productId,
-            @RequestBody ProductUpdateRequestDto request,
+            @Valid @RequestBody ProductUpdateRequestDto request,
             Authentication authentication) {
         
         Long adminId = (Long) authentication.getPrincipal();

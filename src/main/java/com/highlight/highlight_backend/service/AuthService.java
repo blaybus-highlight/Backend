@@ -46,13 +46,13 @@ public class AuthService {
         // 1. 관리자 계정 조회
         Admin admin = adminRepository.findByAdminIdAndIsActiveTrue(request.getAdminId())
             .orElseThrow(() -> {
-                log.warn("존재하지 않는 관리자 ID: {}", request.getAdminId());
+                log.warn("로그인 실패 - 존재하지 않는 관리자 ID 또는 비활성화된 계정");
                 return new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
             });
         
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
-            log.warn("잘못된 비밀번호 입력: {}", request.getAdminId());
+            log.warn("로그인 실패 - 잘못된 비밀번호");
             throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
         }
         

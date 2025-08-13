@@ -7,6 +7,7 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AdminManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +44,7 @@ public class AdminManagementController {
     @PostMapping("/admins")
     @Operation(summary = "관리자 계정 생성", description = "새로운 관리자 계정을 생성합니다. (SUPER_ADMIN 권한 필요)")
     public ResponseEntity<ResponseDto<AdminResponseDto>> createAdmin(
-            @RequestBody AdminCreateRequestDto request,
+            @Valid @RequestBody AdminCreateRequestDto request,
             Authentication authentication) {
         
         Long currentAdminId = (Long) authentication.getPrincipal();
@@ -116,7 +117,7 @@ public class AdminManagementController {
     @Operation(summary = "관리자 계정 수정", description = "관리자 계정 정보 및 권한을 수정합니다. (SUPER_ADMIN 권한 필요)")
     public ResponseEntity<ResponseDto<AdminResponseDto>> updateAdmin(
             @PathVariable Long adminId,
-            @RequestBody AdminUpdateRequestDto request,
+            @Valid @RequestBody AdminUpdateRequestDto request,
             Authentication authentication) {
         
         Long currentAdminId = (Long) authentication.getPrincipal();

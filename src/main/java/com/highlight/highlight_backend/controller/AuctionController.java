@@ -4,6 +4,7 @@ import com.highlight.highlight_backend.dto.*;
 import com.highlight.highlight_backend.service.AuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,7 @@ public class AuctionController {
     @Operation(summary = "경매 예약", 
                description = "상품을 경매에 예약합니다. 경매 시작/종료 시간을 직접 입력하여 설정할 수 있습니다.")
     public ResponseEntity<ResponseDto<AuctionResponseDto>> scheduleAuction(
-            @RequestBody AuctionScheduleRequestDto request,
+            @Valid @RequestBody AuctionScheduleRequestDto request,
             Authentication authentication) {
         
         Long adminId = (Long) authentication.getPrincipal();
@@ -68,7 +69,7 @@ public class AuctionController {
                description = "예약된 경매를 시작합니다. 즉시 시작하거나 시간을 직접 입력하여 시작할 수 있습니다.")
     public ResponseEntity<ResponseDto<AuctionResponseDto>> startAuction(
             @PathVariable Long auctionId,
-            @RequestBody AuctionStartRequestDto request,
+            @Valid @RequestBody AuctionStartRequestDto request,
             Authentication authentication) {
         
         Long adminId = (Long) authentication.getPrincipal();
@@ -124,7 +125,7 @@ public class AuctionController {
                description = "진행 중인 경매를 종료합니다. 정상 종료 또는 중단으로 처리할 수 있습니다.")
     public ResponseEntity<ResponseDto<AuctionResponseDto>> endAuction(
             @PathVariable Long auctionId,
-            @RequestBody AuctionEndRequestDto request,
+            @Valid @RequestBody AuctionEndRequestDto request,
             Authentication authentication) {
         
         Long adminId = (Long) authentication.getPrincipal();

@@ -6,6 +6,7 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "관리자 로그인", description = "설정된 ID/PW로 백오피스 관리자 로그인을 수행합니다.")
     public ResponseEntity<ResponseDto<LoginResponseDto>> login(
-            @RequestBody LoginRequestDto request) {
+            @Valid @RequestBody LoginRequestDto request) {
         
         log.info("POST /api/auth/login - 관리자 로그인 요청: {}", request.getAdminId());
         

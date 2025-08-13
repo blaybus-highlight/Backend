@@ -45,6 +45,16 @@ public class SecurityConfig {
                 // CORS 설정 적용 (별도 CorsConfig에서 관리)
                 .cors(cors -> {})
                 
+                // 보안 헤더 설정
+                .headers(headers -> headers
+                    .frameOptions(frameOptions -> frameOptions.deny())  // X-Frame-Options: DENY
+                    .contentTypeOptions(contentTypeOptions -> {})  // X-Content-Type-Options: nosniff
+                    .httpStrictTransportSecurity(hsts -> hsts
+                        .maxAgeInSeconds(31536000)  // 1년
+                        .includeSubDomains(true)
+                    )
+                )
+                
                 // 세션 사용하지 않음 (JWT 사용)
                 .sessionManagement(session -> 
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
