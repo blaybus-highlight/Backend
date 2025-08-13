@@ -41,7 +41,16 @@ public enum ErrorCode {
     /** 사용자를 찾을 수 없음 */
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_001", "사용자를 찾을 수 없습니다."),
     /** 이미 존재하는 이메일 */
-    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "USER_002", "이미 존재하는 이메일입니다.");
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "USER_002", "이미 존재하는 이메일입니다."),
+    
+    
+    // ===== 관리자 관련 에러 =====
+    /** 관리자를 찾을 수 없음 */
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "ADMIN_001", "관리자를 찾을 수 없습니다."),
+    /** 잘못된 로그인 정보 */
+    INVALID_LOGIN_CREDENTIALS(HttpStatus.UNAUTHORIZED, "ADMIN_002", "아이디 또는 비밀번호가 올바르지 않습니다."),
+    /** 비활성화된 관리자 계정 */
+    INACTIVE_ADMIN_ACCOUNT(HttpStatus.FORBIDDEN, "ADMIN_003", "비활성화된 관리자 계정입니다.");
     
     /**
      * HTTP 상태 코드
