@@ -58,7 +58,16 @@ public enum ErrorCode {
     /** 본인 계정 비활성화 불가 */
     CANNOT_DEACTIVATE_SELF(HttpStatus.BAD_REQUEST, "ADMIN_006", "본인 계정은 비활성화할 수 없습니다."),
     /** 본인 계정 삭제 불가 */
-    CANNOT_DELETE_SELF(HttpStatus.BAD_REQUEST, "ADMIN_007", "본인 계정은 삭제할 수 없습니다.");
+    CANNOT_DELETE_SELF(HttpStatus.BAD_REQUEST, "ADMIN_007", "본인 계정은 삭제할 수 없습니다."),
+    
+    
+    // ===== 상품 관련 에러 =====
+    /** 상품을 찾을 수 없음 */
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCT_001", "상품을 찾을 수 없습니다."),
+    /** 상품 소개 길이 초과 */
+    INVALID_PRODUCT_DESCRIPTION_LENGTH(HttpStatus.BAD_REQUEST, "PRODUCT_002", "상품 소개는 25자를 초과할 수 없습니다."),
+    /** 경매 중인 상품 삭제 불가 */
+    CANNOT_DELETE_AUCTION_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_003", "경매 중인 상품은 삭제할 수 없습니다.");
     
     /**
      * HTTP 상태 코드
