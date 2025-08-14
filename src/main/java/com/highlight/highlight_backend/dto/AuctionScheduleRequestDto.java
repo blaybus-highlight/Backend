@@ -1,11 +1,14 @@
 package com.highlight.highlight_backend.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -43,4 +46,11 @@ public class AuctionScheduleRequestDto {
      */
     @Size(max = 500, message = "경매 설명은 500자를 초과할 수 없습니다")
     private String description;
+    
+    /**
+     * 즉시구매가 (선택사항)
+     */
+    @DecimalMin(value = "0", message = "즉시구매가는 0원 이상이어야 합니다")
+    @DecimalMax(value = "999999999999999", message = "즉시구매가가 너무 큽니다")
+    private BigDecimal buyItNowPrice;
 }

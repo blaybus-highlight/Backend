@@ -74,6 +74,12 @@ public class Auction {
     private BigDecimal currentHighestBid;
     
     /**
+     * 즉시구매가
+     */
+    @Column(name = "buy_it_now_price", precision = 15, scale = 0)
+    private BigDecimal buyItNowPrice;
+    
+    /**
      * 총 입찰 참여자 수
      */
     @Column(nullable = false)
