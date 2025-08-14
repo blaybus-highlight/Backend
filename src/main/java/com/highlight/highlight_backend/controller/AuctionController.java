@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/auctions")
+@RequestMapping("/api/admin/auctions")
 @RequiredArgsConstructor
 @Tag(name = "경매 관리 API", description = "경매 예약/시작/종료/중단 관련 API")
 public class AuctionController {

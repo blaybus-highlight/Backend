@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/admin-management")
+@RequestMapping("/api/admin/admin-management")
 @RequiredArgsConstructor
 @Tag(name = "관리자 계정 관리 API", description = "백오피스 관리자 계정 생성/수정/삭제 관련 API")
 public class AdminManagementController {

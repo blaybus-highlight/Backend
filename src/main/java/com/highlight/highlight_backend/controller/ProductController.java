@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
 @Tag(name = "상품 관리 API", description = "경매 상품 등록/수정/조회/삭제 관련 API")
 public class ProductController {
