@@ -48,12 +48,14 @@ public class AuctionSpecs {
                 return null;
             }
             if (minPrice != null && maxPrice != null) {
-                return criteriaBuilder.between(root.get("currentPrice"), minPrice, maxPrice);
+                return criteriaBuilder.between(root.get("currentHighestBid"), minPrice, maxPrice);
             }
             if (minPrice != null) {
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("currentPrice"), minPrice);
+                return criteriaBuilder.greaterThanOrEqualTo(root.get("currentHighestBid"), minPrice);
             }
-            return criteriaBuilder.lessThanOrEqualTo(root.get("currentPrice"), maxPrice);
+            return criteriaBuilder.lessThanOrEqualTo(root.get("currentHighestBid"), maxPrice);
         };
     }
+
+
 }

@@ -44,7 +44,7 @@ public class AuctionSearchController {
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String eventName,
             // 2. 정렬 조건
-            @RequestParam(defaultValue = "신규") String sortCode,
+            @RequestParam(defaultValue = "newest") String sortCode,
             Pageable pageable) {
 
         log.info("GET /api/user/products - 경매 목록 조회 요청 (비로그인 사용자도 접근 가능)");

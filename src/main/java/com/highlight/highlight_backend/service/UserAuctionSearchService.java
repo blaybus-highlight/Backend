@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification; // import 추가
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -25,7 +26,7 @@ import org.springframework.util.StringUtils;
 public class UserAuctionSearchService {
 
     private final UserAuctionRepository userAuctionRepository;
-
+    @Transactional(readOnly = true)
     public Page<UserAuctionResponseDto> getProductsFiltered(
             String category, Long minPrice, Long maxPrice, String brand, String eventName,
             String sortCode, Pageable pageable) {
@@ -66,7 +67,7 @@ public class UserAuctionSearchService {
             case "ending": // 마감임박순
                 return Sort.by(Sort.Direction.ASC, "endTime");
             case "popular": // 인기순 (예: 입찰 수 기준)
-                return Sort.by(Sort.Direction.DESC, "bidCount");
+                return Sort.by(Sort.Direction.DESC, "totalBids");
             case "newest": // 신규순
             default:
                 return Sort.by(Sort.Direction.DESC, "createdAt");
