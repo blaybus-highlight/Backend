@@ -63,6 +63,11 @@ public class AuctionResponseDto {
     private BigDecimal currentHighestBid;
     
     /**
+     * 즉시구매가
+     */
+    private BigDecimal buyItNowPrice;
+    
+    /**
      * 총 입찰 참여자 수
      */
     private Integer totalBidders;
@@ -124,6 +129,7 @@ public class AuctionResponseDto {
             auction.getActualStartTime(),
             auction.getActualEndTime(),
             auction.getCurrentHighestBid(),
+            auction.getBuyItNowPrice(),
             auction.getTotalBidders(),
             auction.getTotalBids(),
             auction.getCreatedBy(),
@@ -150,6 +156,7 @@ public class AuctionResponseDto {
             auction.getActualStartTime(),
             auction.getActualEndTime(),
             auction.getCurrentHighestBid(),
+            auction.getBuyItNowPrice(),
             auction.getTotalBidders(),
             auction.getTotalBids(),
             auction.getCreatedBy(),

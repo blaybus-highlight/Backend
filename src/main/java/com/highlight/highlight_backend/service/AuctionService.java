@@ -78,6 +78,7 @@ public class AuctionService {
         auction.setScheduledStartTime(request.getScheduledStartTime());
         auction.setScheduledEndTime(request.getScheduledEndTime());
         auction.setDescription(request.getDescription());
+        auction.setBuyItNowPrice(request.getBuyItNowPrice());
         auction.setCreatedBy(adminId);
         
         // 7. 상품 상태를 경매대기로 변경
