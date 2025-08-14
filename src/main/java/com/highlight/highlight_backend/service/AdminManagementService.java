@@ -3,7 +3,6 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.Admin;
 import com.highlight.highlight_backend.dto.AdminCreateRequestDto;
 import com.highlight.highlight_backend.dto.AdminResponseDto;
-import com.highlight.highlight_backend.dto.AdminUpdateRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
@@ -66,87 +65,12 @@ public class AdminManagementService {
         newAdmin.setRole(Admin.AdminRole.ADMIN); // 기본적으로 일반 관리자
         newAdmin.setActive(true);
         
-        // 권한 설정
-        newAdmin.setCanManageProducts(request.isCanManageProducts());
-        newAdmin.setCanManageAuctions(request.isCanManageAuctions());
-        newAdmin.setCanManagePayments(request.isCanManagePayments());
-        newAdmin.setCanManageShipping(request.isCanManageShipping());
-        newAdmin.setCanManageAuctionResults(request.isCanManageAuctionResults());
-        newAdmin.setCanManageInquiries(request.isCanManageInquiries());
         
         Admin savedAdmin = adminRepository.save(newAdmin);
         
         log.info("관리자 계정 생성 완료: {} (ID: {})", savedAdmin.getAdminName(), savedAdmin.getId());
         
         return AdminResponseDto.from(savedAdmin);
-    }
-    
-    /**
-     * 관리자 계정 수정
-     * 
-     * @param adminId 수정할 관리자 ID
-     * @param request 수정 요청 데이터
-     * @param currentAdminId 현재 로그인한 관리자 ID
-     * @return 수정된 관리자 정보
-     */
-    @Transactional
-    public AdminResponseDto updateAdmin(Long adminId, AdminUpdateRequestDto request, Long currentAdminId) {
-        log.info("관리자 계정 수정 요청: {} (요청자: {})", adminId, currentAdminId);
-        
-        // 1. 현재 로그인한 관리자 권한 확인
-        validateSuperAdminPermission(currentAdminId);
-        
-        // 2. 수정할 관리자 조회
-        Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
-        
-        // 3. 본인 계정은 비활성화 불가
-        if (adminId.equals(currentAdminId) && request.getIsActive() != null && !request.getIsActive()) {
-            throw new BusinessException(ErrorCode.CANNOT_DEACTIVATE_SELF);
-        }
-        
-        // 4. 수정 처리
-        if (request.getAdminName() != null) {
-            admin.setAdminName(request.getAdminName());
-        }
-        
-        if (request.getEmail() != null) {
-            // 이메일 중복 체크
-            if (!admin.getEmail().equals(request.getEmail()) && adminRepository.existsByEmail(request.getEmail())) {
-                throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
-            }
-            admin.setEmail(request.getEmail());
-        }
-        
-        if (request.getIsActive() != null) {
-            admin.setActive(request.getIsActive());
-        }
-        
-        // 권한 설정 수정
-        if (request.getCanManageProducts() != null) {
-            admin.setCanManageProducts(request.getCanManageProducts());
-        }
-        if (request.getCanManageAuctions() != null) {
-            admin.setCanManageAuctions(request.getCanManageAuctions());
-        }
-        if (request.getCanManagePayments() != null) {
-            admin.setCanManagePayments(request.getCanManagePayments());
-        }
-        if (request.getCanManageShipping() != null) {
-            admin.setCanManageShipping(request.getCanManageShipping());
-        }
-        if (request.getCanManageAuctionResults() != null) {
-            admin.setCanManageAuctionResults(request.getCanManageAuctionResults());
-        }
-        if (request.getCanManageInquiries() != null) {
-            admin.setCanManageInquiries(request.getCanManageInquiries());
-        }
-        
-        Admin updatedAdmin = adminRepository.save(admin);
-        
-        log.info("관리자 계정 수정 완료: {} (ID: {})", updatedAdmin.getAdminName(), updatedAdmin.getId());
-        
-        return AdminResponseDto.from(updatedAdmin);
     }
     
     /**

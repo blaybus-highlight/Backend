@@ -63,7 +63,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     // 공개 엔드포인트 (인증 불필요)
                     .requestMatchers(
-                        "/api/auth/**",           // 인증 관련 API
+                        "/api/auth/**",           // 인증 관련 API (일반 사용자)
+                        "/api/admin-auth/**",     // 관리자 인증 관련 API
                         "/api/public/**",         // 공개 API
                         "/swagger-ui/**",         // Swagger UI
                         "/api-docs/**",           // API 문서

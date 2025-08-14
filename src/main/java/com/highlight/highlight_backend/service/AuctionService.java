@@ -248,7 +248,8 @@ public class AuctionService {
         Admin admin = adminRepository.findById(adminId)
             .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
         
-        if (!admin.isCanManageAuctions() && admin.getRole() != Admin.AdminRole.SUPER_ADMIN) {
+        // 기획 변경: 모든 관리자가 경매 관리 가능, SUPER_ADMIN 체크만 유지
+        if (admin.getRole() != Admin.AdminRole.SUPER_ADMIN && admin.getRole() != Admin.AdminRole.ADMIN) {
             throw new BusinessException(ErrorCode.INSUFFICIENT_PERMISSION);
         }
         

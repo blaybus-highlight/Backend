@@ -61,20 +61,27 @@ public class Admin {
     @Column(nullable = false)
     private AdminRole role = AdminRole.ADMIN;
     
+    
     /**
-     * 상품 등록 및 수정 권한
+     * 계정 활성화 상태
+     */
+    @Column(nullable = false)
+    private boolean isActive = true;
+    
+    /**
+     * 상품 관리 권한
      */
     @Column(nullable = false)
     private boolean canManageProducts = false;
     
     /**
-     * 경매 설정 권한
+     * 경매 관리 권한
      */
     @Column(nullable = false)
     private boolean canManageAuctions = false;
     
     /**
-     * 결제 상태 확인 권한
+     * 결제 관리 권한
      */
     @Column(nullable = false)
     private boolean canManagePayments = false;
@@ -86,22 +93,16 @@ public class Admin {
     private boolean canManageShipping = false;
     
     /**
-     * 낙찰/유찰 관리 권한
+     * 경매 결과 관리 권한
      */
     @Column(nullable = false)
     private boolean canManageAuctionResults = false;
     
     /**
-     * 문의 답변 권한
+     * 문의 관리 권한
      */
     @Column(nullable = false)
     private boolean canManageInquiries = false;
-    
-    /**
-     * 계정 활성화 상태
-     */
-    @Column(nullable = false)
-    private boolean isActive = true;
     
     /**
      * 마지막 로그인 시간
