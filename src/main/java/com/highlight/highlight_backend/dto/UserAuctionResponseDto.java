@@ -1,145 +1,59 @@
 package com.highlight.highlight_backend.dto;
 
 import com.highlight.highlight_backend.domain.Auction;
+import com.highlight.highlight_backend.domain.Product;
+import com.highlight.highlight_backend.domain.ProductImage;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 일반 유저에게 썸네일 화면에 보여줄 응답 DTO
+ * 일반 유저에게 썸네일 화면에 보여줄 경매 정보 응답 DTO
  *
  * @author 탁찬홍
  * @since 2025.08.14
  */
 @Getter
+@Builder // new UserAuctionResponseDto(...) 대신 Builder 패턴을 사용하기 위해 추가
 @AllArgsConstructor
 public class UserAuctionResponseDto {
 
-        /**
-         * 경매 ID
-         */
-        private Long id;
+    // Product 에서 가져올 정보
+    private String thumbnailUrl; // 썸네일 이미지 URL
+    private String productName;  // 상품명
+    // Auction 에서 가져올 정보
+    private BigDecimal currentPrice;   // 현재가
+    private BigDecimal buyNowPrice;    // 즉시구매가
+    private Integer bidCount;      // 입찰 수
+    private LocalDateTime endTime; // 종료 시간
+    private String auctionStatus;  // 현재 경매 상태
 
-        /**
-         * 경매 상품 정보
-         */
-        private ProductResponseDto product;
+    /**
+     * Auction 엔티티로부터 UserAuctionResponseDto를 생성합니다.
+     * @param auction 원본 Auction 엔티티
+     * @return 변환된 DTO
+     */
+    public static UserAuctionResponseDto from(Auction auction) {
+        Product product = auction.getProduct();
+        List<ProductImage> images = product.getImages();
 
-        /**
-         * 경매 상태
-         */
+        // 썸네일 이미지를 가져옵니다. 이미지가 없으면 null 처리.
+        String thumbnailUrl = (images != null && !images.isEmpty()) ? images.get(0).getImageUrl() : null;
 
-        private Auction.AuctionStatus status;
-        /**
-         * 경매 시작 예정 시간
-         */
-        private LocalDateTime scheduledStartTime;
-
-        /**
-         * 경매 종료 예정 시간
-         */
-        private LocalDateTime scheduledEndTime;
-
-        /**
-         * 실제 경매 시작 시간
-         */
-        private LocalDateTime actualStartTime;
-
-        /**
-         * 실제 경매 종료 시간
-         */
-        private LocalDateTime actualEndTime;
-
-        /**
-         * 현재 최고 입찰가
-         */
-        private BigDecimal currentHighestBid;
-
-        /**
-         * 총 입찰 참여자 수
-         */
-        private Integer totalBidders;
-
-        /**
-         * 총 입찰 횟수
-         */
-        private Integer totalBids;
-
-        /**
-         * 경매 생성한 관리자 ID
-         */
-        private Long createdBy;
-
-        /**
-         * 경매 시작한 관리자 ID
-         */
-        private Long startedBy;
-
-        /**
-         * 생성 시간
-         */
-        private LocalDateTime createdAt;
-
-        /**
-         * 수정 시간
-         */
-        private LocalDateTime updatedAt;
-
-        /**
-         * Auction 엔티티로부터 DTO 생성
-         */
-        public static com.highlight.highlight_backend.dto.AuctionResponseDto from(Auction auction) {
-            ProductResponseDto productDto = auction.getProduct() != null ?
-                    ProductResponseDto.from(auction.getProduct()) : null;
-
-            return new com.highlight.highlight_backend.dto.AuctionResponseDto(
-                    auction.getId(),
-                    productDto,
-                    auction.getStatus(),
-                    auction.getStatus().getDescription(),
-                    auction.getScheduledStartTime(),
-                    auction.getScheduledEndTime(),
-                    auction.getActualStartTime(),
-                    auction.getActualEndTime(),
-                    auction.getCurrentHighestBid(),
-                    auction.getTotalBidders(),
-                    auction.getTotalBids(),
-                    auction.getCreatedBy(),
-                    auction.getStartedBy(),
-                    auction.getEndedBy(),
-                    auction.getEndReason(),
-                    auction.getDescription(),
-                    auction.getCreatedAt(),
-                    auction.getUpdatedAt()
-            );
-        }
-
-        /**
-         * 상품 정보 없이 경매 기본 정보만 포함한 DTO 생성
-         */
-        public static com.highlight.highlight_backend.dto.AuctionResponseDto fromWithoutProduct(Auction auction) {
-            return new com.highlight.highlight_backend.dto.AuctionResponseDto(
-                    auction.getId(),
-                    null, // 상품 정보 제외
-                    auction.getStatus(),
-                    auction.getStatus().getDescription(),
-                    auction.getScheduledStartTime(),
-                    auction.getScheduledEndTime(),
-                    auction.getActualStartTime(),
-                    auction.getActualEndTime(),
-                    auction.getCurrentHighestBid(),
-                    auction.getTotalBidders(),
-                    auction.getTotalBids(),
-                    auction.getCreatedBy(),
-                    auction.getStartedBy(),
-                    auction.getEndedBy(),
-                    auction.getEndReason(),
-                    auction.getDescription(),
-                    auction.getCreatedAt(),
-                    auction.getUpdatedAt()
-            );
-        }
+        return UserAuctionResponseDto.builder()
+                // Product 정보
+                .thumbnailUrl(thumbnailUrl)
+                .productName(product.getProductName())
+                // Auction 정보
+                .buyNowPrice(auction.getBuyItNowPrice())
+                .currentPrice(auction.getCurrentHighestBid())
+                .bidCount(auction.getTotalBids())
+                .endTime(auction.getScheduledEndTime())
+                .auctionStatus(auction.getStatus().name()) // Enum 값을 문자열로 변환
+                .build();
     }
 }
