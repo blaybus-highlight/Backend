@@ -2,7 +2,6 @@ package com.highlight.highlight_backend.controller;
 
 import com.highlight.highlight_backend.dto.AdminCreateRequestDto;
 import com.highlight.highlight_backend.dto.AdminResponseDto;
-import com.highlight.highlight_backend.dto.AdminUpdateRequestDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AdminManagementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -102,32 +101,6 @@ public class AdminManagementController {
         
         return ResponseEntity.ok(
             ResponseDto.success(response, "관리자 정보를 성공적으로 조회했습니다.")
-        );
-    }
-    
-    /**
-     * 관리자 계정 수정
-     * 
-     * @param adminId 수정할 관리자 ID
-     * @param request 수정 요청 데이터
-     * @param authentication 현재 로그인한 관리자 정보
-     * @return 수정된 관리자 정보
-     */
-    @PutMapping("/admins/{adminId}")
-    @Operation(summary = "관리자 계정 수정", description = "관리자 계정 정보 및 권한을 수정합니다. (SUPER_ADMIN 권한 필요)")
-    public ResponseEntity<ResponseDto<AdminResponseDto>> updateAdmin(
-            @PathVariable Long adminId,
-            @Valid @RequestBody AdminUpdateRequestDto request,
-            Authentication authentication) {
-        
-        Long currentAdminId = (Long) authentication.getPrincipal();
-        log.info("PUT /api/admin-management/admins/{} - 관리자 계정 수정 요청 (요청자: {})", 
-                adminId, currentAdminId);
-        
-        AdminResponseDto response = adminManagementService.updateAdmin(adminId, request, currentAdminId);
-        
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "관리자 계정이 성공적으로 수정되었습니다.")
         );
     }
     

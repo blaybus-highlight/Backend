@@ -2,7 +2,6 @@ package com.highlight.highlight_backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.highlight.highlight_backend.dto.AdminCreateRequestDto;
-import com.highlight.highlight_backend.dto.AdminUpdateRequestDto;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -180,41 +179,6 @@ class AdminManagementControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    @DisplayName("관리자 계정 수정 성공 테스트")
-    void testUpdateAdminSuccess() throws Exception {
-        // Given: 먼저 관리자 계정 생성
-        Long adminId = createTestAdmin();
-        AdminUpdateRequestDto updateRequest = createValidAdminUpdateRequest();
-
-        // When & Then
-        mockMvc.perform(put("/api/admin-management/admins/{adminId}", adminId)
-                .header("Authorization", "Bearer " + adminAccessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.adminName").value("수정된 관리자"))
-                .andExpect(jsonPath("$.data.email").value("updated@test.com"))
-                .andExpect(jsonPath("$.message").value("관리자 계정이 성공적으로 수정되었습니다."));
-    }
-
-    @Test
-    @DisplayName("관리자 계정 수정 실패 테스트 - 일반 관리자 권한")
-    void testUpdateAdminFailWithInsufficientPermission() throws Exception {
-        // Given
-        Long adminId = createTestAdmin();
-        AdminUpdateRequestDto updateRequest = createValidAdminUpdateRequest();
-
-        // When & Then
-        mockMvc.perform(put("/api/admin-management/admins/{adminId}", adminId)
-                .header("Authorization", "Bearer " + managerAccessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
 
     @Test
     @DisplayName("관리자 계정 삭제 성공 테스트")
@@ -287,12 +251,6 @@ class AdminManagementControllerTest {
             setField(request, "password", "TestPass123!@#");
             setField(request, "adminName", "테스트 관리자");
             setField(request, "email", "testadmin@test.com");
-            setField(request, "canManageProducts", true);
-            setField(request, "canManageAuctions", false);
-            setField(request, "canManagePayments", true);
-            setField(request, "canManageShipping", false);
-            setField(request, "canManageAuctionResults", false);
-            setField(request, "canManageInquiries", true);
         } catch (Exception e) {
             throw new RuntimeException("테스트 데이터 생성 실패", e);
         }
@@ -300,28 +258,6 @@ class AdminManagementControllerTest {
         return request;
     }
 
-    /**
-     * 유효한 관리자 수정 요청 데이터 생성
-     */
-    private AdminUpdateRequestDto createValidAdminUpdateRequest() {
-        AdminUpdateRequestDto request = new AdminUpdateRequestDto();
-        
-        try {
-            setField(request, "adminName", "수정된 관리자");
-            setField(request, "email", "updated@test.com");
-            setField(request, "isActive", true);
-            setField(request, "canManageProducts", false);
-            setField(request, "canManageAuctions", true);
-            setField(request, "canManagePayments", false);
-            setField(request, "canManageShipping", true);
-            setField(request, "canManageAuctionResults", true);
-            setField(request, "canManageInquiries", false);
-        } catch (Exception e) {
-            throw new RuntimeException("테스트 데이터 생성 실패", e);
-        }
-        
-        return request;
-    }
 
     /**
      * 리플렉션을 통한 private 필드 설정 헬퍼 메서드

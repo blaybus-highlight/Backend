@@ -50,33 +50,4 @@ public class AdminCreateRequestDto {
     @Size(max = 100, message = "이메일은 100자를 초과할 수 없습니다")
     private String email;
     
-    /**
-     * 상품 등록 및 수정 권한
-     */
-    private boolean canManageProducts;
-    
-    /**
-     * 경매 설정 권한
-     */
-    private boolean canManageAuctions;
-    
-    /**
-     * 결제 상태 확인 권한
-     */
-    private boolean canManagePayments;
-    
-    /**
-     * 배송 관리 권한
-     */
-    private boolean canManageShipping;
-    
-    /**
-     * 낙찰/유찰 관리 권한
-     */
-    private boolean canManageAuctionResults;
-    
-    /**
-     * 문의 답변 권한
-     */
-    private boolean canManageInquiries;
 }
