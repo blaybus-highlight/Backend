@@ -69,6 +69,42 @@ public class Admin {
     private boolean isActive = true;
     
     /**
+     * 상품 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManageProducts = false;
+    
+    /**
+     * 경매 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManageAuctions = false;
+    
+    /**
+     * 결제 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManagePayments = false;
+    
+    /**
+     * 배송 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManageShipping = false;
+    
+    /**
+     * 경매 결과 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManageAuctionResults = false;
+    
+    /**
+     * 문의 관리 권한
+     */
+    @Column(nullable = false)
+    private boolean canManageInquiries = false;
+    
+    /**
      * 마지막 로그인 시간
      */
     private LocalDateTime lastLoginAt;
