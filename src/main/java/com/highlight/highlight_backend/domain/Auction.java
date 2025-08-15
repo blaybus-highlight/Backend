@@ -66,7 +66,13 @@ public class Auction {
      * 실제 경매 종료 시간
      */
     private LocalDateTime actualEndTime;
-    
+
+    /**
+     * 경매 시작가 -> 맨 처음 시작 시 가격 // 추가
+     */
+    @Column(nullable = false)
+    private BigDecimal price;
+
     /**
      * 현재 최고 입찰가
      */
@@ -78,6 +84,18 @@ public class Auction {
      */
     @Column(name = "buy_it_now_price", precision = 15, scale = 0)
     private BigDecimal buyItNowPrice;
+
+    /**
+     * 최소 인상폭 // 추가
+     */
+    @Column(nullable = false)   
+    private BigDecimal minimumBid;
+
+    /**
+     * 최대 인상폭 // 추가
+     */
+    @Column(nullable = false)
+    private BigDecimal maxBid;
     
     /**
      * 총 입찰 참여자 수
