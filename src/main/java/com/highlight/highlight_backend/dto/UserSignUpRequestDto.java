@@ -37,6 +37,7 @@ public class UserSignUpRequestDto {
     @AssertTrue(message = "휴대폰 인증이 필요 합니다.")
     private boolean isPhoneVerified;
 
+
     @NotNull(message = "만 14세 이상 동의 여부를 입력해주세요.")
     @AssertTrue(message = "만 14세 이상이어야 합니다.")
     private Boolean isOver14;
@@ -44,8 +45,11 @@ public class UserSignUpRequestDto {
     @NotNull(message = "이용약관 동의 여부를 입력해주세요.")
     @AssertTrue(message = "이용약관에 동의해야 합니다.")
     private Boolean agreedToTerms;
+    
+    @NotNull(message = "마케팅 이용약관 동의 여부를 입력해주세요.")
+    private Boolean marketingEnabled;
 
-    private boolean marketingEnabled;
-    private boolean eventSnsEnabled;
+    @NotNull(message = "SNS 광고 동의 여부를 입력해주세요.")
+    private Boolean eventSnsEnabled;
 
 }

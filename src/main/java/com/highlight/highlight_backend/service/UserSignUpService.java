@@ -1,10 +1,13 @@
 package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.User;
+import com.highlight.highlight_backend.dto.UserLoginRequestDto;
+import com.highlight.highlight_backend.dto.UserLoginResponseDto;
 import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.user.UserRepository;
+import com.highlight.highlight_backend.util.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ public class UserSignUpService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Transactional
     public UserSignUpRequestDto signUp(UserSignUpRequestDto signUpRequestDto) {
@@ -48,12 +52,35 @@ public class UserSignUpService {
         /**
          * 유저 repo 에 저장
          */
-        user.setOver14(signUpRequestDto.isOver14());
-        user.setAgreedToTerms(signUpRequestDto.isAgreedToTerms());
-        user.setMarketingEnabled(signUpRequestDto.isMarketingEnabled());
-        user.setEventSnsEnabled(signUpRequestDto.isEventSnsEnabled());
+        user.setOver14(signUpRequestDto.getIsOver14());
+        user.setAgreedToTerms(signUpRequestDto.getAgreedToTerms());
+        user.setMarketingEnabled(signUpRequestDto.getMarketingEnabled());
+        user.setEventSnsEnabled(signUpRequestDto.getEventSnsEnabled());
 
         userRepository.save(user);
         return signUpRequestDto;
+    }
+
+    public UserLoginResponseDto login(UserLoginRequestDto loginRequestDto) {
+        // 1. 사용자 조회
+        User user = userRepository.findByUserId(loginRequestDto.getUser_id())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS));
+
+        // 2. 비밀번호 검증
+        if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+        }
+
+        // 3. JWT 토큰 생성
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getUserId());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getUserId());
+
+        // 4. UserResponseDto 생성 및 반환
+        return UserLoginResponseDto.builder()
+                .user_id(user.getUserId())
+                .nickname(user.getNickname())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }
