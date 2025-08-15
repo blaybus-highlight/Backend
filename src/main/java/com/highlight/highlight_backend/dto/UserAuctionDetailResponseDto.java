@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,10 @@ public class UserAuctionDetailResponseDto {
     private List<ProductResponseDto.ProductImageResponseDto> images;  // 이미지
     private String status;  // 상품상태
     //private String size; // 상품 사이즈
+
+    private LocalDateTime scheduledStartTime;  // 경매 시작 시간
+    private LocalDateTime scheduledEndTime;  // 경매 종료 시간
+
     private BigDecimal entranceFee;  // 입장료
     private BigDecimal currentHighestBid;  // 현재가
     private BigDecimal buyItNowPrice;  // 즉시구매가
@@ -48,6 +53,8 @@ public class UserAuctionDetailResponseDto {
                 .detailedInfo(product.getDetailedInfo())
                 .images(imageDtos)
                 .status(product.getStatus().getDescription())
+                .scheduledStartTime(auction.getScheduledStartTime())
+                .scheduledEndTime(auction.getScheduledEndTime())
                 .entranceFee(product.getEntranceFee())
                 .currentHighestBid(auction.getCurrentHighestBid())
                 .buyItNowPrice(auction.getBuyItNowPrice())

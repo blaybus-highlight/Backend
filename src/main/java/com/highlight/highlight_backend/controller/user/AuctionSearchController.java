@@ -28,9 +28,12 @@ public class AuctionSearchController {
 
     /**
      *
+     * @param minPrice -> 최소 가격
+     * @param maxPrice -> 최대 가격
+     * @param brand -> 브랜드 종류
+     * @param eventName -> 이벤드 이름
      * @param category -> 필터링할 카테고리를 가져옵니다.
      * @param sortCode -> ending, popular, newest (정렬 대상을 받아옵니다)
-     * @return
      */
     @GetMapping("/")
     @Operation(summary = "경매 목록 조회", description = "모든 경매 목록을 불러옵니다.")
@@ -54,7 +57,13 @@ public class AuctionSearchController {
                 ResponseDto.success(response, "경매 목록을 성공적으로 불러왔습니다."));
     }
 
+    /**
+     *
+     * @param auctionId -> auction ID 를 받아서 조회
+     * @return -> UserAuctionDetailResponseDto 를 반환
+     */
     @GetMapping("/{auctionId}")
+    @Operation(summary = "Auction 상세 정보 조회", description = "AuctionId 를 통해 상세 정보를 조회합니다.")
     public ResponseEntity<ResponseDto<UserAuctionDetailResponseDto>> getAuctionDetail(
             @PathVariable("auctionId") Long auctionId
     ) {
