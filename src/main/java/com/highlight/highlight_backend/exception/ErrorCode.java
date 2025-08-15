@@ -68,6 +68,18 @@ public enum ErrorCode {
     INVALID_PRODUCT_DESCRIPTION_LENGTH(HttpStatus.BAD_REQUEST, "PRODUCT_002", "상품 소개는 25자를 초과할 수 없습니다."),
     /** 경매 중인 상품 삭제 불가 */
     CANNOT_DELETE_AUCTION_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_003", "경매 중인 상품은 삭제할 수 없습니다."),
+    /** 유효하지 않은 상품 갯수 */
+    INVALID_PRODUCT_COUNT(HttpStatus.BAD_REQUEST, "PRODUCT_004", "상품 갯수는 1개 이상이어야 합니다."),
+    /** 유효하지 않은 제조년도 */
+    INVALID_MANUFACTURE_YEAR(HttpStatus.BAD_REQUEST, "PRODUCT_005", "제조년도가 유효하지 않습니다."),
+    /** 재질 정보 누락 */
+    INVALID_MATERIAL(HttpStatus.BAD_REQUEST, "PRODUCT_006", "상품 재질 정보는 필수입니다."),
+    /** 사이즈 정보 누락 */
+    INVALID_SIZE(HttpStatus.BAD_REQUEST, "PRODUCT_007", "상품 사이즈 정보는 필수입니다."),
+    /** 브랜드 정보 누락 */
+    INVALID_BRAND(HttpStatus.BAD_REQUEST, "PRODUCT_008", "브랜드 정보는 필수입니다."),
+    /** 상품 등급 누락 */
+    INVALID_PRODUCT_RANK(HttpStatus.BAD_REQUEST, "PRODUCT_009", "상품 등급 정보는 필수입니다."),
     
     
     // ===== 경매 관련 에러 =====
@@ -87,6 +99,16 @@ public enum ErrorCode {
     INVALID_AUCTION_END_TIME(HttpStatus.BAD_REQUEST, "AUCTION_007", "경매 종료 시간이 유효하지 않습니다."),
     /** 경매 진행 시간 부족 */
     AUCTION_DURATION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AUCTION_008", "경매 진행 시간은 최소 10분 이상이어야 합니다."),
+    /** 유효하지 않은 입찰 단위 */
+    INVALID_BID_UNIT(HttpStatus.BAD_REQUEST, "AUCTION_009", "입찰 단위는 0보다 커야 합니다."),
+    /** 유효하지 않은 배송비 */
+    INVALID_SHIPPING_FEE(HttpStatus.BAD_REQUEST, "AUCTION_010", "배송비는 0원 이상이어야 합니다."),
+    /** 유효하지 않은 최소 입찰가 */
+    INVALID_MINIMUM_BID(HttpStatus.BAD_REQUEST, "AUCTION_011", "최소 입찰가는 입찰 단위보다 크거나 같아야 합니다."),
+    /** 입찰가와 입찰 단위 불일치 */
+    BID_UNIT_MISMATCH(HttpStatus.BAD_REQUEST, "AUCTION_012", "입찰가는 입찰 단위의 배수여야 합니다."),
+    /** 최대 입찰가가 최소 입찰가보다 작음 */
+    MAX_BID_LESS_THAN_MIN_BID(HttpStatus.BAD_REQUEST, "AUCTION_013", "최대 입찰가는 최소 입찰가보다 크거나 같아야 합니다."),
 
 
     // ===== User 회원가입 관련 에러 ===== //

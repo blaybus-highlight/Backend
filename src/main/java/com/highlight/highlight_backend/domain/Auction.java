@@ -68,7 +68,7 @@ public class Auction {
     private LocalDateTime actualEndTime;
 
     /**
-     * 경매 시작가 -> 맨 처음 시작 시 가격 // 추가
+     * 경매 시작가 -> 맨 처음 시작 시 가격
      */
     @Column(nullable = false)
     private BigDecimal price;
@@ -86,16 +86,34 @@ public class Auction {
     private BigDecimal buyItNowPrice;
 
     /**
-     * 최소 인상폭 // 추가
+     * 최소 인상폭
      */
     @Column(nullable = false)   
     private BigDecimal minimumBid;
 
     /**
-     * 최대 인상폭 // 추가
+     * 최대 인상폭
      */
     @Column(nullable = false)
     private BigDecimal maxBid;
+
+    /**
+     * 입찰 단위
+     */
+    @Column(nullable = false)
+    private BigDecimal bidUnit;
+
+    /**
+     * 배송비
+     */
+    @Column(precision = 15, scale = 0)
+    private BigDecimal shippingFee;
+
+    /**
+     * 직접 픽업 가능 여부
+     */
+    @Column(nullable = false)
+    private Boolean isPickupAvailable = false;
     
     /**
      * 총 입찰 참여자 수

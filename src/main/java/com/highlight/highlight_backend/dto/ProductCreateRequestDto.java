@@ -66,6 +66,53 @@ public class ProductCreateRequestDto {
      */
     @NotNull(message = "카테고리는 필수입니다")
     private Product.Category category;
+
+    /**
+     * 상품 갯수
+     */
+    @NotNull(message = "상품 갯수는 필수입니다")
+    @Min(value = 1, message = "상품 갯수는 1개 이상이어야 합니다")
+    private Long productCount;
+
+    /**
+     * 상품 재질
+     */
+    @NotBlank(message = "상품 재질은 필수입니다")
+    @Size(max = 100, message = "재질은 100자를 초과할 수 없습니다")
+    private String material;
+
+    /**
+     * 상품 사이즈
+     */
+    @NotBlank(message = "상품 사이즈는 필수입니다")
+    @Size(max = 100, message = "사이즈는 100자를 초과할 수 없습니다")
+    private String size;
+
+    /**
+     * 브랜드/메이커
+     */
+    @NotBlank(message = "브랜드는 필수입니다")
+    @Size(max = 100, message = "브랜드는 100자를 초과할 수 없습니다")
+    private String brand;
+
+    /**
+     * 제조년도
+     */
+    @Min(value = 1800, message = "제조년도는 1800년 이후여야 합니다")
+    @Max(value = 2030, message = "제조년도는 2030년 이전이어야 합니다")
+    private Integer manufactureYear;
+
+    /**
+     * 상품 상태 설명
+     */
+    @Size(max = 500, message = "상품 상태 설명은 500자를 초과할 수 없습니다")
+    private String condition;
+
+    /**
+     * 상품 등급
+     */
+    @NotNull(message = "상품 등급은 필수입니다")
+    private Product.ProductRank rank;
     
     /**
      * 상품 이미지 정보 목록

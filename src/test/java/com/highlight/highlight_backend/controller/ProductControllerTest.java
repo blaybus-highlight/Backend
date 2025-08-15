@@ -286,6 +286,13 @@ class ProductControllerTest {
             setField(request, "detailedInfo", "테스트 상품의 상세 정보입니다.");
             setField(request, "startingPrice", new BigDecimal("100000"));
             setField(request, "category", Product.Category.PROPS);
+            setField(request, "productCount", 1L);
+            setField(request, "material", "도자기");
+            setField(request, "size", "10x20x5");
+            setField(request, "brand", "NAFAL");
+            setField(request, "manufactureYear", 2020);
+            setField(request, "condition", "상태 양호");
+            setField(request, "rank", Product.ProductRank.BEST);
             setField(request, "images", new ArrayList<>());
             setField(request, "isDraft", false);
         } catch (Exception e) {
@@ -310,6 +317,13 @@ class ProductControllerTest {
             setField(request, "detailedInfo", "수정된 상품의 상세 정보입니다.");
             setField(request, "startingPrice", new BigDecimal("150000"));
             setField(request, "category", Product.Category.FURNITURE);
+            setField(request, "productCount", 2L);
+            setField(request, "material", "목재");
+            setField(request, "size", "50x100x30");
+            setField(request, "brand", "NAFAL2");
+            setField(request, "manufactureYear", 2022);
+            setField(request, "condition", "새상품급");
+            setField(request, "rank", Product.ProductRank.GREAT);
             setField(request, "images", new ArrayList<>());
         } catch (Exception e) {
             throw new RuntimeException("테스트 데이터 생성 실패", e);
