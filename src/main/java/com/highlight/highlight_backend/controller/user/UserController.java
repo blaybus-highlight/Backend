@@ -26,7 +26,6 @@ public class UserController {
     private final UserSignUpService userSignUpService;
 
     /**
-     * 
      * @param signUpRequestDto 회원가입 정보를
      * @return
      */
@@ -46,5 +45,6 @@ public class UserController {
         UserLoginResponseDto response = userSignUpService.login(loginRequestDto);
         return ResponseEntity.ok(ResponseDto.success(response, "User 로그인에 성공하였습니다."));
     }
+}
 
     
