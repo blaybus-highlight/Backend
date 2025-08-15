@@ -1,6 +1,7 @@
 package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.Auction;
+import com.highlight.highlight_backend.dto.UserAuctionDetailResponseDto;
 import com.highlight.highlight_backend.dto.UserAuctionResponseDto;
 import com.highlight.highlight_backend.repository.user.UserAuctionRepository;
 import com.highlight.highlight_backend.repository.spec.AuctionSpecs; // import 추가
@@ -15,18 +16,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
- * 일반 User에게 필터링, 정렬조건을 받고 정렬된 값을 찾는 Service
+ * 일반 User 인증없이 보여줄 정보를 처리하는 Service
  *
  *
  * @author 탁찬홍
  * @since 2025.08.14
  */
 @Service
-@RequiredArgsConstructor // final 필드에 대한 생성자를 만들어줍니다.
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserAuctionSearchService {
 
     private final UserAuctionRepository userAuctionRepository;
-    @Transactional(readOnly = true)
+
+    /**
+     * 필터링, 정렬할 값을 가져오고 정렬한다.
+     * JapRepository 에서 Specification 을 이용하여 필터링
+     * @return UserAuctionResponseDto 반환
+     */
+
     public Page<UserAuctionResponseDto> getProductsFiltered(
             String category, Long minPrice, Long maxPrice, String brand, String eventName,
             String sortCode, Pageable pageable) {
@@ -72,5 +80,10 @@ public class UserAuctionSearchService {
             default:
                 return Sort.by(Sort.Direction.DESC, "createdAt");
         }
+    }
+
+    public UserAuctionDetailResponseDto getProductsDetail(Long auctionId) {
+        Auction auction = userAuctionRepository.findOne(auctionId);
+        return UserAuctionDetailResponseDto.from(auction);
     }
 }
