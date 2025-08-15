@@ -111,12 +111,45 @@ public enum ErrorCode {
     MAX_BID_LESS_THAN_MIN_BID(HttpStatus.BAD_REQUEST, "AUCTION_013", "최대 입찰가는 최소 입찰가보다 크거나 같아야 합니다."),
 
 
-        // ===== User 회원가입 관련 에러 ===== //
-    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "USER_006", "이미 사용 중인 아이디입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "USER_007", "이미 사용 중인 닉네임입니다."),
-    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "USER_008", "이미 사용 중인 휴대폰 번호입니다."),
-    INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "USER_009", "유효하지 않은 휴대폰 번호 형식입니다."),
-    VERIFICATION_CODE_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER_010", "인증번호가 일치하지 않습니다.");;
+    // ===== User 회원가입 관련 에러 ===== //
+    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "USER_001", "이미 사용 중인 아이디입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "USER_002", "이미 사용 중인 닉네임입니다."),
+    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "USER_003", "이미 사용 중인 휴대폰 번호입니다."),
+    INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "USER_004", "유효하지 않은 휴대폰 번호 형식입니다."),
+    VERIFICATION_CODE_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER_005", "인증번호가 일치하지 않습니다."),
+
+
+    // ===== 입찰 관련 에러 =====
+    /** 입찰을 찾을 수 없음 */
+    BID_NOT_FOUND(HttpStatus.NOT_FOUND, "BID_001", "입찰을 찾을 수 없습니다."),
+    /** 유효하지 않은 입찰 금액 */
+    INVALID_BID_AMOUNT(HttpStatus.BAD_REQUEST, "BID_002", "입찰 금액이 유효하지 않습니다."),
+    /** 입찰 금액이 현재가보다 낮음 */
+    BID_AMOUNT_TOO_LOW(HttpStatus.BAD_REQUEST, "BID_003", "입찰 금액이 현재 최고가보다 낮습니다."),
+    /** 본인 입찰에 재입찰 */
+    CANNOT_BID_ON_OWN_BID(HttpStatus.BAD_REQUEST, "BID_004", "본인의 입찰에는 재입찰할 수 없습니다."),
+    /** 경매 종료로 입찰 불가 */
+    AUCTION_ENDED_CANNOT_BID(HttpStatus.BAD_REQUEST, "BID_005", "종료된 경매에는 입찰할 수 없습니다."),
+    /** 경매 시작 전 입찰 불가 */
+    AUCTION_NOT_STARTED_CANNOT_BID(HttpStatus.BAD_REQUEST, "BID_006", "시작되지 않은 경매에는 입찰할 수 없습니다."),
+    /** 입찰 취소 불가 */
+    CANNOT_CANCEL_BID(HttpStatus.BAD_REQUEST, "BID_007", "입찰을 취소할 수 없습니다."),
+
+
+    // ===== WebSocket 관련 에러 =====
+    /** WebSocket 연결 실패 */
+    WEBSOCKET_CONNECTION_FAILED(HttpStatus.BAD_REQUEST, "WEBSOCKET_001", "WebSocket 연결에 실패했습니다."),
+    /** WebSocket 메시지 전송 실패 */
+    WEBSOCKET_MESSAGE_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "WEBSOCKET_002", "실시간 메시지 전송에 실패했습니다."),
+    /** 유효하지 않은 WebSocket 메시지 형식 */
+    INVALID_WEBSOCKET_MESSAGE_FORMAT(HttpStatus.BAD_REQUEST, "WEBSOCKET_003", "유효하지 않은 메시지 형식입니다."),
+    /** WebSocket 구독 실패 */
+    WEBSOCKET_SUBSCRIPTION_FAILED(HttpStatus.BAD_REQUEST, "WEBSOCKET_004", "실시간 알림 구독에 실패했습니다."),
+    /** WebSocket 연결 해제 오류 */
+    WEBSOCKET_DISCONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "WEBSOCKET_005", "연결 해제 중 오류가 발생했습니다."),
+    /** 경매 구독 권한 없음 */
+    WEBSOCKET_AUCTION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "WEBSOCKET_006", "해당 경매의 실시간 정보에 접근할 권한이 없습니다."),;
+
     /**
      * HTTP 상태 코드
      */

@@ -1,0 +1,154 @@
+package com.highlight.highlight_backend.controller;
+
+import com.highlight.highlight_backend.dto.AuctionStatusResponseDto;
+import com.highlight.highlight_backend.dto.BidCreateRequestDto;
+import com.highlight.highlight_backend.dto.BidResponseDto;
+import com.highlight.highlight_backend.dto.ResponseDto;
+import com.highlight.highlight_backend.service.BidService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 입찰 관련 컨트롤러
+ * 
+ * 경매 입찰 참여, 입찰 내역 조회, 실시간 경매 상태 조회 API를 제공합니다.
+ * 
+ * @author 전우선
+ * @since 2025.08.15
+ */
+@Slf4j
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+@Tag(name = "입찰 관리", description = "입찰 참여, 입찰 내역 조회, 경매 상태 조회 API")
+public class BidController {
+    
+    private final BidService bidService;
+    
+    /**
+     * 입찰 참여
+     * 
+     * @param request 입찰 요청 정보
+     * @param authentication 현재 로그인한 사용자 정보
+     * @return 입찰 결과
+     */
+    @PostMapping("/bids")
+    @Operation(summary = "입찰 참여", description = "경매에 입찰을 참여합니다.")
+    public ResponseEntity<ResponseDto<BidResponseDto>> createBid(
+            @Valid @RequestBody BidCreateRequestDto request,
+            Authentication authentication) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("POST /api/bids - 입찰 참여 요청 (사용자: {}, 경매: {}, 금액: {})", 
+                userId, request.getAuctionId(), request.getBidAmount());
+        
+        BidResponseDto response = bidService.createBid(request, userId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "입찰에 성공했습니다.")
+        );
+    }
+    
+    /**
+     * 경매 입찰 내역 조회
+     * 
+     * @param auctionId 경매 ID
+     * @param pageable 페이징 정보
+     * @return 입찰 내역 목록
+     */
+    @GetMapping("/auctions/{auctionId}/bids")
+    @Operation(summary = "경매 입찰 내역 조회", description = "특정 경매의 입찰 내역을 조회합니다.")
+    public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getAuctionBids(
+            @Parameter(description = "경매 ID", required = true)
+            @PathVariable Long auctionId,
+            @Parameter(description = "페이징 정보")
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        log.info("GET /api/auctions/{}/bids - 경매 입찰 내역 조회", auctionId);
+        
+        Page<BidResponseDto> response = bidService.getAuctionBids(auctionId, pageable);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "입찰 내역 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 실시간 경매 상태 조회
+     * 
+     * @param auctionId 경매 ID
+     * @return 경매 상태 정보
+     */
+    @GetMapping("/auctions/{auctionId}/status")
+    @Operation(summary = "실시간 경매 상태 조회", description = "경매의 실시간 상태 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto<AuctionStatusResponseDto>> getAuctionStatus(
+            @Parameter(description = "경매 ID", required = true)
+            @PathVariable Long auctionId) {
+        
+        log.info("GET /api/auctions/{}/status - 실시간 경매 상태 조회", auctionId);
+        
+        AuctionStatusResponseDto response = bidService.getAuctionStatus(auctionId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "경매 상태 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 내 입찰 내역 조회
+     * 
+     * @param authentication 현재 로그인한 사용자 정보
+     * @param pageable 페이징 정보
+     * @return 사용자 입찰 내역
+     */
+    @GetMapping("/users/bids")
+    @Operation(summary = "내 입찰 내역 조회", description = "로그인한 사용자의 입찰 내역을 조회합니다.")
+    public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getUserBids(
+            Authentication authentication,
+            @Parameter(description = "페이징 정보")
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("GET /api/users/bids - 내 입찰 내역 조회 (사용자: {})", userId);
+        
+        Page<BidResponseDto> response = bidService.getUserBids(userId, pageable);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "내 입찰 내역 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 내 낙찰 내역 조회
+     * 
+     * @param authentication 현재 로그인한 사용자 정보
+     * @param pageable 페이징 정보
+     * @return 낙찰 내역
+     */
+    @GetMapping("/users/wins")
+    @Operation(summary = "내 낙찰 내역 조회", description = "로그인한 사용자의 낙찰 내역을 조회합니다.")
+    public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getUserWonBids(
+            Authentication authentication,
+            @Parameter(description = "페이징 정보")
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("GET /api/users/wins - 내 낙찰 내역 조회 (사용자: {})", userId);
+        
+        Page<BidResponseDto> response = bidService.getUserWonBids(userId, pageable);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "내 낙찰 내역 조회가 완료되었습니다.")
+        );
+    }
+}

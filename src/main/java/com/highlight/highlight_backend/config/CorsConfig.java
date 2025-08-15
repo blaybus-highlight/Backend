@@ -52,7 +52,11 @@ public class CorsConfig {
             "accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "Sec-WebSocket-Key",           // WebSocket 핸드셰이크
+            "Sec-WebSocket-Version",       // WebSocket 버전
+            "Sec-WebSocket-Protocol",      // WebSocket 프로토콜 (STOMP)
+            "Sec-WebSocket-Extensions"     // WebSocket 확장
         ));
         
         // 노출할 헤더

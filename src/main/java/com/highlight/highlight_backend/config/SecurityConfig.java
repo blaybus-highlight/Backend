@@ -63,14 +63,33 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     // 공개 엔드포인트 (인증 불필요)
                     .requestMatchers(
-                        "/api/auth/**",           // 인증 관련 API (일반 사용자)
-                        "/api/admin-auth/**",     // 관리자 인증 관련 API
-                        "/api/public/**",         // 공개 API
-                        "/swagger-ui/**",         // Swagger UI
-                        "/api-docs/**",           // API 문서
-                        "/v3/api-docs/**",        // OpenAPI 문서
-                        "/error"                  // 에러 페이지
+                        "/api/auth/**",                    // 인증 관련 API (일반 사용자)
+                        "/api/admin-auth/**",              // 관리자 인증 관련 API
+                        "/api/public/**",                  // 공개 API
+                        "/api/auctions/*/bids",            // 경매 입찰 내역 조회 (공개)
+                        "/api/auctions/*/status",          // 실시간 경매 상태 조회 (공개)
+                        "/ws/**",                          // WebSocket 엔드포인트
+                        "/topic/**",                       // WebSocket 토픽
+                        "/queue/**",                       // WebSocket 큐
+                        "/swagger-ui/**",                  // Swagger UI
+                        "/api-docs/**",                    // API 문서
+                        "/v3/api-docs/**",                 // OpenAPI 문서
+                        "/error"                           // 에러 페이지
                     ).permitAll()
+                    
+                    // 사용자 인증 필요 엔드포인트
+                    .requestMatchers(
+                        "/api/bids",                       // 입찰 참여
+                        "/api/users/bids",                 // 내 입찰 내역
+                        "/api/users/wins"                  // 내 낙찰 내역
+                    ).authenticated()
+                    
+                    // 관리자 권한 필요 엔드포인트  
+                    .requestMatchers(
+                        "/api/admin/**",                   // 관리자 전용 API
+                        "/api/products/**",                // 상품 관리
+                        "/api/auctions/**"                 // 경매 관리 (공개 조회 제외)
+                    ).hasRole("ADMIN")
                     
                     // 그 외 모든 요청은 인증 필요
                     .anyRequest().authenticated()

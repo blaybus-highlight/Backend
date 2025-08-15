@@ -11,7 +11,9 @@ import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.repository.AuctionRepository;
+import com.highlight.highlight_backend.repository.BidRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
+import com.highlight.highlight_backend.domain.Bid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +41,8 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
     private final AdminRepository adminRepository;
+    private final WebSocketService webSocketService;
+    private final BidRepository bidRepository;
     
     /**
      * 경매 예약
@@ -137,6 +141,9 @@ public class AuctionService {
         
         Auction updatedAuction = auctionRepository.save(auction);
         
+        // 6. WebSocket으로 경매 시작 알림 전송
+        webSocketService.sendAuctionStartedNotification(updatedAuction);
+        
         log.info("경매 시작 완료: {} (ID: {})", 
                 auction.getProduct().getProductName(), updatedAuction.getId());
         
@@ -168,7 +175,17 @@ public class AuctionService {
             throw new BusinessException(ErrorCode.CANNOT_END_AUCTION);
         }
         
-        // 4. 종료 처리
+        // 4. 낙찰자 조회 (정상 종료인 경우)
+        Bid winnerBid = null;
+        if (!request.isCancel()) {
+            winnerBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction).orElse(null);
+            if (winnerBid != null) {
+                winnerBid.setAsWon(); // 낙찰 상태로 변경
+                bidRepository.save(winnerBid);
+            }
+        }
+        
+        // 5. 종료 처리
         if (request.isCancel()) {
             // 경매 중단
             auction.cancelAuction(adminId, request.getEndReason());
@@ -180,6 +197,9 @@ public class AuctionService {
         }
         
         Auction updatedAuction = auctionRepository.save(auction);
+        
+        // 6. WebSocket으로 경매 종료 알림 전송
+        webSocketService.sendAuctionEndedNotification(updatedAuction, winnerBid);
         
         log.info("경매 {}완료: {} (ID: {})", 
                 request.isCancel() ? "중단 " : "", 
