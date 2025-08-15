@@ -10,12 +10,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * +
+ * 경매 목록을 조회하고 세부사항을 확인하는 controller
+ *
+ * @Author 탁찬홍
+ * @since 2025.08.15
  */
 @Slf4j
 @RestController

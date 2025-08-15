@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 
 /**
  * 일반 User 에게 상품 Detail 페이지에 보낼 정보
+ *
+ * @author 탁찬홍
+ * @since 2025.08.15
  */
 @Getter
 @AllArgsConstructor
