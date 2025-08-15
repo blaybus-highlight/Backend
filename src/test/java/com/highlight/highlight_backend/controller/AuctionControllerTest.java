@@ -275,6 +275,13 @@ class AuctionControllerTest {
         setField(request, "detailedInfo", "테스트 상품의 상세 정보");
         setField(request, "startingPrice", new BigDecimal("100000"));
         setField(request, "category", Product.Category.PROPS);
+        setField(request, "productCount", 1L);
+        setField(request, "material", "도자기");
+        setField(request, "size", "15x25x10");
+        setField(request, "brand", "NAFAL");
+        setField(request, "manufactureYear", 2021);
+        setField(request, "condition", "양호");
+        setField(request, "rank", Product.ProductRank.GOOD);
         setField(request, "images", new ArrayList<>());
         setField(request, "isDraft", false);
         

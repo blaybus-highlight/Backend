@@ -53,6 +53,41 @@ public class ProductUpdateRequestDto {
      * 카테고리
      */
     private Product.Category category;
+
+    /**
+     * 상품 갯수
+     */
+    private Long productCount;
+
+    /**
+     * 상품 재질
+     */
+    private String material;
+
+    /**
+     * 상품 사이즈
+     */
+    private String size;
+
+    /**
+     * 브랜드/메이커
+     */
+    private String brand;
+
+    /**
+     * 제조년도
+     */
+    private Integer manufactureYear;
+
+    /**
+     * 상품 상태 설명
+     */
+    private String condition;
+
+    /**
+     * 상품 등급
+     */
+    private Product.ProductRank rank;
     
     /**
      * 상품 상태

@@ -60,7 +60,10 @@ public class ProductService {
             throw new BusinessException(ErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
-        // 3. 상품 엔티티 생성
+        // 3. 상품 정보 검증
+        validateProductData(request);
+        
+        // 4. 상품 엔티티 생성
         Product product = new Product();
         product.setProductName(request.getProductName());
         product.setShortDescription(request.getShortDescription());
@@ -69,6 +72,13 @@ public class ProductService {
         product.setDetailedInfo(request.getDetailedInfo());
         product.setStartingPrice(request.getStartingPrice());
         product.setCategory(request.getCategory());
+        product.setProductCount(request.getProductCount());
+        product.setMaterial(request.getMaterial());
+        product.setSize(request.getSize());
+        product.setBrand(request.getBrand());
+        product.setManufactureYear(request.getManufactureYear());
+        product.setCondition(request.getCondition());
+        product.setRank(request.getRank());
         product.setRegisteredBy(adminId);
         
         // 상태 설정 (임시저장 또는 활성)
@@ -112,6 +122,9 @@ public class ProductService {
             throw new BusinessException(ErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
+        // 3.5. 상품 데이터 검증
+        validateProductUpdateData(request);
+        
         // 4. 상품 정보 업데이트
         if (StringUtils.hasText(request.getProductName())) {
             product.setProductName(request.getProductName());
@@ -133,6 +146,27 @@ public class ProductService {
         }
         if (request.getCategory() != null) {
             product.setCategory(request.getCategory());
+        }
+        if (request.getProductCount() != null) {
+            product.setProductCount(request.getProductCount());
+        }
+        if (request.getMaterial() != null) {
+            product.setMaterial(request.getMaterial());
+        }
+        if (request.getSize() != null) {
+            product.setSize(request.getSize());
+        }
+        if (request.getBrand() != null) {
+            product.setBrand(request.getBrand());
+        }
+        if (request.getManufactureYear() != null) {
+            product.setManufactureYear(request.getManufactureYear());
+        }
+        if (request.getCondition() != null) {
+            product.setCondition(request.getCondition());
+        }
+        if (request.getRank() != null) {
+            product.setRank(request.getRank());
         }
         if (request.getStatus() != null) {
             product.setStatus(request.getStatus());
@@ -299,5 +333,80 @@ public class ProductService {
             extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         }
         return UUID.randomUUID().toString() + extension;
+    }
+    
+    /**
+     * 상품 데이터 검증
+     * 
+     * @param request 검증할 상품 생성 요청 데이터
+     */
+    private void validateProductData(ProductCreateRequestDto request) {
+        // 상품 갯수 검증
+        if (request.getProductCount() == null || request.getProductCount() <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_PRODUCT_COUNT);
+        }
+        
+        // 제조년도 검증
+        if (request.getManufactureYear() != null) {
+            int currentYear = java.time.Year.now().getValue();
+            if (request.getManufactureYear() < 1800 || request.getManufactureYear() > currentYear + 10) {
+                throw new BusinessException(ErrorCode.INVALID_MANUFACTURE_YEAR);
+            }
+        }
+        
+        // 재질 검증
+        if (request.getMaterial() == null || request.getMaterial().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_MATERIAL);
+        }
+        
+        // 사이즈 검증
+        if (request.getSize() == null || request.getSize().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_SIZE);
+        }
+        
+        // 브랜드 검증
+        if (request.getBrand() == null || request.getBrand().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_BRAND);
+        }
+        
+        // 상품 등급 검증
+        if (request.getRank() == null) {
+            throw new BusinessException(ErrorCode.INVALID_PRODUCT_RANK);
+        }
+    }
+    
+    /**
+     * 상품 업데이트 데이터 검증
+     * 
+     * @param request 검증할 상품 수정 요청 데이터
+     */
+    private void validateProductUpdateData(ProductUpdateRequestDto request) {
+        // 상품 갯수 검증
+        if (request.getProductCount() != null && request.getProductCount() <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_PRODUCT_COUNT);
+        }
+        
+        // 제조년도 검증
+        if (request.getManufactureYear() != null) {
+            int currentYear = java.time.Year.now().getValue();
+            if (request.getManufactureYear() < 1800 || request.getManufactureYear() > currentYear + 10) {
+                throw new BusinessException(ErrorCode.INVALID_MANUFACTURE_YEAR);
+            }
+        }
+        
+        // 재질 검증
+        if (request.getMaterial() != null && request.getMaterial().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_MATERIAL);
+        }
+        
+        // 사이즈 검증
+        if (request.getSize() != null && request.getSize().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_SIZE);
+        }
+        
+        // 브랜드 검증
+        if (request.getBrand() != null && request.getBrand().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_BRAND);
+        }
     }
 }

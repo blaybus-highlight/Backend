@@ -50,13 +50,7 @@ public class Product {
      */
     @Column(columnDefinition = "TEXT")
     private String history;
-    
-    /**
-     * 기본 정보 -> 상세 정보만 있으면 될 것 같음
-     */
-    //@Column(columnDefinition = "TEXT")
-    //private String basicInfo;
-    
+
     /**
      * 기대효과
      */
@@ -76,12 +70,6 @@ public class Product {
     private BigDecimal startingPrice;
     
     /**
-     * 입장료 -> 입장료 방식은 이용하지 않음
-     */
-    //@Column(nullable = false, precision = 15, scale = 0)
-    //private BigDecimal entranceFee;
-    
-    /**
      * 상품 상태
      */
     @Enumerated(EnumType.STRING)
@@ -89,35 +77,53 @@ public class Product {
     private ProductStatus status = ProductStatus.DRAFT;
 
     /**
-     * 현재 상품 상태 ex. 최상, 상, 중 (ENUM class 로 만듦)  // 추가
+     * 현재 상품 상태 ex. 최상, 상, 중 (ENUM class 로 만듦)
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "`ProductRank`", nullable = false)
     private ProductRank rank;
     /**
-     * 카테고리 (ENUM class 로 만듦)  // 추가
+     * 카테고리 (ENUM class 로 만듦)
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
 
     /**
-     * 상품 갯수  // 추가
+     * 상품 갯수
      */
     @Column(nullable = false)
     private Long productCount;
 
     /**
-     * 상품 제질  // 추가
+     * 상품 제질
      */
     @Column(nullable = false)
     private String material;
 
     /**
-     * 상품 사이즈 -> 100 x 100 형식  // 추가
+     * 상품 사이즈 -> 100 x 100 형식
      */
     @Column(nullable = false)
     private String size;
+
+    /**
+     * 브랜드/메이커
+     */
+    @Column(nullable = false, length = 100)
+    private String brand;
+
+    /**
+     * 제조년도
+     */
+    @Column
+    private Integer manufactureYear;
+
+    /**
+     * 상품 상태 설명
+     */
+    @Column(columnDefinition = "TEXT")
+    private String condition;
 
     /**
      * 등록한 관리자 ID
@@ -167,7 +173,7 @@ public class Product {
     }
 
     /**
-     * 현재 상품의 등급  // 추가
+     * 현재 상품의 등급
      */
     @Getter
     public enum ProductRank {
