@@ -1,7 +1,7 @@
 package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.User;
-import com.highlight.highlight_backend.dto.SignUpRequestDto;
+import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.user.UserRepository;
@@ -18,7 +18,7 @@ public class UserSignUpService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public SignUpRequestDto signUp(SignUpRequestDto signUpRequestDto) {
+    public UserSignUpRequestDto signUp(UserSignUpRequestDto signUpRequestDto) {
         // 1. 중복 검사
         if (userRepository.existsByUserId(signUpRequestDto.getUserId())) {
             throw new BusinessException(ErrorCode.DUPLICATE_USER_ID);

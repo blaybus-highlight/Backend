@@ -43,7 +43,7 @@ public class ProductResponseDto {
     /**
      * 기본 정보
      */
-    private String basicInfo;
+    //private String basicInfo;
     
     /**
      * 기대효과
@@ -63,7 +63,7 @@ public class ProductResponseDto {
     /**
      * 입장료
      */
-    private BigDecimal entranceFee;
+    //private BigDecimal entranceFee;
     
     /**
      * 상품 상태
@@ -78,7 +78,7 @@ public class ProductResponseDto {
     /**
      * 카테고리
      */
-    private String category;
+    private Product.Category category;
     
     /**
      * 등록한 관리자 ID
@@ -121,11 +121,9 @@ public class ProductResponseDto {
             product.getProductName(),
             product.getShortDescription(),
             product.getHistory(),
-            product.getBasicInfo(),
             product.getExpectedEffects(),
             product.getDetailedInfo(),
             product.getStartingPrice(),
-            product.getEntranceFee(),
             product.getStatus(),
             product.getStatus().getDescription(),
             product.getCategory(),
