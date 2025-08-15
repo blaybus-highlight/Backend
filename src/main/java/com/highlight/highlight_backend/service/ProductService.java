@@ -65,11 +65,9 @@ public class ProductService {
         product.setProductName(request.getProductName());
         product.setShortDescription(request.getShortDescription());
         product.setHistory(request.getHistory());
-        product.setBasicInfo(request.getBasicInfo());
         product.setExpectedEffects(request.getExpectedEffects());
         product.setDetailedInfo(request.getDetailedInfo());
         product.setStartingPrice(request.getStartingPrice());
-        product.setEntranceFee(request.getEntranceFee());
         product.setCategory(request.getCategory());
         product.setRegisteredBy(adminId);
         
@@ -124,9 +122,6 @@ public class ProductService {
         if (request.getHistory() != null) {
             product.setHistory(request.getHistory());
         }
-        if (request.getBasicInfo() != null) {
-            product.setBasicInfo(request.getBasicInfo());
-        }
         if (request.getExpectedEffects() != null) {
             product.setExpectedEffects(request.getExpectedEffects());
         }
@@ -135,9 +130,6 @@ public class ProductService {
         }
         if (request.getStartingPrice() != null) {
             product.setStartingPrice(request.getStartingPrice());
-        }
-        if (request.getEntranceFee() != null) {
-            product.setEntranceFee(request.getEntranceFee());
         }
         if (request.getCategory() != null) {
             product.setCategory(request.getCategory());

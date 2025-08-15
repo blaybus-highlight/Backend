@@ -32,10 +32,6 @@ public class ProductUpdateRequestDto {
      */
     private String history;
     
-    /**
-     * 기본 정보
-     */
-    private String basicInfo;
     
     /**
      * 기대효과
@@ -52,15 +48,11 @@ public class ProductUpdateRequestDto {
      */
     private BigDecimal startingPrice;
     
-    /**
-     * 입장료
-     */
-    private BigDecimal entranceFee;
     
     /**
      * 카테고리
      */
-    private String category;
+    private Product.Category category;
     
     /**
      * 상품 상태

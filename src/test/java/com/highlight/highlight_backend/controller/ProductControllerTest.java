@@ -1,6 +1,7 @@
 package com.highlight.highlight_backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.highlight.highlight_backend.domain.Product;
 import com.highlight.highlight_backend.dto.ProductCreateRequestDto;
 import com.highlight.highlight_backend.dto.ProductUpdateRequestDto;
 import com.jayway.jsonpath.JsonPath;
@@ -84,7 +85,6 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.data.productName").value("테스트 상품"))
                 .andExpect(jsonPath("$.data.shortDescription").value("테스트 상품 소개"))
                 .andExpect(jsonPath("$.data.startingPrice").value(100000))
-                .andExpect(jsonPath("$.data.entranceFee").value(5000))
                 .andExpect(jsonPath("$.message").value("상품이 성공적으로 등록되었습니다."));
     }
 
@@ -282,12 +282,10 @@ class ProductControllerTest {
             setField(request, "productName", "테스트 상품");
             setField(request, "shortDescription", "테스트 상품 소개");
             setField(request, "history", "테스트 상품의 역사입니다.");
-            setField(request, "basicInfo", "테스트 상품의 기본 정보입니다.");
             setField(request, "expectedEffects", "테스트 상품의 기대효과입니다.");
             setField(request, "detailedInfo", "테스트 상품의 상세 정보입니다.");
             setField(request, "startingPrice", new BigDecimal("100000"));
-            setField(request, "entranceFee", new BigDecimal("5000"));
-            setField(request, "category", "테스트 카테고리");
+            setField(request, "category", Product.Category.PROPS);
             setField(request, "images", new ArrayList<>());
             setField(request, "isDraft", false);
         } catch (Exception e) {
@@ -308,12 +306,10 @@ class ProductControllerTest {
             setField(request, "productName", "수정된 테스트 상품");
             setField(request, "shortDescription", "수정된 상품 소개");
             setField(request, "history", "수정된 상품의 역사입니다.");
-            setField(request, "basicInfo", "수정된 상품의 기본 정보입니다.");
             setField(request, "expectedEffects", "수정된 상품의 기대효과입니다.");
             setField(request, "detailedInfo", "수정된 상품의 상세 정보입니다.");
             setField(request, "startingPrice", new BigDecimal("150000"));
-            setField(request, "entranceFee", new BigDecimal("7000"));
-            setField(request, "category", "수정된 카테고리");
+            setField(request, "category", Product.Category.FURNITURE);
             setField(request, "images", new ArrayList<>());
         } catch (Exception e) {
             throw new RuntimeException("테스트 데이터 생성 실패", e);

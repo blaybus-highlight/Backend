@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
 import com.highlight.highlight_backend.dto.AuctionScheduleRequestDto;
 import com.highlight.highlight_backend.dto.AuctionStartRequestDto;
+import com.highlight.highlight_backend.domain.Product;
 import com.highlight.highlight_backend.dto.ProductCreateRequestDto;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -270,12 +271,10 @@ class AuctionControllerTest {
         setField(request, "productName", "테스트 경매 상품");
         setField(request, "shortDescription", "경매용 테스트 상품");
         setField(request, "history", "테스트 상품의 역사");
-        setField(request, "basicInfo", "테스트 상품의 기본 정보");
         setField(request, "expectedEffects", "테스트 상품의 기대효과");
         setField(request, "detailedInfo", "테스트 상품의 상세 정보");
         setField(request, "startingPrice", new BigDecimal("100000"));
-        setField(request, "entranceFee", new BigDecimal("5000"));
-        setField(request, "category", "테스트 카테고리");
+        setField(request, "category", Product.Category.PROPS);
         setField(request, "images", new ArrayList<>());
         setField(request, "isDraft", false);
         

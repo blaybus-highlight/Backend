@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.highlight.highlight_backend.domain.Product;
 
 /**
  * 상품 등록 요청 DTO
@@ -38,11 +39,6 @@ public class ProductCreateRequestDto {
     @Size(max = 2000, message = "히스토리는 2000자를 초과할 수 없습니다")
     private String history;
     
-    /**
-     * 기본 정보
-     */
-    @Size(max = 2000, message = "기본 정보는 2000자를 초과할 수 없습니다")
-    private String basicInfo;
     
     /**
      * 기대효과
@@ -64,19 +60,12 @@ public class ProductCreateRequestDto {
     @DecimalMax(value = "999999999999999", message = "시작가가 너무 큽니다")
     private BigDecimal startingPrice;
     
-    /**
-     * 입장료
-     */
-    @NotNull(message = "입장료는 필수입니다")
-    @DecimalMin(value = "0", message = "입장료는 0원 이상이어야 합니다")
-    @DecimalMax(value = "999999999999999", message = "입장료가 너무 큽니다")
-    private BigDecimal entranceFee;
     
     /**
      * 카테고리
      */
-    @Size(max = 50, message = "카테고리는 50자를 초과할 수 없습니다")
-    private String category;
+    @NotNull(message = "카테고리는 필수입니다")
+    private Product.Category category;
     
     /**
      * 상품 이미지 정보 목록
