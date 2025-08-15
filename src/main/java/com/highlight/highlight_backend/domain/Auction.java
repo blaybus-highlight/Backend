@@ -71,7 +71,7 @@ public class Auction {
      * 경매 시작가 -> 맨 처음 시작 시 가격 // 추가
      */
     @Column(nullable = false)
-    private BigDecimal price;
+    private BigDecimal startPrice;
 
     /**
      * 현재 최고 입찰가

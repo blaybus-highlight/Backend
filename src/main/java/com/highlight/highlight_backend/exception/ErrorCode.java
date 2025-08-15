@@ -89,12 +89,12 @@ public enum ErrorCode {
     AUCTION_DURATION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AUCTION_008", "경매 진행 시간은 최소 10분 이상이어야 합니다."),
 
 
-    // ===== User 회원가입 관련 에러 ===== //
-    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "USER_001", "이미 사용 중인 아이디입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "USER_002", "이미 사용 중인 닉네임입니다."),
-    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "USER_003", "이미 사용 중인 휴대폰 번호입니다."),
-    INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "USER_004", "유효하지 않은 휴대폰 번호 형식입니다."),
-    VERIFICATION_CODE_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER_005", "인증번호가 일치하지 않습니다."),;
+        // ===== User 회원가입 관련 에러 ===== //
+    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "USER_006", "이미 사용 중인 아이디입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "USER_007", "이미 사용 중인 닉네임입니다."),
+    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "USER_008", "이미 사용 중인 휴대폰 번호입니다."),
+    INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "USER_009", "유효하지 않은 휴대폰 번호 형식입니다."),
+    VERIFICATION_CODE_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER_010", "인증번호가 일치하지 않습니다.");;
     /**
      * HTTP 상태 코드
      */

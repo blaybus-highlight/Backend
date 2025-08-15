@@ -1,6 +1,7 @@
 package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.User;
+import com.highlight.highlight_backend.dto.UserDetailResponseDto;
 import com.highlight.highlight_backend.dto.UserLoginRequestDto;
 import com.highlight.highlight_backend.dto.UserLoginResponseDto;
 import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
@@ -82,5 +83,11 @@ public class UserSignUpService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    public UserDetailResponseDto getUserDetailsById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return UserDetailResponseDto.from(user);
     }
 }

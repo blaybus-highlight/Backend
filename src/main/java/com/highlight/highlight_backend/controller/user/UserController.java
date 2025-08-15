@@ -1,9 +1,6 @@
 package com.highlight.highlight_backend.controller.user;
 
-import com.highlight.highlight_backend.dto.ResponseDto;
-import com.highlight.highlight_backend.dto.UserLoginRequestDto;
-import com.highlight.highlight_backend.dto.UserLoginResponseDto;
-import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
+import com.highlight.highlight_backend.dto.*;
 import com.highlight.highlight_backend.service.UserSignUpService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 유저 관리 controller
@@ -31,6 +25,11 @@ public class UserController {
 
     private final UserSignUpService userSignUpService;
 
+    /**
+     * 
+     * @param signUpRequestDto 회원가입 정보를
+     * @return
+     */
     @PostMapping("/signup")
     @Operation(summary = "User 회원가입", description = "ID, PW, PhoneNumber, Nickname을 요구")
     public ResponseEntity<ResponseDto<UserSignUpRequestDto>> signUP(@Valid @RequestBody UserSignUpRequestDto signUpRequestDto) {
@@ -41,9 +40,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "User 로그인", description = "ID, PW 로그인 후 JWT 토큰 발급")
     public ResponseEntity<ResponseDto<UserLoginResponseDto>> login(@Valid @RequestBody UserLoginRequestDto loginRequestDto) {
         log.info("POST /api/public/login - User 로그인 (비로그인 사용자도 접근 가능)");
         UserLoginResponseDto response = userSignUpService.login(loginRequestDto);
         return ResponseEntity.ok(ResponseDto.success(response, "User 로그인에 성공하였습니다."));
     }
-}
+
+    
