@@ -87,7 +87,12 @@ public class Product {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductStatus status = ProductStatus.DRAFT;
-    
+
+    /**
+     * 현재 상품 상태 ex. 중고, 모서리 깨짐
+     */
+    @Column(length = 50)
+    private String currentStatus;
     /**
      * 카테고리
      */
