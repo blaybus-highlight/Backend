@@ -10,7 +10,10 @@ import com.highlight.highlight_backend.dto.AuctionStartRequestDto;
 import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
 import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.AuctionErrorCode;
+import com.highlight.highlight_backend.exception.AdminErrorCode;
+import com.highlight.highlight_backend.exception.ProductErrorCode;
+import com.highlight.highlight_backend.exception.UserErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.repository.AuctionRepository;
 import com.highlight.highlight_backend.repository.BidRepository;
@@ -64,16 +67,16 @@ public class AuctionService {
         
         // 2. 상품 조회 및 검증
         Product product = productRepository.findById(request.getProductId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 3. 상품이 이미 경매에 등록되어 있는지 확인
         if (auctionRepository.existsByProductId(request.getProductId())) {
-            throw new BusinessException(ErrorCode.PRODUCT_ALREADY_IN_AUCTION);
+            throw new BusinessException(AuctionErrorCode.PRODUCT_ALREADY_IN_AUCTION);
         }
         
         // 4. 상품 상태 확인 (ACTIVE 상태만 경매 가능)
         if (product.getStatus() != Product.ProductStatus.ACTIVE) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_STATUS_FOR_AUCTION);
+            throw new BusinessException(AuctionErrorCode.INVALID_PRODUCT_STATUS_FOR_AUCTION);
         }
         
         // 5. 경매 시간 검증
@@ -128,11 +131,11 @@ public class AuctionService {
         
         // 2. 경매 조회
         Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 경매 시작 가능 여부 확인
         if (!auction.canStart()) {
-            throw new BusinessException(ErrorCode.CANNOT_START_AUCTION);
+            throw new BusinessException(AuctionErrorCode.CANNOT_START_AUCTION);
         }
         
         // 4. 즉시 시작 vs 시간 입력 처리
@@ -182,11 +185,11 @@ public class AuctionService {
         
         // 2. 경매 조회
         Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 경매 종료 가능 여부 확인
         if (!auction.canEnd()) {
-            throw new BusinessException(ErrorCode.CANNOT_END_AUCTION);
+            throw new BusinessException(AuctionErrorCode.CANNOT_END_AUCTION);
         }
         
         // 4. 낙찰자 조회 (정상 종료인 경우)
@@ -251,7 +254,7 @@ public class AuctionService {
         validateAuctionManagePermission(adminId);
         
         Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         return AuctionResponseDto.from(auction);
     }
@@ -280,11 +283,11 @@ public class AuctionService {
      */
     private Admin validateAuctionManagePermission(Long adminId) {
         Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         
         // 기획 변경: 모든 관리자가 경매 관리 가능, SUPER_ADMIN 체크만 유지
         if (admin.getRole() != Admin.AdminRole.SUPER_ADMIN && admin.getRole() != Admin.AdminRole.ADMIN) {
-            throw new BusinessException(ErrorCode.INSUFFICIENT_PERMISSION);
+            throw new BusinessException(AdminErrorCode.INSUFFICIENT_PERMISSION);
         }
         
         return admin;
@@ -301,17 +304,17 @@ public class AuctionService {
         
         // 시작 시간이 현재 시간보다 이전일 수 없음
         if (startTime.isBefore(now.minus(5, ChronoUnit.MINUTES))) { // 5분 여유
-            throw new BusinessException(ErrorCode.INVALID_AUCTION_START_TIME);
+            throw new BusinessException(AuctionErrorCode.INVALID_AUCTION_START_TIME);
         }
         
         // 종료 시간이 시작 시간보다 이전일 수 없음
         if (endTime.isBefore(startTime)) {
-            throw new BusinessException(ErrorCode.INVALID_AUCTION_END_TIME);
+            throw new BusinessException(AuctionErrorCode.INVALID_AUCTION_END_TIME);
         }
         
         // 경매 시간이 너무 짧으면 안됨 (최소 10분)
         if (ChronoUnit.MINUTES.between(startTime, endTime) < 10) {
-            throw new BusinessException(ErrorCode.AUCTION_DURATION_TOO_SHORT);
+            throw new BusinessException(AuctionErrorCode.AUCTION_DURATION_TOO_SHORT);
         }
     }
     
@@ -329,7 +332,7 @@ public class AuctionService {
         
         // 1. 경매 조회
         Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 2. 즉시구매 가능 여부 검증
         validateBuyItNowEligibility(auction, userId);
@@ -362,17 +365,17 @@ public class AuctionService {
     private void validateBuyItNowEligibility(Auction auction, Long userId) {
         // 경매가 진행중인지 확인
         if (!auction.isInProgress()) {
-            throw new BusinessException(ErrorCode.AUCTION_NOT_IN_PROGRESS);
+            throw new BusinessException(AuctionErrorCode.AUCTION_NOT_IN_PROGRESS);
         }
         
         // 즉시구매가가 설정되어 있는지 확인
         if (auction.getBuyItNowPrice() == null || auction.getBuyItNowPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
+            throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
         }
         
         // 재고가 1개인지 확인
         if (auction.getProduct().getProductCount() != 1) {
-            throw new BusinessException(ErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
+            throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
         }
         
         // 사용자 존재 여부 확인
@@ -384,7 +387,7 @@ public class AuctionService {
      */
     private Bid createBuyItNowBid(Auction auction, Long userId) {
         com.highlight.highlight_backend.domain.User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
             
         Bid buyItNowBid = new Bid();
         buyItNowBid.setAuction(auction);
@@ -401,7 +404,7 @@ public class AuctionService {
      */
     private void validateUserExists(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
     }
     
@@ -415,7 +418,7 @@ public class AuctionService {
         // 즉시구매가가 설정된 경우에만 검증
         if (buyItNowPrice != null && buyItNowPrice.compareTo(java.math.BigDecimal.ZERO) > 0) {
             if (product.getProductCount() != 1) {
-                throw new BusinessException(ErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
+                throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
             }
         }
     }

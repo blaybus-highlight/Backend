@@ -3,7 +3,7 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.Seller;
 import com.highlight.highlight_backend.dto.SellerResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.SellerErrorCode;
 import com.highlight.highlight_backend.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class SellerService {
         log.info("판매자 상세 정보 조회: {}", sellerId);
         
         Seller seller = sellerRepository.findById(sellerId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.SELLER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(SellerErrorCode.SELLER_NOT_FOUND));
         
         return SellerResponseDto.from(seller);
     }
@@ -106,7 +106,7 @@ public class SellerService {
         log.info("판매자 마지막 활동 시간 업데이트: {}", sellerId);
         
         Seller seller = sellerRepository.findById(sellerId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.SELLER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(SellerErrorCode.SELLER_NOT_FOUND));
         
         seller.updateLastActiveAt();
         sellerRepository.save(seller);

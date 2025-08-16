@@ -7,6 +7,7 @@ import com.highlight.highlight_backend.dto.websocket.BidOutbidNotificationDto;
 import com.highlight.highlight_backend.dto.websocket.BidWebSocketDto;
 import com.highlight.highlight_backend.dto.websocket.WebSocketMessageDto;
 import com.highlight.highlight_backend.dto.websocket.WebSocketMessageDto.WebSocketMessageType;
+import com.highlight.highlight_backend.exception.CommonErrorCode;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class WebSocketService {
             log.info("WebSocket - 새 입찰 알림 전송 완료: {}", destination);
         } catch (Exception e) {
             log.error("WebSocket - 새 입찰 알림 전송 실패: {}", e.getMessage(), e);
-            sendErrorMessage(bid.getAuction().getId(), ErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED.getMessage());
+            sendErrorMessage(bid.getAuction().getId(), CommonErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED.getMessage());
         }
     }
     
@@ -268,7 +269,7 @@ public class WebSocketService {
             messagingTemplate.convertAndSend(destination, message);
         } catch (Exception e) {
             log.error("WebSocket - 연결 성공 메시지 전송 실패: 경매={}, 에러={}", auctionId, e.getMessage());
-            sendErrorMessage(auctionId, ErrorCode.WEBSOCKET_CONNECTION_FAILED.getMessage());
+            sendErrorMessage(auctionId, CommonErrorCode.WEBSOCKET_CONNECTION_FAILED.getMessage());
         }
     }
     

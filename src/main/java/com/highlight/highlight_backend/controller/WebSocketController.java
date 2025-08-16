@@ -1,5 +1,6 @@
 package com.highlight.highlight_backend.controller;
 
+import com.highlight.highlight_backend.exception.CommonErrorCode;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.service.WebSocketService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,7 +90,7 @@ public class WebSocketController {
             log.info("WebSocket - 경매 상태 요청 처리 완료: 경매ID={}", auctionId);
         } catch (Exception e) {
             log.error("WebSocket - 경매 상태 요청 처리 실패: 경매ID={}, 오류={}", auctionId, e.getMessage());
-            webSocketService.sendErrorMessage(auctionId, ErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED);
+            webSocketService.sendErrorMessage(auctionId, CommonErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED);
         }
     }
 }

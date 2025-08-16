@@ -7,7 +7,8 @@ import com.highlight.highlight_backend.dto.ProductCreateRequestDto;
 import com.highlight.highlight_backend.dto.ProductResponseDto;
 import com.highlight.highlight_backend.dto.ProductUpdateRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.ProductErrorCode;
+import com.highlight.highlight_backend.exception.AdminErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.repository.ProductImageRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
@@ -64,7 +65,7 @@ public class ProductService {
         // 2. 상품 소개 글자 수 검증
         if (StringUtils.hasText(request.getShortDescription()) && 
             request.getShortDescription().length() > 25) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
         // 3. 상품 정보 검증
@@ -121,12 +122,12 @@ public class ProductService {
         
         // 2. 상품 조회
         Product product = productRepository.findByIdWithImages(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 3. 상품 소개 글자 수 검증
         if (StringUtils.hasText(request.getShortDescription()) && 
             request.getShortDescription().length() > 25) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
         // 3.5. 상품 데이터 검증
@@ -217,7 +218,7 @@ public class ProductService {
         validateProductManagePermission(adminId);
         
         Product product = productRepository.findByIdWithImages(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         return ProductResponseDto.from(product);
     }
@@ -235,11 +236,11 @@ public class ProductService {
         validateProductManagePermission(adminId);
         
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 경매 중인 상품은 삭제 불가
         if (product.getStatus() == Product.ProductStatus.IN_AUCTION) {
-            throw new BusinessException(ErrorCode.CANNOT_DELETE_AUCTION_PRODUCT);
+            throw new BusinessException(ProductErrorCode.CANNOT_DELETE_AUCTION_PRODUCT);
         }
         
         productRepository.delete(product);
@@ -259,7 +260,7 @@ public class ProductService {
         
         // 1. 기준 상품 조회
         Product baseProduct = productRepository.findById(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 2. 추천 로직: 동일 카테고리 또는 동일 브랜드 상품 조회
         List<Product> recommendedProducts = productRepository.findRecommendedProducts(
@@ -286,11 +287,11 @@ public class ProductService {
      */
     private Admin validateProductManagePermission(Long adminId) {
         Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         
         // 기획 변경: 모든 관리자가 상품 관리 가능, SUPER_ADMIN 체크만 유지
         if (admin.getRole() != Admin.AdminRole.SUPER_ADMIN && admin.getRole() != Admin.AdminRole.ADMIN) {
-            throw new BusinessException(ErrorCode.INSUFFICIENT_PERMISSION);
+            throw new BusinessException(AdminErrorCode.INSUFFICIENT_PERMISSION);
         }
         
         return admin;
@@ -313,7 +314,7 @@ public class ProductService {
         
         // 상품 조회
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 프리미엄 설정 변경
         product.setIsPremium(isPremium);
@@ -409,35 +410,35 @@ public class ProductService {
     private void validateProductData(ProductCreateRequestDto request) {
         // 상품 갯수 검증
         if (request.getProductCount() == null || request.getProductCount() <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_COUNT);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_COUNT);
         }
         
         // 제조년도 검증
         if (request.getManufactureYear() != null) {
             int currentYear = java.time.Year.now().getValue();
             if (request.getManufactureYear() < 1800 || request.getManufactureYear() > currentYear + 10) {
-                throw new BusinessException(ErrorCode.INVALID_MANUFACTURE_YEAR);
+                throw new BusinessException(ProductErrorCode.INVALID_MANUFACTURE_YEAR);
             }
         }
         
         // 재질 검증
         if (request.getMaterial() == null || request.getMaterial().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_MATERIAL);
+            throw new BusinessException(ProductErrorCode.INVALID_MATERIAL);
         }
         
         // 사이즈 검증
         if (request.getSize() == null || request.getSize().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_SIZE);
+            throw new BusinessException(ProductErrorCode.INVALID_SIZE);
         }
         
         // 브랜드 검증
         if (request.getBrand() == null || request.getBrand().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_BRAND);
+            throw new BusinessException(ProductErrorCode.INVALID_BRAND);
         }
         
         // 상품 등급 검증
         if (request.getRank() == null) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_RANK);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_RANK);
         }
     }
     
@@ -449,30 +450,30 @@ public class ProductService {
     private void validateProductUpdateData(ProductUpdateRequestDto request) {
         // 상품 갯수 검증
         if (request.getProductCount() != null && request.getProductCount() <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_PRODUCT_COUNT);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_COUNT);
         }
         
         // 제조년도 검증
         if (request.getManufactureYear() != null) {
             int currentYear = java.time.Year.now().getValue();
             if (request.getManufactureYear() < 1800 || request.getManufactureYear() > currentYear + 10) {
-                throw new BusinessException(ErrorCode.INVALID_MANUFACTURE_YEAR);
+                throw new BusinessException(ProductErrorCode.INVALID_MANUFACTURE_YEAR);
             }
         }
         
         // 재질 검증
         if (request.getMaterial() != null && request.getMaterial().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_MATERIAL);
+            throw new BusinessException(ProductErrorCode.INVALID_MATERIAL);
         }
         
         // 사이즈 검증
         if (request.getSize() != null && request.getSize().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_SIZE);
+            throw new BusinessException(ProductErrorCode.INVALID_SIZE);
         }
         
         // 브랜드 검증
         if (request.getBrand() != null && request.getBrand().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_BRAND);
+            throw new BusinessException(ProductErrorCode.INVALID_BRAND);
         }
     }
     
@@ -493,7 +494,7 @@ public class ProductService {
         
         // 상품 존재 확인
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 파일 검증
         validateImageFiles(files);
@@ -524,7 +525,7 @@ public class ProductService {
                 
             } catch (IOException e) {
                 log.error("이미지 업로드 실패: 파일={}, 오류={}", file.getOriginalFilename(), e.getMessage());
-                throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
+                throw new BusinessException(ProductErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }
         
@@ -550,15 +551,15 @@ public class ProductService {
         
         // 상품 존재 확인
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
         
         // 이미지 존재 확인
         ProductImage productImage = productImageRepository.findById(imageId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.IMAGE_NOT_FOUND));
         
         // 이미지가 해당 상품에 속하는지 확인
         if (!productImage.getProduct().getId().equals(productId)) {
-            throw new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT);
+            throw new BusinessException(ProductErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT);
         }
         
         // S3에서 파일 삭제
@@ -578,35 +579,35 @@ public class ProductService {
      */
     private void validateImageFiles(MultipartFile[] files) {
         if (files == null || files.length == 0) {
-            throw new BusinessException(ErrorCode.NO_IMAGE_FILES);
+            throw new BusinessException(ProductErrorCode.NO_IMAGE_FILES);
         }
         
         // 파일 개수 제한 (최대 10개)
         if (files.length > 10) {
-            throw new BusinessException(ErrorCode.TOO_MANY_IMAGE_FILES);
+            throw new BusinessException(ProductErrorCode.TOO_MANY_IMAGE_FILES);
         }
         
         for (MultipartFile file : files) {
             // 빈 파일 검증
             if (file.isEmpty()) {
-                throw new BusinessException(ErrorCode.EMPTY_IMAGE_FILE);
+                throw new BusinessException(ProductErrorCode.EMPTY_IMAGE_FILE);
             }
             
             // 파일 크기 검증 (최대 10MB)
             if (file.getSize() > 10 * 1024 * 1024) {
-                throw new BusinessException(ErrorCode.IMAGE_FILE_TOO_LARGE);
+                throw new BusinessException(ProductErrorCode.IMAGE_FILE_TOO_LARGE);
             }
             
             // 파일 타입 검증
             String contentType = file.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
-                throw new BusinessException(ErrorCode.INVALID_IMAGE_FILE_TYPE);
+                throw new BusinessException(ProductErrorCode.INVALID_IMAGE_FILE_TYPE);
             }
             
             // 지원하는 이미지 형식 검증
             List<String> allowedTypes = Arrays.asList("image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp");
             if (!allowedTypes.contains(contentType.toLowerCase())) {
-                throw new BusinessException(ErrorCode.UNSUPPORTED_IMAGE_FILE_TYPE);
+                throw new BusinessException(ProductErrorCode.UNSUPPORTED_IMAGE_FILE_TYPE);
             }
         }
     }

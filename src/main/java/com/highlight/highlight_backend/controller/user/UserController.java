@@ -4,6 +4,7 @@ import com.highlight.highlight_backend.dto.*;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestCodeDto;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestDto;
 import com.highlight.highlight_backend.service.UserService;
+import com.highlight.highlight_backend.util.ResponseUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -58,7 +59,7 @@ public class UserController {
             @Valid @RequestBody UserSignUpRequestDto signUpRequestDto) {
         log.info("POST /api/public/signup - User 회원가입");
         UserSignUpRequestDto response = userService.signUp(signUpRequestDto);
-        return ResponseEntity.ok(ResponseDto.success(response, "User 회원가입에 성공하였습니다."));
+        return ResponseUtils.success(response, "User 회원가입에 성공하였습니다.");
     }
 
     /**

@@ -9,7 +9,8 @@ import com.highlight.highlight_backend.dto.UserLoginRequestDto;
 import com.highlight.highlight_backend.dto.UserLoginResponseDto;
 import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.UserErrorCode;
+import com.highlight.highlight_backend.exception.SmsErrorCode;
 import com.highlight.highlight_backend.repository.PhoneVerificationRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
 import com.highlight.highlight_backend.util.JwtUtil;
@@ -53,21 +54,21 @@ public class UserService {
     public UserSignUpRequestDto signUp(UserSignUpRequestDto signUpRequestDto) {
         // 1. 중복 검사
         if (userRepository.existsByUserId(signUpRequestDto.getUserId())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_USER_ID);
+            throw new BusinessException(UserErrorCode.DUPLICATE_USER_ID);
         }
         if (userRepository.existsByNickname(signUpRequestDto.getNickname())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
+            throw new BusinessException(UserErrorCode.DUPLICATE_NICKNAME);
         }
         if (userRepository.existsByPhoneNumber(signUpRequestDto.getPhoneNumber())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_PHONE_NUMBER);
+            throw new BusinessException(UserErrorCode.DUPLICATE_PHONE_NUMBER);
         }
         String phoneNumber = signUpRequestDto.getPhoneNumber();
         PhoneVerification verification = phoneVerificationRepository.findById(phoneNumber)
-                .orElseThrow(() -> new BusinessException(ErrorCode.VERIFICATION_REQUIRED)); // 인증 요청 기록 없음
+                .orElseThrow(() -> new BusinessException(UserErrorCode.VERIFICATION_REQUIRED)); // 인증 요청 기록 없음
 
         // 인증 완료 상태가 아니거나, 인증 유효 시간이 만료된 경우
         if (!verification.isVerified() || LocalDateTime.now().isAfter(verification.getExpiresAt())) {
-            throw new BusinessException(ErrorCode.VERIFICATION_FAILED_OR_EXPIRED); // 인증 실패 또는 만료
+            throw new BusinessException(SmsErrorCode.VERIFICATION_FAILED_OR_EXPIRED); // 인증 실패 또는 만료
         }
 
         // 2. 비밀번호 암호화
@@ -99,7 +100,7 @@ public class UserService {
 
         // 이미 가입된 번호인지 확인
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new BusinessException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+            throw new BusinessException(UserErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
         }
 
         String verificationCode = createRandomCode();
@@ -120,7 +121,7 @@ public class UserService {
             coolsms.send(params);
         } catch (CoolsmsException e) {
             log.error("SMS 발송 실패: {}", e.getMessage());
-            throw new BusinessException(ErrorCode.SMS_SEND_FAILED);
+            throw new BusinessException(SmsErrorCode.SMS_SEND_FAILED);
         }
 
         log.info("회원가입용 인증번호 발송: {}", phoneNumber);
@@ -133,16 +134,16 @@ public class UserService {
     public void confirmVerification(PhoneVerificationRequestDto requestDto) {
         // DB에서 휴대폰 번호로 인증 정보를 조회
         PhoneVerification verification = phoneVerificationRepository.findById(requestDto.getPhoneNumber())
-                .orElseThrow(() -> new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(SmsErrorCode.VERIFICATION_CODE_NOT_FOUND));
 
         // 만료 시간 확인
         if (LocalDateTime.now().isAfter(verification.getExpiresAt())) {
-            throw new BusinessException(ErrorCode.VERIFICATION_CODE_EXPIRED);
+            throw new BusinessException(SmsErrorCode.VERIFICATION_CODE_EXPIRED);
         }
 
         // 인증번호 일치 여부 확인
         if (!verification.getVerificationCode().equals(requestDto.getVerificationCode())) {
-            throw new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_MATCH);
+            throw new BusinessException(UserErrorCode.VERIFICATION_CODE_NOT_MATCH);
         }
 
         // 인증 성공 시, verified 상태를 true로 변경하고 저장
@@ -159,11 +160,11 @@ public class UserService {
     public UserLoginResponseDto login(UserLoginRequestDto loginRequestDto) {
         // 1. 사용자 조회
         User user = userRepository.findByUserId(loginRequestDto.getUser_id())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_LOGIN_CREDENTIALS));
 
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+            throw new BusinessException(UserErrorCode.INVALID_LOGIN_CREDENTIALS);
         }
 
         // 3. JWT 토큰 생성
@@ -181,14 +182,14 @@ public class UserService {
 
     public UserDetailResponseDto getUserDetailsById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         return UserDetailResponseDto.from(user);
     }
 
     @Transactional
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
     }
 }
