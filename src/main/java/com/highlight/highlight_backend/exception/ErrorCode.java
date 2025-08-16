@@ -158,6 +158,15 @@ public enum ErrorCode {
     CANNOT_CANCEL_BID(HttpStatus.BAD_REQUEST, "BID_007", "입찰을 취소할 수 없습니다."),
 
 
+    // ===== 찜하기 관련 에러 =====
+    /** 찜하기를 찾을 수 없음 */
+    WISHLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "WISHLIST_001", "찜하기를 찾을 수 없습니다."),
+    /** 중복된 찜하기 */
+    DUPLICATE_WISHLIST(HttpStatus.CONFLICT, "WISHLIST_002", "이미 찜한 상품입니다."),
+    /** 찜하기 권한 없음 */
+    WISHLIST_ACCESS_DENIED(HttpStatus.FORBIDDEN, "WISHLIST_003", "해당 찜하기에 접근할 권한이 없습니다."),
+
+
     // ===== WebSocket 관련 에러 =====
     /** WebSocket 연결 실패 */
     WEBSOCKET_CONNECTION_FAILED(HttpStatus.BAD_REQUEST, "WEBSOCKET_001", "WebSocket 연결에 실패했습니다."),
