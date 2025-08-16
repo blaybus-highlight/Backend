@@ -77,13 +77,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # ✅ [수정됨] 1. Docker 메타데이터(태그, 라벨) 자동 생성
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      # ✅ [수정됨] 2. 생성된 메타데이터를 사용하여 빌드 및 푸시
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.event.repository.html_url }}
-            org.opencontainers.image.created=${{ steps.build.outputs.metadata.imagedigest }}
-            org.opencontainers.image.revision=${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
