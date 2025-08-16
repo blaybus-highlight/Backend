@@ -132,6 +132,15 @@ public enum ErrorCode {
     SUSPENDED_SELLER(HttpStatus.FORBIDDEN, "SELLER_005", "정지된 판매자입니다."),
 
 
+    // ===== 알림 관련 에러 =====
+    /** 알림 설정을 찾을 수 없음 */
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION_001", "알림 설정을 찾을 수 없습니다."),
+    /** 중복된 알림 설정 */
+    DUPLICATE_NOTIFICATION(HttpStatus.CONFLICT, "NOTIFICATION_002", "이미 설정된 알림입니다."),
+    /** 알림 권한 없음 */
+    NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "NOTIFICATION_003", "해당 알림에 접근할 권한이 없습니다."),
+
+
     // ===== 입찰 관련 에러 =====
     /** 입찰을 찾을 수 없음 */
     BID_NOT_FOUND(HttpStatus.NOT_FOUND, "BID_001", "입찰을 찾을 수 없습니다."),

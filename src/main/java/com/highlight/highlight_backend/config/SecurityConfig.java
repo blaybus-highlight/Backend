@@ -83,7 +83,8 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/bids",                       // 입찰 참여
                         "/api/users/bids",                 // 내 입찰 내역
-                        "/api/users/wins"                  // 내 낙찰 내역
+                        "/api/users/wins",                 // 내 낙찰 내역
+                        "/api/user/notifications/**"      // 상품 알림 설정
                     ).authenticated()
                     
                     // 관리자 권한 필요 엔드포인트  
