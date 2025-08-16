@@ -7,12 +7,15 @@ import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
 import com.highlight.highlight_backend.dto.AuctionResponseDto;
 import com.highlight.highlight_backend.dto.AuctionScheduleRequestDto;
 import com.highlight.highlight_backend.dto.AuctionStartRequestDto;
+import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
+import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.repository.AuctionRepository;
 import com.highlight.highlight_backend.repository.BidRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
+import com.highlight.highlight_backend.repository.user.UserRepository;
 import com.highlight.highlight_backend.domain.Bid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +46,7 @@ public class AuctionService {
     private final AdminRepository adminRepository;
     private final WebSocketService webSocketService;
     private final BidRepository bidRepository;
+    private final UserRepository userRepository;
     
     /**
      * 경매 예약
@@ -75,7 +79,10 @@ public class AuctionService {
         // 5. 경매 시간 검증
         validateAuctionTime(request.getScheduledStartTime(), request.getScheduledEndTime());
         
-        // 6. 경매 엔티티 생성
+        // 6. 즉시구매가 설정 시 재고 1개 검증
+        validateBuyItNowProductCount(product, request.getBuyItNowPrice());
+        
+        // 7. 경매 엔티티 생성
         Auction auction = new Auction();
 
         auction.setProduct(product);
@@ -92,7 +99,7 @@ public class AuctionService {
         auction.setShippingFee(request.getShippingFee());       // 배송비 설정
         auction.setIsPickupAvailable(request.getIsPickupAvailable()); // 직접 픽업 가능 여부
         
-        // 7. 상품 상태를 경매대기로 변경
+        // 8. 상품 상태를 경매대기로 변경
         product.setStatus(Product.ProductStatus.AUCTION_READY);
         productRepository.save(product);
         
@@ -305,6 +312,111 @@ public class AuctionService {
         // 경매 시간이 너무 짧으면 안됨 (최소 10분)
         if (ChronoUnit.MINUTES.between(startTime, endTime) < 10) {
             throw new BusinessException(ErrorCode.AUCTION_DURATION_TOO_SHORT);
+        }
+    }
+    
+    /**
+     * 즉시구매 처리
+     * 
+     * @param auctionId 즉시구매할 경매 ID
+     * @param request 즉시구매 요청 데이터
+     * @param userId 구매자 ID
+     * @return 즉시구매 완료 정보
+     */
+    @Transactional
+    public BuyItNowResponseDto buyItNow(Long auctionId, BuyItNowRequestDto request, Long userId) {
+        log.info("즉시구매 요청: 경매 {} (사용자: {})", auctionId, userId);
+        
+        // 1. 경매 조회
+        Auction auction = auctionRepository.findByIdWithProduct(auctionId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+        
+        // 2. 즉시구매 가능 여부 검증
+        validateBuyItNowEligibility(auction, userId);
+        
+        // 3. 즉시구매 처리
+        Bid buyItNowBid = createBuyItNowBid(auction, userId);
+        
+        // 4. 경매 즉시 종료
+        auction.endAuction(null, "즉시구매로 인한 경매 종료");
+        auction.getProduct().setStatus(Product.ProductStatus.AUCTION_COMPLETED);
+        
+        // 5. 낙찰 처리
+        buyItNowBid.setAsWon();
+        bidRepository.save(buyItNowBid);
+        
+        Auction completedAuction = auctionRepository.save(auction);
+        
+        // 6. WebSocket 알림 전송
+        webSocketService.sendAuctionEndedNotification(completedAuction, buyItNowBid);
+        
+        log.info("즉시구매 완료: 경매 {} (사용자: {}, 가격: {})", 
+                auctionId, userId, auction.getBuyItNowPrice());
+        
+        return BuyItNowResponseDto.from(completedAuction, userId);
+    }
+    
+    /**
+     * 즉시구매 가능 여부 검증
+     */
+    private void validateBuyItNowEligibility(Auction auction, Long userId) {
+        // 경매가 진행중인지 확인
+        if (!auction.isInProgress()) {
+            throw new BusinessException(ErrorCode.AUCTION_NOT_IN_PROGRESS);
+        }
+        
+        // 즉시구매가가 설정되어 있는지 확인
+        if (auction.getBuyItNowPrice() == null || auction.getBuyItNowPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(ErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
+        }
+        
+        // 재고가 1개인지 확인
+        if (auction.getProduct().getProductCount() != 1) {
+            throw new BusinessException(ErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
+        }
+        
+        // 사용자 존재 여부 확인
+        validateUserExists(userId);
+    }
+    
+    /**
+     * 즉시구매 입찰 생성
+     */
+    private Bid createBuyItNowBid(Auction auction, Long userId) {
+        com.highlight.highlight_backend.domain.User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            
+        Bid buyItNowBid = new Bid();
+        buyItNowBid.setAuction(auction);
+        buyItNowBid.setUser(user);
+        buyItNowBid.setBidAmount(auction.getBuyItNowPrice());
+        buyItNowBid.setCreatedAt(LocalDateTime.now());
+        buyItNowBid.setIsBuyItNow(true);
+        
+        return bidRepository.save(buyItNowBid);
+    }
+    
+    /**
+     * 사용자 존재 여부 확인
+     */
+    private void validateUserExists(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+    
+    /**
+     * 즉시구매가 설정 시 상품 개수 검증
+     * 
+     * @param product 상품 정보
+     * @param buyItNowPrice 즉시구매가
+     */
+    private void validateBuyItNowProductCount(Product product, java.math.BigDecimal buyItNowPrice) {
+        // 즉시구매가가 설정된 경우에만 검증
+        if (buyItNowPrice != null && buyItNowPrice.compareTo(java.math.BigDecimal.ZERO) > 0) {
+            if (product.getProductCount() != 1) {
+                throw new BusinessException(ErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
+            }
         }
     }
 }
