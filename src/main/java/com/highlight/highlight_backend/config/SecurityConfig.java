@@ -61,41 +61,36 @@ public class SecurityConfig {
                 
                 // 엔드포인트 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                    // 공개 엔드포인트 (인증 불필요)
+                    // 공개 엔드포인트 (인증 불필요) - 구체적인 경로를 먼저 처리
                     .requestMatchers(
-                        "/api/auth/**",                    // 인증 관련 API (일반 사용자)
                         "/api/admin-auth/**",              // 관리자 인증 관련 API
                         "/api/admin/signup",               // 관리자 회원가입
-                        "/api/public/**",                  // 공개 API
-                        "/api/auctions/*/bids",            // 경매 입찰 내역 조회 (공개)
-                        "/api/auctions/*/status",          // 실시간 경매 상태 조회 (공개)
-                        "/api/admin/products/*/recommendations", // 관련 상품 추천 (공개)
-                        "/ws/**",                          // WebSocket 엔드포인트
-                        "/topic/**",                       // WebSocket 토픽
-                        "/queue/**",                       // WebSocket 큐
-                        "/swagger-ui/**",                  // Swagger UI
-                        "/api-docs/**",                    // API 문서
-                        "/v3/api-docs/**",                 // OpenAPI 문서
+                        "/api/public/**",                  // 공개 API (사용자 인증, 경매 목록, 판매자 정보 등)
+                        "/api/auctions/*/bids",            // 경매 입찰 내역 조회 (익명)
+                        "/api/auctions/*/status",          // 실시간 경매 상태 조회
+                        "/api/admin/products/*/recommendations", // 관련 상품 추천
+                        "/ws/**", "/topic/**", "/queue/**", "/app/**", // WebSocket 관련 (STOMP 포함)
+                        "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", // API 문서
+                        "/swagger-ui.html", "/webjars/**", // Swagger UI 리소스
+                        "/actuator/health",                // 헬스체크
                         "/error"                           // 에러 페이지
                     ).permitAll()
                     
                     // 사용자 인증 필요 엔드포인트
                     .requestMatchers(
                         "/api/bids",                       // 입찰 참여
-                        "/api/users/bids",                 // 내 입찰 내역
-                        "/api/users/wins",                 // 내 낙찰 내역
-                        "/api/users/wins/**",              // 낙찰 상세 정보
+                        "/api/users/**",                   // 사용자 개인 정보 관련 API
                         "/api/auctions/*/bids/with-user",  // 경매 입찰 내역 (본인 강조)
-                        "/api/user/notifications/**",     // 상품 알림 설정
-                        "/api/user/wishlist/**"           // 상품 찜하기
+                        "/api/auctions/*/my-result",       // 경매에서 내 결과 조회
+                        "/api/user/**"                     // 사용자 마이페이지, 찜하기, 알림, 경매 참여 등
                     ).authenticated()
                     
-                    // 관리자 권한 필요 엔드포인트  
+                    // 관리자 권한 필요 엔드포인트 (signup은 이미 위에서 permitAll 처리됨)
                     .requestMatchers(
-                        "/api/admin/**",                   // 관리자 전용 API
-                        "/api/products/**",                // 상품 관리
-                        "/api/auctions/**"                 // 경매 관리 (공개 조회 제외)
-                    ).hasRole("ADMIN")
+                        "/api/admin/admin-management/**",  // 관리자 계정 관리
+                        "/api/admin/products/**",          // 상품 관리
+                        "/api/admin/auctions/**"           // 경매 관리
+                    ).hasAnyRole("ADMIN", "SUPER_ADMIN")
                     
                     // 그 외 모든 요청은 인증 필요
                     .anyRequest().authenticated()
