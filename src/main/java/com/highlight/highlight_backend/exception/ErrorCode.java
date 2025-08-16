@@ -35,13 +35,29 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_002", "인증되지 않은 사용자입니다."),
     /** 접근 기업 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "AUTH_003", "권한이 없습니다."),
-    
-    
-    // ===== 사용자 관련 에러 =====
+
+
+    // ===== 사용자 관련 에러 ===== //
     /** 사용자를 찾을 수 없음 */
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_001", "사용자를 찾을 수 없습니다."),
     /** 이미 존재하는 이메일 */
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "USER_002", "이미 존재하는 이메일입니다."),
+    /** 이미 존재하는 휴대번호 */
+    PHONE_NUMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER_003", "이미 존재하는 휴대번호입니다."),
+
+    /** 휴대폰 인증이 필요한 경우 */
+    VERIFICATION_REQUIRED(HttpStatus.BAD_REQUEST, "USER_004", "휴대폰 인증이 필요합니다."),
+
+    // ===== 휴대폰 인증 SMS 관련 에러 ===== //
+
+    /** SMS 전송 실패 */
+    SMS_SEND_FAILED(HttpStatus.BAD_REQUEST, "SMS_001", "SMS 전송에 실패했습니다."),
+    /** 유효하지 않은 인증번호 */
+    VERIFICATION_CODE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "SMS_002", "유효하지 않은 인증번호입니다."),
+    /** 인증코드 유효시간 만료 */
+    VERIFICATION_CODE_EXPIRED(HttpStatus.UNAUTHORIZED, "SMS_003", "인증 유효 시간이 초과되었습니다."),
+    /** 휴대폰 인증 실패 또는 만료 */
+    VERIFICATION_FAILED_OR_EXPIRED(HttpStatus.BAD_REQUEST, "SMS_004", "휴대폰 인증에 실패했거나 유효 시간이 만료되었습니다."),
     
     
     // ===== 관리자 관련 에러 =====
@@ -182,6 +198,7 @@ public enum ErrorCode {
     WEBSOCKET_DISCONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "WEBSOCKET_005", "연결 해제 중 오류가 발생했습니다."),
     /** 경매 구독 권한 없음 */
     WEBSOCKET_AUCTION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "WEBSOCKET_006", "해당 경매의 실시간 정보에 접근할 권한이 없습니다."),;
+
 
     /**
      * HTTP 상태 코드

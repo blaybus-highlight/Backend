@@ -1,5 +1,6 @@
 package com.highlight.highlight_backend.service;
 
+import com.highlight.highlight_backend.domain.PhoneVerification;
 import com.highlight.highlight_backend.domain.User;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestCodeDto;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestDto;
@@ -9,6 +10,7 @@ import com.highlight.highlight_backend.dto.UserLoginResponseDto;
 import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.repository.PhoneVerificationRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
 import com.highlight.highlight_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ import java.util.Random;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PhoneVerificationRepository phoneVerificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     
@@ -58,6 +61,14 @@ public class UserService {
         if (userRepository.existsByPhoneNumber(signUpRequestDto.getPhoneNumber())) {
             throw new BusinessException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
+        String phoneNumber = signUpRequestDto.getPhoneNumber();
+        PhoneVerification verification = phoneVerificationRepository.findById(phoneNumber)
+                .orElseThrow(() -> new BusinessException(ErrorCode.VERIFICATION_REQUIRED)); // 인증 요청 기록 없음
+
+        // 인증 완료 상태가 아니거나, 인증 유효 시간이 만료된 경우
+        if (!verification.isVerified() || LocalDateTime.now().isAfter(verification.getExpiresAt())) {
+            throw new BusinessException(ErrorCode.VERIFICATION_FAILED_OR_EXPIRED); // 인증 실패 또는 만료
+        }
 
         // 2. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
@@ -68,7 +79,7 @@ public class UserService {
         user.setPassword(encodedPassword);
         user.setNickname(signUpRequestDto.getNickname());
         user.setPhoneNumber(signUpRequestDto.getPhoneNumber());
-        user.setPhoneVerified(false);
+        user.setPhoneVerified(true); // 휴대폰 인증 완료 상태로 설정
         user.setOver14(signUpRequestDto.getIsOver14());
         user.setAgreedToTerms(signUpRequestDto.getAgreedToTerms());
         user.setMarketingEnabled(signUpRequestDto.getMarketingEnabled());
@@ -78,55 +89,65 @@ public class UserService {
         return signUpRequestDto;
     }
 
+    /**
+     * 
+     * 휴대폰 번호를 확인하고 SMS 요청을 보냄
+     */
     @Transactional
-    public void requestPhoneVerification(PhoneVerificationRequestCodeDto requestDto) {
-        User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    public void requestVerificationForSignUp(PhoneVerificationRequestCodeDto requestDto) {
+        String phoneNumber = requestDto.getPhoneNumber();
+
+        // 이미 가입된 번호인지 확인
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new BusinessException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+        }
 
         String verificationCode = createRandomCode();
-        user.setVerificationCode(verificationCode);
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(3)); // 3분 후 만료
-        userRepository.save(user);
-        
-        // SMS 키 적용
+
+        // DB에 인증번호와 만료 시간 저장 (기존에 있어도 덮어쓰기)
+        PhoneVerification verification = new PhoneVerification(phoneNumber, verificationCode);
+        phoneVerificationRepository.save(verification);
+
+        // SMS 발송 로직 (수정: user 객체 대신 phoneNumber 변수 사용)
         Message coolsms = new Message(apiKey, apiSecret);
         HashMap<String, String> params = new HashMap<>();
-        params.put("to", user.getPhoneNumber());
+        params.put("to", phoneNumber);
         params.put("from", fromPhoneNumber);
         params.put("type", "SMS");
-        params.put("text", "[Highlight] 인증번호 [" + verificationCode + "]를 입력해주세요.");
-        // SMS 요청
+        params.put("text", "nafal 회원가입 인증번호 " + verificationCode + " 를 입력해주세요.");
+
         try {
             coolsms.send(params);
         } catch (CoolsmsException e) {
             log.error("SMS 발송 실패: {}", e.getMessage());
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR); // 혹은 SMS 발송 관련 에러 코드
+            throw new BusinessException(ErrorCode.SMS_SEND_FAILED);
         }
 
-        log.info("Generated verification code for {}: {}", user.getPhoneNumber(), verificationCode);
+        log.info("회원가입용 인증번호 발송: {}", phoneNumber);
     }
 
+    /**
+     * 입력된 인증번호가 유효한지 확인하는 메소드
+     */
     @Transactional
-    public void verifyPhoneNumber(PhoneVerificationRequestDto requestDto) {
-        User user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    public void confirmVerification(PhoneVerificationRequestDto requestDto) {
+        // DB에서 휴대폰 번호로 인증 정보를 조회
+        PhoneVerification verification = phoneVerificationRepository.findById(requestDto.getPhoneNumber())
+                .orElseThrow(() -> new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_FOUND));
 
-        if (user.getVerificationCode() == null || user.getVerificationCodeExpiresAt() == null) {
-            throw new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_MATCH); // Or a more specific error
+        // 만료 시간 확인
+        if (LocalDateTime.now().isAfter(verification.getExpiresAt())) {
+            throw new BusinessException(ErrorCode.VERIFICATION_CODE_EXPIRED);
         }
 
-        if (LocalDateTime.now().isAfter(user.getVerificationCodeExpiresAt())) {
-            throw new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_MATCH); // Or a more specific "code expired" error
-        }
-
-        if (!user.getVerificationCode().equals(requestDto.getVerificationCode())) {
+        // 인증번호 일치 여부 확인
+        if (!verification.getVerificationCode().equals(requestDto.getVerificationCode())) {
             throw new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_MATCH);
         }
 
-        user.setPhoneVerified(true);
-        user.setVerificationCode(null);
-        user.setVerificationCodeExpiresAt(null);
-        userRepository.save(user);
+        // 인증 성공 시, verified 상태를 true로 변경하고 저장
+        verification.setVerified(true);
+        phoneVerificationRepository.save(verification);
     }
 
     private String createRandomCode() {

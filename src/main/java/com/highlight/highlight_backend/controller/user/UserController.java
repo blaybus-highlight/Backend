@@ -47,7 +47,7 @@ public class UserController {
     @Operation(summary = "휴대폰 인증 코드 요청", description = "사용자의 휴대폰 번호로 인증 코드를 발송합니다.")
     public ResponseEntity<ResponseDto<?>> requestPhoneVerification(@Valid @RequestBody PhoneVerificationRequestCodeDto requestDto) {
         log.info("POST /api/public/request-phone-verification - 휴대폰 인증 코드 요청");
-        userService.requestPhoneVerification(requestDto);
+        userService.requestVerificationForSignUp(requestDto);
         return ResponseEntity.ok(ResponseDto.success(null, "인증 코드 발송에 성공하였습니다."));
     }
 
@@ -55,7 +55,7 @@ public class UserController {
     @Operation(summary = "휴대폰 인증 코드 확인", description = "휴대폰 번호와 인증코드를 받아 인증 처리합니다.")
     public ResponseEntity<ResponseDto<?>> verifyPhone(@Valid @RequestBody PhoneVerificationRequestDto requestDto) {
         log.info("POST /api/public/verify-phone - 휴대폰 인증 코드 확인");
-        userService.verifyPhoneNumber(requestDto);
+        userService.confirmVerification(requestDto);
         return ResponseEntity.ok(ResponseDto.success(null, "휴대폰 인증에 성공하였습니다."));
     }
 }

@@ -31,13 +31,6 @@ public class UserSignUpRequestDto {
     @Pattern(regexp = "^010\\d{8}$", message = "휴대폰 번호 형식에 맞지 않습니다.")
     private String phoneNumber;
 
-    /**
-     * 인증 시 true
-     */
-    @AssertTrue(message = "휴대폰 인증이 필요 합니다.")
-    private boolean isPhoneVerified;
-
-
     @NotNull(message = "만 14세 이상 동의 여부를 입력해주세요.")
     @AssertTrue(message = "만 14세 이상이어야 합니다.")
     private Boolean isOver14;
