@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import jakarta.persistence.criteria.Join;
+import java.time.LocalDateTime;
 
 public class AuctionSpecs {
 
@@ -65,6 +66,40 @@ public class AuctionSpecs {
             }
             Join<Auction, Product> productJoin = root.join("product");
             return criteriaBuilder.equal(productJoin.get("isPremium"), isPremium);
+        };
+    }
+    
+    // 경매 상태 필터 (진행중/예정/마감임박)
+    public static Specification<Auction> hasAuctionStatus(String status) {
+        return (root, query, criteriaBuilder) -> {
+            if (!StringUtils.hasText(status)) {
+                return null;
+            }
+            
+            LocalDateTime now = LocalDateTime.now();
+            
+            switch (status.toUpperCase()) {
+                case "IN_PROGRESS":
+                    // 진행중: 상태가 IN_PROGRESS이고 종료시간이 1시간 이후
+                    return criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("status"), Auction.AuctionStatus.IN_PROGRESS),
+                        criteriaBuilder.greaterThan(root.get("scheduledEndTime"), now.plusHours(1))
+                    );
+                    
+                case "SCHEDULED":
+                    // 예정: 상태가 SCHEDULED
+                    return criteriaBuilder.equal(root.get("status"), Auction.AuctionStatus.SCHEDULED);
+                    
+                case "ENDING_SOON":
+                    // 마감임박: 상태가 IN_PROGRESS이고 종료시간이 1시간 이내
+                    return criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("status"), Auction.AuctionStatus.IN_PROGRESS),
+                        criteriaBuilder.between(root.get("scheduledEndTime"), now, now.plusHours(1))
+                    );
+                    
+                default:
+                    return null;
+            }
         };
     }
 
