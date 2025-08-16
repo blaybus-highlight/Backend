@@ -35,6 +35,7 @@ public class AuctionSearchController {
      * @param brand -> 브랜드 종류
      * @param eventName -> 이벤드 이름
      * @param category -> 필터링할 카테고리를 가져옵니다.
+     * @param isPremium -> 프리미엄 상품 필터링 (true: 프리미엄만, false: 일반만, null: 전체)
      * @param sortCode -> ending, popular, newest (정렬 대상을 받아옵니다)
      */
     @GetMapping("/")
@@ -46,6 +47,7 @@ public class AuctionSearchController {
             @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String eventName,
+            @RequestParam(required = false) Boolean isPremium,
             // 2. 정렬 조건
             @RequestParam(defaultValue = "newest") String sortCode,
             Pageable pageable) {
@@ -53,7 +55,7 @@ public class AuctionSearchController {
         log.info("GET /api/public/products - 경매 목록 조회 요청 (비로그인 사용자도 접근 가능)");
 
         Page<UserAuctionResponseDto> response = userAuctionSearchService.getProductsFiltered(
-                category, minPrice, maxPrice, brand, eventName, sortCode, pageable);
+                category, minPrice, maxPrice, brand, eventName, isPremium, sortCode, pageable);
 
         return ResponseEntity.ok(
                 ResponseDto.success(response, "경매 목록을 성공적으로 불러왔습니다."));

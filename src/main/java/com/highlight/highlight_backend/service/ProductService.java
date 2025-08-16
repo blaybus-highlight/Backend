@@ -296,6 +296,37 @@ public class ProductService {
     }
     
     /**
+     * 상품 프리미엄 설정 변경
+     * 
+     * @param productId 상품 ID
+     * @param isPremium 프리미엄 설정 여부
+     * @param adminId 관리자 ID
+     * @return 업데이트된 상품 정보
+     */
+    @Transactional
+    public ProductResponseDto updateProductPremium(Long productId, Boolean isPremium, Long adminId) {
+        log.info("상품 프리미엄 설정 변경: 상품={}, 프리미엄={}, 관리자={}", productId, isPremium, adminId);
+        
+        // 관리자 권한 검증
+        validateProductManagePermission(adminId);
+        
+        // 상품 조회
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        
+        // 프리미엄 설정 변경
+        product.setIsPremium(isPremium);
+        
+        // 저장
+        Product savedProduct = productRepository.save(product);
+        
+        log.info("상품 프리미엄 설정 완료: {} (ID: {}, 프리미엄: {})", 
+                savedProduct.getProductName(), savedProduct.getId(), isPremium);
+        
+        return ProductResponseDto.from(savedProduct);
+    }
+    
+    /**
      * 상품 이미지 처리 (신규 등록)
      * 
      * @param product 상품 엔티티

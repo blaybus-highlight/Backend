@@ -57,5 +57,15 @@ public class AuctionSpecs {
         };
     }
 
+    // 프리미엄 상품 필터
+    public static Specification<Auction> isPremium(Boolean isPremium) {
+        return (root, query, criteriaBuilder) -> {
+            if (isPremium == null) {
+                return null;
+            }
+            Join<Auction, Product> productJoin = root.join("product");
+            return criteriaBuilder.equal(productJoin.get("isPremium"), isPremium);
+        };
+    }
 
 }

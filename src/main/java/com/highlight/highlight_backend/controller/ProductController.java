@@ -179,4 +179,32 @@ public class ProductController {
             ResponseDto.success(response, "관련 상품을 성공적으로 조회했습니다.")
         );
     }
+    
+    /**
+     * 상품 프리미엄 설정 변경
+     * 
+     * @param productId 상품 ID
+     * @param isPremium 프리미엄 설정 여부
+     * @param authentication 현재 로그인한 관리자 정보
+     * @return 업데이트된 상품 정보
+     */
+    @PatchMapping("/{productId}/premium")
+    @Operation(summary = "상품 프리미엄 설정", description = "관리자가 상품의 프리미엄 여부를 설정합니다.")
+    public ResponseEntity<ResponseDto<ProductResponseDto>> updateProductPremium(
+            @PathVariable Long productId,
+            @RequestParam Boolean isPremium,
+            Authentication authentication) {
+        
+        Long adminId = (Long) authentication.getPrincipal();
+        log.info("PATCH /api/admin/products/{}/premium - 상품 프리미엄 설정 (관리자: {}, 프리미엄: {})", 
+                productId, adminId, isPremium);
+        
+        ProductResponseDto response = productService.updateProductPremium(productId, isPremium, adminId);
+        
+        String message = isPremium ? "상품이 프리미엄으로 설정되었습니다." : "상품의 프리미엄 설정이 해제되었습니다.";
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, message)
+        );
+    }
 }

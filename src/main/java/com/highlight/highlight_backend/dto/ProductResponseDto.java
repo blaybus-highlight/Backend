@@ -96,6 +96,11 @@ public class ProductResponseDto {
     private String primaryImageUrl;
     
     /**
+     * 프리미엄 상품 여부
+     */
+    private Boolean isPremium;
+    
+    /**
      * 생성 시간
      */
     private LocalDateTime createdAt;
@@ -130,6 +135,7 @@ public class ProductResponseDto {
             product.getRegisteredBy(),
             imageDtos,
             primaryImageUrl,
+            product.getIsPremium(),
             product.getCreatedAt(),
             product.getUpdatedAt()
         );

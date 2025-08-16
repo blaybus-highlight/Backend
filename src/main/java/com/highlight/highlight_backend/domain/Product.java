@@ -136,6 +136,12 @@ public class Product {
      */
     @Column(nullable = false)
     private Long sellerId;
+    
+    /**
+     * 프리미엄 상품 여부
+     */
+    @Column(nullable = false)
+    private Boolean isPremium = false;
 
     /**
      * 판매자 정보 (Lazy Loading)

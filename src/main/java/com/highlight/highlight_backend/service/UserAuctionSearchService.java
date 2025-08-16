@@ -37,7 +37,7 @@ public class UserAuctionSearchService {
 
     public Page<UserAuctionResponseDto> getProductsFiltered(
             String category, Long minPrice, Long maxPrice, String brand, String eventName,
-            String sortCode, Pageable pageable) {
+            Boolean isPremium, String sortCode, Pageable pageable) {
 
         // 1. Specification 조합 -> Where 문을 동적으로 만듦
         Specification<Auction> spec = Specification.where(null);
@@ -53,6 +53,9 @@ public class UserAuctionSearchService {
         }
         if (minPrice != null || maxPrice != null) {
             spec = spec.and(AuctionSpecs.betweenPrice(minPrice, maxPrice));
+        }
+        if (isPremium != null) {
+            spec = spec.and(AuctionSpecs.isPremium(isPremium));
         }
 
         // 2. 정렬(Sort) 조건 적용
