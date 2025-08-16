@@ -1,30 +1,37 @@
 # .github/workflows/main.yml
 
-name: Java CI with Gradle and Docker
+name: Java CI/CD to EC2
 
+# 'main' 브랜치에 코드가 push 될 때마다 이 워크플로우를 실행합니다.
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
+# 워크플로우 실행에 필요한 권한을 설정합니다.
 permissions:
   contents: read
   packages: write
 
+# 워크플로우에서 공통으로 사용할 환경 변수를 설정합니다.
+env:
+  CONTAINER_NAME: my-app-container     # EC2에서 실행할 컨테이너 이름 (자유롭게 지정)
+
 jobs:
-  build-and-push-docker-image:
+  build-push-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # 1. GitHub 리포지토리의 코드를 워크플로우 환경으로 가져옵니다.
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2. JDK 17 버전을 설치합니다.
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # 3. GitHub Secrets를 사용하여 application.yml 파일을 동적으로 생성합니다.
       - name: Create application.yml
         run: |
           mkdir -p src/main/resources
@@ -70,6 +77,7 @@ jobs:
           echo '  default-consumes-media-type: application/json' >> src/main/resources/application.yml
           echo '  default-produces-media-type: application/json' >> src/main/resources/application.yml
 
+      # 4. GitHub 컨테이너 저장소(GHCR)에 로그인합니다.
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -77,14 +85,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ✅ [수정됨] 1. Docker 메타데이터(태그, 라벨) 자동 생성
+      # 5. Docker 메타데이터(소문자 태그, 라벨)를 자동으로 생성합니다.
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
 
-      # ✅ [수정됨] 2. 생성된 메타데이터를 사용하여 빌드 및 푸시
+      # 6. Docker 이미지를 빌드하고 GHCR에 푸시(업로드)합니다.
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -92,3 +100,25 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # 7. SSH를 통해 EC2에 접속하여 배포 스크립트를 실행합니다.
+      - name: Deploy to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # EC2 서버에서 GitHub 컨테이너 저장소(GHCR)에 로그인합니다.
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 방금 푸시한 최신 이미지를 pull 받습니다.
+            docker pull ${{ steps.meta.outputs.tags }}
+
+            # 기존에 실행 중인 컨테이너가 있으면 중지하고 삭제합니다.
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
+
+            # 새로운 컨테이너를 실행합니다. (포트는 application.yml에 설정한 8085로 매핑)
+            docker run -d -p 8085:8085 --name ${{ env.CONTAINER_NAME }} ${{ steps.meta.outputs.tags }}
