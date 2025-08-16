@@ -122,7 +122,7 @@ public class Product {
     /**
      * 상품 상태 설명
      */
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "`condition`")
     private String condition;
 
     /**
