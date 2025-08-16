@@ -114,7 +114,7 @@ public class SwaggerConfig {
                         .url("http://localhost:8085")
                         .description("🔧 Local Development Server"),
                 new Server()
-                        .url("https://api.highlight-demo.com")
+                        .url("http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com:8085")
                         .description("🚀 Production Server (배포 후 활성화)")
         );
     }

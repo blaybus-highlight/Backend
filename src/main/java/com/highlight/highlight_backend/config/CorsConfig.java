@@ -35,7 +35,7 @@ public class CorsConfig {
             "http://localhost:3001",        // Next.js 개발 서버
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
             "https://your-domain.com",      // 운영 도메인 (실제 도메인으로 변경)
-            "https://*.amazonaws.com",      // AWS 배포 (CloudFront, ELB 등)
+            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com",      // AWS 배포 (CloudFront, ELB 등)
             "https://*.execute-api.*.amazonaws.com"  // API Gateway
         ));
         
