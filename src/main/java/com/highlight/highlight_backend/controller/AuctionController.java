@@ -3,6 +3,11 @@ package com.highlight.highlight_backend.controller;
 import com.highlight.highlight_backend.dto.*;
 import com.highlight.highlight_backend.service.AuctionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +44,25 @@ public class AuctionController {
      * @return 예약된 경매 정보
      */
     @PostMapping("/schedule")
-    @Operation(summary = "경매 예약", 
-               description = "상품을 경매에 예약합니다. 경매 시작/종료 시간을 직접 입력하여 설정할 수 있습니다.")
+    @Operation(
+        summary = "경매 예약", 
+        description = "상품을 경매에 예약합니다. 경매 시작/종료 시간, 시작가, 입찰 단위, 즉시 구매가 등을 설정할 수 있습니다. 경매 진행 시간은 최소 10분 이상이어야 합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "경매 예약 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (시간, 가격 등)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 경매에 등록된 상품"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<AuctionResponseDto>> scheduleAuction(
+            @Parameter(description = "경매 예약 요청 데이터", required = true)
             @Valid @RequestBody AuctionScheduleRequestDto request,
             Authentication authentication) {
         
@@ -65,10 +86,26 @@ public class AuctionController {
      * @return 시작된 경매 정보
      */
     @PostMapping("/{auctionId}/start")
-    @Operation(summary = "경매 시작", 
-               description = "예약된 경매를 시작합니다. 즉시 시작하거나 시간을 직접 입력하여 시작할 수 있습니다.")
+    @Operation(
+        summary = "경매 시작", 
+        description = "예약된 경매를 시작합니다. 즉시 시작하거나 특정 시간으로 설정하여 시작할 수 있습니다. 시작 후에는 사용자들이 입찰할 수 있습니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "경매 시작 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "이미 진행 중이거나 종료된 경매"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<AuctionResponseDto>> startAuction(
+            @Parameter(description = "시작할 경매의 고유 ID", required = true, example = "1")
             @PathVariable Long auctionId,
+            @Parameter(description = "경매 시작 요청 데이터", required = true)
             @Valid @RequestBody AuctionStartRequestDto request,
             Authentication authentication) {
         
@@ -91,9 +128,24 @@ public class AuctionController {
      * @return 시작된 경매 정보
      */
     @PostMapping("/{auctionId}/start-now")
-    @Operation(summary = "경매 즉시 시작", 
-               description = "버튼 클릭으로 경매를 즉시 시작합니다. 현재 시간부터 시작되며 기존 종료 시간을 유지합니다.")
+    @Operation(
+        summary = "경매 즉시 시작", 
+        description = "버튼 클릭으로 경매를 즉시 시작합니다. 현재 시간부터 시작되며 기존 종료 시간을 유지합니다. 간편 시작 API입니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "경매 즉시 시작 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "이미 진행 중이거나 종료된 경매"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<AuctionResponseDto>> startAuctionNow(
+            @Parameter(description = "즉시 시작할 경매의 고유 ID", required = true, example = "1")
             @PathVariable Long auctionId,
             Authentication authentication) {
         

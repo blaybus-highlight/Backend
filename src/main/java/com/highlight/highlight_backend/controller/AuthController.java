@@ -5,6 +5,11 @@ import com.highlight.highlight_backend.dto.LoginResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +41,22 @@ public class AuthController {
      * @return 로그인 응답 (JWT 토큰 포함)
      */
     @PostMapping("/login")
-    @Operation(summary = "관리자 로그인", description = "설정된 ID/PW로 백오피스 관리자 로그인을 수행합니다.")
+    @Operation(
+        summary = "관리자 로그인", 
+        description = "설정된 ID/PW로 백오피스 관리자 로그인을 수행합니다. 성공 시 JWT 액세스 토큰과 리프레시 토큰을 반환합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "로그인 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "401", description = "인증 실패 - 잘못된 ID 또는 비밀번호"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<LoginResponseDto>> login(
+            @Parameter(description = "관리자 로그인 요청 정보 (ID, 비밀번호)", required = true)
             @Valid @RequestBody LoginRequestDto request) {
         
         log.info("POST /api/auth/login - 관리자 로그인 요청: {}", request.getAdminId());
@@ -56,8 +75,26 @@ public class AuthController {
      * @return 검증 결과
      */
     @GetMapping("/validate")
-    @Operation(summary = "토큰 유효성 검증", description = "JWT 토큰의 유효성을 검증합니다.")
+    @Operation(
+        summary = "토큰 유효성 검증", 
+        description = "Authorization 헤더의 JWT 토큰 유효성을 검증합니다. Bearer 토큰 형식이어야 합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "토큰 검증 완료",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 토큰 형식"),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<Boolean>> validateToken(
+            @Parameter(
+                description = "JWT 토큰을 포함한 Authorization 헤더", 
+                required = true,
+                example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            )
             @RequestHeader("Authorization") String authorizationHeader) {
         
         log.info("GET /api/auth/validate - 토큰 검증 요청");
@@ -77,7 +114,18 @@ public class AuthController {
      * @return 로그아웃 응답
      */
     @PostMapping("/logout")
-    @Operation(summary = "로그아웃", description = "관리자 로그아웃을 수행합니다.")
+    @Operation(
+        summary = "로그아웃", 
+        description = "관리자 로그아웃을 수행합니다. 클라이언트에서 토큰을 삭제해야 합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "로그아웃 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<String>> logout() {
         
         log.info("POST /api/auth/logout - 로그아웃 요청");

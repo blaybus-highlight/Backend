@@ -9,6 +9,10 @@ import com.highlight.highlight_backend.dto.AuctionMyResultResponseDto;
 import com.highlight.highlight_backend.service.BidService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +49,24 @@ public class BidController {
      * @return 입찰 결과
      */
     @PostMapping("/bids")
-    @Operation(summary = "입찰 참여", description = "경매에 입찰을 참여합니다.")
+    @Operation(
+        summary = "입찰 참여", 
+        description = "경매에 입찰을 참여합니다. 입찰 금액은 현재 최고가보다 높아야 하며, 입찰 단위의 배수여야 합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "입찰 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "최소 입찰 금액 미달 또는 경매 종료"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 더 높은 입찰가 존재"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<BidResponseDto>> createBid(
+            @Parameter(description = "입찰 요청 정보 (경매 ID, 입찰 금액)", required = true)
             @Valid @RequestBody BidCreateRequestDto request,
             Authentication authentication) {
         
@@ -69,11 +89,23 @@ public class BidController {
      * @return 입찰 내역 목록
      */
     @GetMapping("/auctions/{auctionId}/bids")
-    @Operation(summary = "경매 입찰 내역 조회 (익명)", description = "특정 경매의 입찰 내역을 익명으로 조회합니다.")
+    @Operation(
+        summary = "경매 입찰 내역 조회 (익명)", 
+        description = "특정 경매의 입찰 내역을 익명으로 조회합니다. 입찰자 정보는 마스킹되어 표시됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "입찰 내역 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getAuctionBids(
-            @Parameter(description = "경매 ID", required = true)
+            @Parameter(description = "입찰 내역을 조회할 경매의 고유 ID", required = true, example = "1")
             @PathVariable Long auctionId,
-            @Parameter(description = "페이징 정보")
+            @Parameter(description = "페이징 정보 (기본 20개)")
             @PageableDefault(size = 20) Pageable pageable) {
         
         log.info("GET /api/auctions/{}/bids - 경매 입찰 내역 조회 (익명)", auctionId);

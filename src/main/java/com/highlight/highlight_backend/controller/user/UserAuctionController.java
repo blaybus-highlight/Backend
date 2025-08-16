@@ -5,6 +5,10 @@ import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AuctionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +44,21 @@ public class UserAuctionController {
      */
     @PostMapping("/{auctionId}/buy-it-now")
     @Operation(summary = "즉시구매", 
-               description = "설정된 즉시구매가로 상품을 즉시 구매합니다. 재고 1개 상품만 가능합니다.")
+               description = "설정된 즉시구매가로 상품을 즉시 구매합니다. 재고 1개 상품만 가능하며, 경매가 즉시 종료됩니다. 결제 정보를 포함해야 합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "즉시구매 성공"),
+        @ApiResponse(responseCode = "400", description = "즉시구매 불가 상품 또는 재고 부족"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 종료된 경매")
+    })
     public ResponseEntity<ResponseDto<BuyItNowResponseDto>> buyItNow(
+            @Parameter(description = "즉시구매할 경매의 고유 ID", required = true, example = "1")
             @PathVariable Long auctionId,
+            @Parameter(description = "즉시구매 요청 데이터 (결제 정보 포함)", required = true)
             @Valid @RequestBody BuyItNowRequestDto request,
-            Authentication authentication) {
+            @Parameter(hidden = true) Authentication authentication) {
         
         Long userId = (Long) authentication.getPrincipal();
         log.info("POST /api/user/auctions/{}/buy-it-now - 즉시구매 요청 (사용자: {})", 
