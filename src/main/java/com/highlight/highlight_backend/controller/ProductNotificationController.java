@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user/notifications")
 @RequiredArgsConstructor
-@Tag(name = "상품 알림 API", description = "상품 알림 설정, 조회, 관리 관련 API (로그인 필요)")
+@Tag(name = "상품 알림 관리", description = "상품 재입고 및 경매 시작 알림 설정 API")
 public class ProductNotificationController {
     
     private final ProductNotificationService notificationService;

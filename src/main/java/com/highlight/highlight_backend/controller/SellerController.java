@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/public/sellers")
 @RequiredArgsConstructor
-@Tag(name = "판매자 정보 API", description = "판매자 상세 정보, 목록 조회 관련 API (로그인 불필요)")
+@Tag(name = "판매자 정보 조회", description = "판매자 상세 정보 및 목록 조회 API")
 public class SellerController {
     
     private final SellerService sellerService;

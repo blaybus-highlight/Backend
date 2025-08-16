@@ -27,7 +27,7 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@Tag(name = "WebSocket 관리", description = "실시간 경매 정보 전송을 위한 WebSocket 메시지 처리 API")
+@Tag(name = "WebSocket 실시간 통신", description = "실시간 경매 정보 및 입찰 알림을 위한 WebSocket API")
 public class WebSocketController {
     
     private final WebSocketService webSocketService;

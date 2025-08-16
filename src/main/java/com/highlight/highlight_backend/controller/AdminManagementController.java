@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/admin-management")
 @RequiredArgsConstructor
-@Tag(name = "관리자 계정 관리 API", description = "백오피스 관리자 계정 생성/수정/삭제 관련 API")
+@Tag(name = "관리자 계정 관리", description = "관리자 계정 조회, 수정, 비활성화 관련 API")
 public class AdminManagementController {
     
     private final AdminManagementService adminManagementService;

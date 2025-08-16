@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-@Tag(name = "사용자 마이페이지", description = "로그인한 사용자의 개인정보 조회 및 탈퇴 API")
+@Tag(name = "마이페이지", description = "사용자 개인정보 조회 및 계정 탈퇴 API")
 public class AuthenticatedUserController {
 
     private final UserService userService;

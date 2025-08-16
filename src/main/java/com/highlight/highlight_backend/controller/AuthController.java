@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin-auth")
 @RequiredArgsConstructor
-@Tag(name = "인증 API", description = "백오피스 관리자 로그인/인증 관련 API")
+@Tag(name = "백오피스 관리자 로그인", description = "백오피스 관리자 로그인 및 토큰 검증 API")
 public class AuthController {
     
     private final AuthService authService;

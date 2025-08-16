@@ -32,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/user/wishlist")
 @RequiredArgsConstructor
-@Tag(name = "상품 찜하기 API", description = "상품 찜하기, 취소, 조회 관련 API (로그인 필요)")
+@Tag(name = "상품 찜하기", description = "상품 찜하기, 취소, 조회 관련 API")
 public class ProductWishlistController {
     
     private final ProductWishlistService wishlistService;

@@ -35,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
-@Tag(name = "상품 관리 API", description = "경매 상품 등록/수정/조회/삭제 관련 API")
+@Tag(name = "상품 관리 (관리자)", description = "경매 상품 등록, 수정, 조회, 삭제 및 이미지 관리 API")
 public class ProductController {
     
     private final ProductService productService;

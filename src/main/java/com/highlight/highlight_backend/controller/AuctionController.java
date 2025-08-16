@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/auctions")
 @RequiredArgsConstructor
-@Tag(name = "경매 관리 API", description = "경매 예약/시작/종료/중단 관련 API")
+@Tag(name = "경매 관리 (관리자)", description = "경매 예약, 시작, 종료, 중단 관련 관리자 API")
 public class AuctionController {
     
     private final AuctionService auctionService;

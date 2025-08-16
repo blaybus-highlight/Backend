@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user/auctions")
 @RequiredArgsConstructor
-@Tag(name = "사용자 경매 참여 API", description = "입찰, 즉시구매 등 경매 참여 관련 API")
+@Tag(name = "즉시구매", description = "경매 상품 즉시구매 API")
 public class UserAuctionController {
     
     private final AuctionService auctionService;

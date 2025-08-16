@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/public/products")
-@Tag(name = "경매 목록 조회", description = "경매 목록 검색, 필터링, 상세조회 API (로그인 불필요)")
+@Tag(name = "경매 목록 조회", description = "경매 목록 검색, 필터링, 상세조회 API")
 public class AuctionSearchController {
 
     private final UserAuctionSearchService userAuctionSearchService;

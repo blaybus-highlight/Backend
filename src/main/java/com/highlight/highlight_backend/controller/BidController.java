@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Tag(name = "입찰 관리", description = "입찰 참여, 입찰 내역 조회, 경매 상태 조회 API")
+@Tag(name = "입찰 및 경매 상태", description = "입찰 참여, 입찰 내역 조회, 경매 상태 조회, 낙찰 내역 API")
 public class BidController {
     
     private final BidService bidService;

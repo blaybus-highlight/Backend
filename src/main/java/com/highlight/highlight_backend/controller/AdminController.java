@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@Tag(name = "관리자 인증", description = "관리자 회원가입, 로그인 API")
+@Tag(name = "관리자 계정 생성", description = "관리자 회원가입 및 로그인 API")
 public class AdminController {
     
     private final AdminManagementService adminManagementService;
