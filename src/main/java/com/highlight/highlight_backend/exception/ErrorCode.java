@@ -125,6 +125,12 @@ public enum ErrorCode {
     BID_UNIT_MISMATCH(HttpStatus.BAD_REQUEST, "AUCTION_012", "입찰가는 입찰 단위의 배수여야 합니다."),
     /** 최대 입찰가가 최소 입찰가보다 작음 */
     MAX_BID_LESS_THAN_MIN_BID(HttpStatus.BAD_REQUEST, "AUCTION_013", "최대 입찰가는 최소 입찰가보다 크거나 같아야 합니다."),
+    /** 경매가 진행중이 아님 */
+    AUCTION_NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "AUCTION_014", "경매가 진행중이 아닙니다."),
+    /** 즉시구매 불가능 */
+    BUY_IT_NOW_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "AUCTION_015", "즉시구매가 설정되지 않아 즉시구매할 수 없습니다."),
+    /** 즉시구매는 재고 1개 상품만 가능 */
+    BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM(HttpStatus.BAD_REQUEST, "AUCTION_016", "즉시구매는 재고가 1개인 상품만 가능합니다."),
 
 
     // ===== User 회원가입 관련 에러 ===== //

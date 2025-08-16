@@ -64,6 +64,12 @@ public class Bid {
     private Boolean isAutoBid = false;
     
     /**
+     * 즉시구매 여부
+     */
+    @Column(nullable = false)
+    private Boolean isBuyItNow = false;
+    
+    /**
      * 자동 입찰 최대 금액 (자동 입찰인 경우)
      */
     @Column(precision = 15, scale = 0)
@@ -150,5 +156,12 @@ public class Bid {
      */
     public boolean isAutoBid() {
         return this.isAutoBid != null && this.isAutoBid;
+    }
+    
+    /**
+     * 즉시구매인지 확인
+     */
+    public boolean isBuyItNow() {
+        return this.isBuyItNow != null && this.isBuyItNow;
     }
 }

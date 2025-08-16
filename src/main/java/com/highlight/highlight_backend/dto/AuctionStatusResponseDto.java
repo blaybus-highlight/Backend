@@ -146,7 +146,7 @@ public class AuctionStatusResponseDto {
             auction.getProduct().getProductName(),
             auction.getStatus().name(),
             auction.getStatus().getDescription(),
-            auction.getProduct().getStartingPrice(),
+            auction.getStartPrice(),
             auction.getCurrentHighestBid(),
             auction.getBuyItNowPrice(),
             totalBidders,

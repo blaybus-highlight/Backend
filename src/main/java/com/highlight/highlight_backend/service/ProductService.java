@@ -72,7 +72,6 @@ public class ProductService {
         product.setHistory(request.getHistory());
         product.setExpectedEffects(request.getExpectedEffects());
         product.setDetailedInfo(request.getDetailedInfo());
-        product.setStartingPrice(request.getStartingPrice());
         product.setCategory(request.getCategory());
         product.setProductCount(request.getProductCount());
         product.setMaterial(request.getMaterial());
@@ -143,9 +142,6 @@ public class ProductService {
         }
         if (request.getDetailedInfo() != null) {
             product.setDetailedInfo(request.getDetailedInfo());
-        }
-        if (request.getStartingPrice() != null) {
-            product.setStartingPrice(request.getStartingPrice());
         }
         if (request.getCategory() != null) {
             product.setCategory(request.getCategory());

@@ -52,7 +52,7 @@ public class AuctionScheduleRequestDto {
      * 최소 인상폭
      */
     @NotNull(message = "최소 인상폭은 필수입니다.")
-    @DecimalMin(value = "0", message = "최소 인상폭은 0원 이상이어야 합니다.")
+    @DecimalMin(value = "1000", message = "최소 인상폭은 1000원 이상이어야 합니다.")
     private BigDecimal minimumBid;
 
     /**

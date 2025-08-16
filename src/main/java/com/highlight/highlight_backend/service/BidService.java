@@ -253,7 +253,7 @@ public class BidService {
             }
         } else {
             // 첫 입찰인 경우: 시작가 이상
-            if (request.getBidAmount().compareTo(auction.getProduct().getStartingPrice()) < 0) {
+            if (request.getBidAmount().compareTo(auction.getStartPrice()) < 0) {
                 throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
             }
         }
