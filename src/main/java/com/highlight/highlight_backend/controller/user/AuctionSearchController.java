@@ -73,7 +73,6 @@ public class AuctionSearchController {
     public ResponseEntity<ResponseDto<UserAuctionDetailResponseDto>> getAuctionDetail(
             @PathVariable("auctionId") Long auctionId
     ) {
-
         log.info("GET /api/public/{} - 경매 목록 조회 요청 (비로그인 사용자도 접근 가능)", auctionId);
 
         UserAuctionDetailResponseDto response = userAuctionSearchService.getProductsDetail(auctionId);
