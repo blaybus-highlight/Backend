@@ -4,8 +4,11 @@ import com.highlight.highlight_backend.domain.Auction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -123,4 +126,15 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
      * @return 경매 등록 여부
      */
     boolean existsByProductId(Long productId);
+    
+    /**
+     * 경매 조회 (비관적 락)
+     * 동시 입찰 시 데이터 일관성을 위해 락을 사용합니다.
+     * 
+     * @param auctionId 경매 ID
+     * @return 경매 정보
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Auction a WHERE a.id = :auctionId")
+    Optional<Auction> findByIdWithLock(@Param("auctionId") Long auctionId);
 }

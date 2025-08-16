@@ -120,4 +120,14 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.auction = :auction " +
            "AND b.status != 'CANCELLED'")
     boolean existsByUserAndAuction(@Param("user") User user, @Param("auction") Auction auction);
+    
+    /**
+     * 동일한 금액으로 입찰된 내역 조회 (선도착 시간 우선 처리용)
+     */
+    @Query("SELECT b FROM Bid b " +
+           "WHERE b.auction = :auction " +
+           "AND b.bidAmount = :bidAmount " +
+           "AND b.status != 'CANCELLED' " +
+           "ORDER BY b.createdAt ASC")
+    Optional<Bid> findByAuctionAndBidAmount(@Param("auction") Auction auction, @Param("bidAmount") java.math.BigDecimal bidAmount);
 }

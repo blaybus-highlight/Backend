@@ -54,14 +54,21 @@ public class BidService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         
-        // 2. 경매 조회
-        Auction auction = auctionRepository.findById(request.getAuctionId())
+        // 2. 경매 조회 (비관적 락으로 동시 입찰 방지)
+        Auction auction = auctionRepository.findByIdWithLock(request.getAuctionId())
             .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 입찰 가능 상태 검증
         validateBidRequest(auction, request, user);
         
-        // 4. 기존 최고 입찰 조회
+        // 4. 동일 금액 입찰 체크 및 처리
+        Optional<Bid> existingSamePriceBid = bidRepository.findByAuctionAndBidAmount(auction, request.getBidAmount());
+        if (existingSamePriceBid.isPresent()) {
+            // 동일한 금액으로 이미 입찰이 있는 경우 거부 (선도착 우선)
+            throw new BusinessException(ErrorCode.BID_AMOUNT_TOO_LOW);
+        }
+        
+        // 5. 기존 최고 입찰 조회
         Optional<Bid> currentHighestBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
         
         // 5. 입찰 엔티티 생성
@@ -217,15 +224,18 @@ public class BidService {
             throw new BusinessException(ErrorCode.CANNOT_START_AUCTION);
         }
         
-        // 시작가보다 높은지 확인
-        if (request.getBidAmount().compareTo(auction.getProduct().getStartingPrice()) < 0) {
-            throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
-        }
-        
-        // 현재 최고가보다 높은지 확인
-        if (auction.getCurrentHighestBid() != null && 
-            request.getBidAmount().compareTo(auction.getCurrentHighestBid()) <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
+        // 입찰 금액 검증
+        if (auction.getCurrentHighestBid() != null) {
+            // 기존 입찰이 있는 경우: 현재 최고가 + 최소 인상폭 이상
+            BigDecimal minimumRequiredBid = auction.getCurrentHighestBid().add(auction.getMinimumBid());
+            if (request.getBidAmount().compareTo(minimumRequiredBid) < 0) {
+                throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
+            }
+        } else {
+            // 첫 입찰인 경우: 시작가 이상
+            if (request.getBidAmount().compareTo(auction.getProduct().getStartingPrice()) < 0) {
+                throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
+            }
         }
         
         // 입찰 단위 확인
