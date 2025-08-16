@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")
@@ -12,6 +16,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Setter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class User {
     
     @Id
@@ -38,6 +44,9 @@ public class User {
     @Column(nullable = false)
     private boolean isPhoneVerified = false; // 기본값은 false로 설정
 
+    private String verificationCode; // 휴대폰 인증 코드
+    private LocalDateTime verificationCodeExpiresAt; // 인증 코드 만료 시간
+
     /**
      * 결제수단 등록
      * 
@@ -59,4 +68,6 @@ public class User {
 
     @Column(nullable = false)
     private boolean eventSnsEnabled;  // 이벤트 광고 SNS 수신 여부
+
+    private LocalDateTime deletedAt;
 }
