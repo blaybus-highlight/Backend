@@ -63,11 +63,6 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String detailedInfo;
     
-    /**
-     * 시작가
-     */
-    @Column(nullable = false, precision = 15, scale = 0)
-    private BigDecimal startingPrice;
     
     /**
      * 상품 상태

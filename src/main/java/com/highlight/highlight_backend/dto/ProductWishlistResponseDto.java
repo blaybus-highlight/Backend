@@ -21,7 +21,6 @@ public class ProductWishlistResponseDto {
     private Long productId;
     private String productName;
     private String productImageUrl;
-    private Long startingPrice;
     private String status;
     private boolean isWishlisted;
     private LocalDateTime createdAt;
@@ -40,7 +39,6 @@ public class ProductWishlistResponseDto {
             .productName(wishlist.getProduct() != null ? wishlist.getProduct().getProductName() : null)
             .productImageUrl(wishlist.getProduct() != null && wishlist.getProduct().getPrimaryImage() != null ? 
                 wishlist.getProduct().getPrimaryImage().getImageUrl() : null)
-            .startingPrice(wishlist.getProduct() != null ? wishlist.getProduct().getStartingPrice().longValue() : null)
             .status(wishlist.getProduct() != null ? wishlist.getProduct().getStatus().getDescription() : null)
             .isWishlisted(true)
             .createdAt(wishlist.getCreatedAt())

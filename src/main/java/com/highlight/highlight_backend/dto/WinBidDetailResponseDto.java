@@ -186,7 +186,7 @@ public class WinBidDetailResponseDto {
             product.getRank() != null ? product.getRank().name() : null,
             product.getStatus() != null ? product.getStatus().name() : null,
             product.getPrimaryImage() != null ? product.getPrimaryImage().getImageUrl() : null,
-            product.getStartingPrice()
+            auction.getStartPrice()
         );
         
         // 판매자 정보 생성

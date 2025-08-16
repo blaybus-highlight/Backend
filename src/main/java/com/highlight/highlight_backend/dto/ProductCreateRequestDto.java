@@ -52,13 +52,6 @@ public class ProductCreateRequestDto {
     @Size(max = 5000, message = "상세 정보는 5000자를 초과할 수 없습니다")
     private String detailedInfo;
     
-    /**
-     * 시작가
-     */
-    @NotNull(message = "시작가는 필수입니다")
-    @DecimalMin(value = "0", message = "시작가는 0원 이상이어야 합니다")
-    @DecimalMax(value = "999999999999999", message = "시작가가 너무 큽니다")
-    private BigDecimal startingPrice;
     
     
     /**

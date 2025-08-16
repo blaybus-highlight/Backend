@@ -43,10 +43,6 @@ public class ProductUpdateRequestDto {
      */
     private String detailedInfo;
     
-    /**
-     * 시작가
-     */
-    private BigDecimal startingPrice;
     
     
     /**

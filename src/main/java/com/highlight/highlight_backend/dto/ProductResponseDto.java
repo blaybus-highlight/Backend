@@ -55,10 +55,6 @@ public class ProductResponseDto {
      */
     private String detailedInfo;
     
-    /**
-     * 시작가
-     */
-    private BigDecimal startingPrice;
     
     /**
      * 입장료
@@ -128,7 +124,6 @@ public class ProductResponseDto {
             product.getHistory(),
             product.getExpectedEffects(),
             product.getDetailedInfo(),
-            product.getStartingPrice(),
             product.getStatus(),
             product.getStatus().getDescription(),
             product.getCategory(),

@@ -197,7 +197,7 @@ public class Auction {
         this.status = AuctionStatus.IN_PROGRESS;
         this.actualStartTime = LocalDateTime.now();
         this.startedBy = adminId;
-        this.currentHighestBid = this.product.getStartingPrice();
+        this.currentHighestBid = this.startPrice;
     }
     
     /**
