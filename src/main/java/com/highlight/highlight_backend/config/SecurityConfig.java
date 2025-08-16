@@ -72,7 +72,6 @@ public class SecurityConfig {
                         "/ws/**", "/topic/**", "/queue/**", "/app/**", // WebSocket 관련 (STOMP 포함)
                         "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", // API 문서
                         "/swagger-ui.html", "/webjars/**", // Swagger UI 리소스
-                        "/actuator/health",                // 헬스체크
                         "/error"                           // 에러 페이지
                     ).permitAll()
                     
@@ -85,7 +84,7 @@ public class SecurityConfig {
                         "/api/user/**"                     // 사용자 마이페이지, 찜하기, 알림, 경매 참여 등
                     ).authenticated()
                     
-                    // 관리자 권한 필요 엔드포인트 (signup은 이미 위에서 permitAll 처리됨)
+                    // 관리자 권한 필요 엔드포인트
                     .requestMatchers(
                         "/api/admin/admin-management/**",  // 관리자 계정 관리
                         "/api/admin/products/**",          // 상품 관리
