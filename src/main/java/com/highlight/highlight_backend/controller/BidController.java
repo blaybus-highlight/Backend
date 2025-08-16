@@ -61,23 +61,50 @@ public class BidController {
     }
     
     /**
-     * 경매 입찰 내역 조회
+     * 경매 입찰 내역 조회 (익명 처리)
      * 
      * @param auctionId 경매 ID
      * @param pageable 페이징 정보
      * @return 입찰 내역 목록
      */
     @GetMapping("/auctions/{auctionId}/bids")
-    @Operation(summary = "경매 입찰 내역 조회", description = "특정 경매의 입찰 내역을 조회합니다.")
+    @Operation(summary = "경매 입찰 내역 조회 (익명)", description = "특정 경매의 입찰 내역을 익명으로 조회합니다.")
     public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getAuctionBids(
             @Parameter(description = "경매 ID", required = true)
             @PathVariable Long auctionId,
             @Parameter(description = "페이징 정보")
             @PageableDefault(size = 20) Pageable pageable) {
         
-        log.info("GET /api/auctions/{}/bids - 경매 입찰 내역 조회", auctionId);
+        log.info("GET /api/auctions/{}/bids - 경매 입찰 내역 조회 (익명)", auctionId);
         
         Page<BidResponseDto> response = bidService.getAuctionBids(auctionId, pageable);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "입찰 내역 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 경매 입찰 내역 조회 (본인 입찰 강조)
+     * 
+     * @param auctionId 경매 ID
+     * @param pageable 페이징 정보
+     * @param authentication 현재 로그인한 사용자 정보
+     * @return 입찰 내역 목록 (본인 입찰 강조)
+     */
+    @GetMapping("/auctions/{auctionId}/bids/with-user")
+    @Operation(summary = "경매 입찰 내역 조회 (본인 강조)", description = "특정 경매의 입찰 내역을 조회하며 본인 입찰을 강조합니다.")
+    public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getAuctionBidsWithUser(
+            @Parameter(description = "경매 ID", required = true)
+            @PathVariable Long auctionId,
+            @Parameter(description = "페이징 정보")
+            @PageableDefault(size = 20) Pageable pageable,
+            Authentication authentication) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("GET /api/auctions/{}/bids/with-user - 경매 입찰 내역 조회 (본인 강조, 사용자: {})", auctionId, userId);
+        
+        Page<BidResponseDto> response = bidService.getAuctionBidsWithUser(auctionId, userId, pageable);
         
         return ResponseEntity.ok(
             ResponseDto.success(response, "입찰 내역 조회가 완료되었습니다.")

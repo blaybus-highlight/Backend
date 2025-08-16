@@ -88,6 +88,12 @@ public class AuctionStatusWebSocketDto {
     private LocalDateTime actualEndTime;
     
     /**
+     * 남은 시간 (초)
+     */
+    @Schema(description = "경매 종료까지 남은 시간 (초)", example = "3600")
+    private Long remainingTimeInSeconds;
+    
+    /**
      * 마지막 업데이트 시간
      */
     @Schema(description = "마지막 업데이트 시간", example = "2025-08-15T14:30:00")
@@ -97,6 +103,9 @@ public class AuctionStatusWebSocketDto {
      * Auction 엔티티와 통계 정보로부터 DTO 생성
      */
     public static AuctionStatusWebSocketDto from(Auction auction, Long totalBidders, Long totalBids, String winnerNickname) {
+        // 남은 시간 계산
+        Long remainingSeconds = calculateRemainingSeconds(auction);
+        
         return new AuctionStatusWebSocketDto(
             auction.getId(),
             auction.getProduct().getProductName(),
@@ -110,8 +119,27 @@ public class AuctionStatusWebSocketDto {
             auction.getScheduledEndTime(),
             auction.getActualStartTime(),
             auction.getActualEndTime(),
+            remainingSeconds,
             LocalDateTime.now()
         );
+    }
+    
+    /**
+     * 경매 종료까지 남은 시간 계산 (초 단위)
+     */
+    private static Long calculateRemainingSeconds(Auction auction) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endTime = auction.getScheduledEndTime();
+        
+        // 경매가 진행 중이 아니거나 이미 종료된 경우
+        if (auction.getStatus() != Auction.AuctionStatus.IN_PROGRESS || 
+            now.isAfter(endTime)) {
+            return 0L;
+        }
+        
+        // 남은 시간 계산 (초 단위)
+        java.time.Duration duration = java.time.Duration.between(now, endTime);
+        return Math.max(0L, duration.getSeconds());
     }
     
     /**

@@ -130,4 +130,19 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.createdAt ASC")
     Optional<Bid> findByAuctionAndBidAmount(@Param("auction") Auction auction, @Param("bidAmount") java.math.BigDecimal bidAmount);
+    
+    /**
+     * 특정 사용자의 특정 경매에서 연속 패배 횟수 조회
+     * (마지막 승리 이후 또는 첫 입찰부터 현재까지의 OUTBID 횟수)
+     */
+    @Query("SELECT COUNT(b) FROM Bid b " +
+           "WHERE b.user = :user " +
+           "AND b.auction = :auction " +
+           "AND b.status = 'OUTBID' " +
+           "AND b.createdAt > COALESCE(" +
+           "    (SELECT MAX(wb.createdAt) FROM Bid wb " +
+           "     WHERE wb.user = :user AND wb.auction = :auction AND wb.status IN ('WINNING', 'WON')), " +
+           "    '1970-01-01 00:00:00'" +
+           ")")
+    Long countConsecutiveLossesByUserAndAuction(@Param("user") User user, @Param("auction") Auction auction);
 }

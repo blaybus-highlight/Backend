@@ -137,4 +137,26 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Auction a WHERE a.id = :auctionId")
     Optional<Auction> findByIdWithLock(@Param("auctionId") Long auctionId);
+    
+    /**
+     * 경매 상태로 경매 목록 조회 (리스트 형태)
+     * 
+     * @param status 경매 상태
+     * @return 해당 상태의 경매 목록
+     */
+    List<Auction> findByStatus(Auction.AuctionStatus status);
+    
+    /**
+     * 특정 시간 범위 내 종료 예정인 진행 중 경매 조회
+     * 
+     * @param status 경매 상태
+     * @param startTime 시작 시간
+     * @param endTime 종료 시간
+     * @return 해당 범위의 경매 목록
+     */
+    List<Auction> findByStatusAndScheduledEndTimeBetween(
+        Auction.AuctionStatus status, 
+        LocalDateTime startTime, 
+        LocalDateTime endTime
+    );
 }

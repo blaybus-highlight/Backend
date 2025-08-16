@@ -3,6 +3,7 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Bid;
 import com.highlight.highlight_backend.dto.websocket.AuctionStatusWebSocketDto;
+import com.highlight.highlight_backend.dto.websocket.BidOutbidNotificationDto;
 import com.highlight.highlight_backend.dto.websocket.BidWebSocketDto;
 import com.highlight.highlight_backend.dto.websocket.WebSocketMessageDto;
 import com.highlight.highlight_backend.dto.websocket.WebSocketMessageDto.WebSocketMessageType;
@@ -167,7 +168,7 @@ public class WebSocketService {
     }
     
     /**
-     * 입찰 경합 패배 알림 (개인 알림)
+     * 입찰 경합 패배 알림 (개인 알림) - 강화된 버전
      * 
      * @param outbidBid 밀려난 입찰
      * @param newBid 새로운 최고 입찰
@@ -176,9 +177,46 @@ public class WebSocketService {
         log.info("WebSocket - 입찰 경합 패배 알림 전송: 사용자={}, 경매={}", 
                 outbidBid.getUser().getId(), outbidBid.getAuction().getId());
         
+        try {
+            // 연속 패배 횟수 조회
+            Long consecutiveLosses = bidRepository.countConsecutiveLossesByUserAndAuction(
+                outbidBid.getUser(), outbidBid.getAuction());
+            
+            // 입찰 통계 조회
+            Long totalBidders = bidRepository.countDistinctBiddersByAuction(outbidBid.getAuction());
+            Long totalBids = bidRepository.countBidsByAuction(outbidBid.getAuction());
+            
+            // 강화된 알림 데이터 생성
+            BidOutbidNotificationDto notificationData = BidOutbidNotificationDto.from(
+                outbidBid, newBid, consecutiveLosses.intValue(), totalBidders, totalBids);
+            
+            WebSocketMessageDto message = WebSocketMessageDto.of(
+                WebSocketMessageType.BID_OUTBID, 
+                outbidBid.getAuction().getId(), 
+                notificationData
+            );
+            
+            // 특정 사용자에게만 전송
+            String destination = "/queue/user/" + outbidBid.getUser().getId() + "/notifications";
+            messagingTemplate.convertAndSend(destination, message);
+            
+            log.info("WebSocket - 강화된 입찰 경합 패배 알림 전송 완료: 사용자={}, 연속패배={}", 
+                    outbidBid.getUser().getId(), consecutiveLosses);
+            
+        } catch (Exception e) {
+            log.error("WebSocket - 강화된 입찰 경합 패배 알림 전송 실패: {}", e.getMessage(), e);
+            // 기본 알림으로 폴백
+            sendBasicOutbidNotification(outbidBid, newBid);
+        }
+    }
+    
+    /**
+     * 기본 입찰 경합 패배 알림 (폴백용)
+     */
+    private void sendBasicOutbidNotification(Bid outbidBid, Bid newBid) {
         String outbidMessage = String.format(
-            "다른 입찰자가 %s원으로 입찰하여 귀하의 입찰이 밀렸습니다.",
-            newBid.getBidAmount()
+            "다른 입찰자가 %,d원으로 입찰하여 귀하의 입찰이 밀렸습니다.",
+            newBid.getBidAmount().longValue()
         );
         
         sendPersonalNotification(
@@ -256,6 +294,30 @@ public class WebSocketService {
             log.error("WebSocket - 에러 메시지 전송 실패: 경매={}, 원본에러={}, 전송에러={}", 
                     auctionId, errorMessage, e.getMessage());
         }
+    }
+    
+    /**
+     * 경매 종료 임박 알림 (1분 이내)
+     * 
+     * @param auction 종료 임박 경매
+     * @param remainingSeconds 남은 시간 (초)
+     */
+    public void sendEndingSoonAlert(Auction auction, long remainingSeconds) {
+        Long auctionId = auction.getId();
+        log.info("WebSocket - 경매 종료 임박 알림 전송: 경매={}, 남은시간={}초", auctionId, remainingSeconds);
+        
+        String alertMessage = String.format("경매가 %d초 후 종료됩니다!", remainingSeconds);
+        
+        WebSocketMessageDto message = WebSocketMessageDto.of(
+            WebSocketMessageType.AUCTION_ENDING_SOON, 
+            auctionId, 
+            alertMessage
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, message);
+        
+        log.info("WebSocket - 경매 종료 임박 알림 전송 완료: {}", destination);
     }
     
     /**

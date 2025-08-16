@@ -108,14 +108,14 @@ public class BidService {
     }
     
     /**
-     * 경매 입찰 내역 조회
+     * 경매 입찰 내역 조회 (익명 처리)
      * 
      * @param auctionId 경매 ID
      * @param pageable 페이징 정보
      * @return 입찰 내역 목록
      */
     public Page<BidResponseDto> getAuctionBids(Long auctionId, Pageable pageable) {
-        log.info("경매 입찰 내역 조회: 경매ID={}", auctionId);
+        log.info("경매 입찰 내역 조회 (익명): 경매ID={}", auctionId);
         
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
@@ -123,6 +123,25 @@ public class BidService {
         Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
         
         return bids.map(BidResponseDto::from);
+    }
+    
+    /**
+     * 경매 입찰 내역 조회 (본인 입찰 강조)
+     * 
+     * @param auctionId 경매 ID
+     * @param userId 현재 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 입찰 내역 목록 (본인 입찰 강조)
+     */
+    public Page<BidResponseDto> getAuctionBidsWithUser(Long auctionId, Long userId, Pageable pageable) {
+        log.info("경매 입찰 내역 조회 (본인 강조): 경매ID={}, 사용자ID={}", auctionId, userId);
+        
+        Auction auction = auctionRepository.findById(auctionId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+        
+        Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
+        
+        return bids.map(bid -> BidResponseDto.fromWithUserInfo(bid, userId));
     }
     
     /**

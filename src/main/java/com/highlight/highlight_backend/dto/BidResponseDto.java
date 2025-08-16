@@ -80,7 +80,13 @@ public class BidResponseDto {
     private Boolean isWinning;
     
     /**
-     * Bid 엔티티로부터 DTO 생성
+     * 본인 입찰인지 여부 (익명 처리된 목록에서 본인 강조용)
+     */
+    @Schema(description = "본인 입찰인지 여부", example = "true")
+    private Boolean isMyBid;
+    
+    /**
+     * Bid 엔티티로부터 DTO 생성 (익명 처리)
      */
     public static BidResponseDto from(Bid bid) {
         String maskedNickname = maskNickname(bid.getUser().getNickname());
@@ -96,7 +102,31 @@ public class BidResponseDto {
             bid.getStatus().getDescription(),
             bid.isAutoBid(),
             bid.getCreatedAt(),
-            isWinning
+            isWinning,
+            false // 익명 처리된 목록이므로 본인 여부는 false
+        );
+    }
+    
+    /**
+     * Bid 엔티티로부터 DTO 생성 (본인 입찰 강조용)
+     */
+    public static BidResponseDto fromWithUserInfo(Bid bid, Long currentUserId) {
+        boolean isMyBid = bid.getUser().getId().equals(currentUserId);
+        String displayNickname = isMyBid ? bid.getUser().getNickname() : maskNickname(bid.getUser().getNickname());
+        boolean isWinning = bid.getStatus() == Bid.BidStatus.WINNING;
+        
+        return new BidResponseDto(
+            bid.getId(),
+            bid.getAuction().getId(),
+            bid.getAuction().getProduct().getProductName(),
+            displayNickname,
+            bid.getBidAmount(),
+            bid.getStatus().name(),
+            bid.getStatus().getDescription(),
+            bid.isAutoBid(),
+            bid.getCreatedAt(),
+            isWinning,
+            isMyBid
         );
     }
     
@@ -116,7 +146,8 @@ public class BidResponseDto {
             bid.getStatus().getDescription(),
             bid.isAutoBid(),
             bid.getCreatedAt(),
-            isWinning
+            isWinning,
+            true // 본인 입찰 내역이므로 true
         );
     }
     
