@@ -321,6 +321,26 @@ public class WebSocketService {
     }
     
     /**
+     * 연결 끊김 알림 전송
+     * 
+     * @param auctionId 경매 ID
+     */
+    public void sendConnectionLostNotification(Long auctionId) {
+        log.info("WebSocket - 연결 끊김 알림 전송: 경매={}", auctionId);
+        
+        WebSocketMessageDto message = WebSocketMessageDto.of(
+            WebSocketMessageType.CONNECTION_LOST, 
+            auctionId, 
+            "연결이 끊어졌어요"
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, message);
+        
+        log.info("WebSocket - 연결 끊김 알림 전송 완료: {}", destination);
+    }
+    
+    /**
      * 에러코드 기반 에러 메시지 전송
      * 
      * @param auctionId 경매 ID  

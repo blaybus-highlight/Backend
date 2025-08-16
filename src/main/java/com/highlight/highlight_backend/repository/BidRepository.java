@@ -145,4 +145,14 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "    '1970-01-01 00:00:00'" +
            ")")
     Long countConsecutiveLossesByUserAndAuction(@Param("user") User user, @Param("auction") Auction auction);
+    
+    /**
+     * 특정 사용자의 특정 경매에서 최고 입찰가 조회
+     */
+    @Query("SELECT b FROM Bid b " +
+           "WHERE b.user = :user " +
+           "AND b.auction = :auction " +
+           "AND b.status != 'CANCELLED' " +
+           "ORDER BY b.bidAmount DESC")
+    Optional<Bid> findTopByAuctionAndUserOrderByBidAmountDesc(@Param("auction") Auction auction, @Param("user") User user);
 }

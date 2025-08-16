@@ -63,6 +63,7 @@ public class WebSocketMessageDto {
         AUCTION_ENDING_SOON("경매 종료 임박"),      // 경매 종료 임박 (1분 이내)
         BID_OUTBID("입찰 경합 패배"),              // 내 입찰이 다른 입찰에 밀림
         CONNECTION_ESTABLISHED("연결 성공"),       // WebSocket 연결 성공
+        CONNECTION_LOST("연결 끊김"),              // WebSocket 연결 끊김
         ERROR("오류");                            // 오류 메시지
         
         private final String description;

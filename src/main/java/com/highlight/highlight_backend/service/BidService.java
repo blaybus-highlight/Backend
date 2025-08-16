@@ -7,6 +7,7 @@ import com.highlight.highlight_backend.dto.AuctionStatusResponseDto;
 import com.highlight.highlight_backend.dto.BidCreateRequestDto;
 import com.highlight.highlight_backend.dto.BidResponseDto;
 import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
+import com.highlight.highlight_backend.dto.AuctionMyResultResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.AuctionRepository;
@@ -296,5 +297,64 @@ public class BidService {
         auction.setTotalBidders(totalBidders.intValue());
         
         auctionRepository.save(auction);
+    }
+    
+    /**
+     * 경매에서 내 결과 조회
+     * 
+     * @param auctionId 경매 ID
+     * @param userId 사용자 ID
+     * @return 경매 내 결과 정보
+     */
+    public AuctionMyResultResponseDto getMyAuctionResult(Long auctionId, Long userId) {
+        log.info("경매 내 결과 조회: 경매ID={}, 사용자ID={}", auctionId, userId);
+        
+        // 경매 조회
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+        
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        
+        // 사용자의 해당 경매 입찰 내역 조회
+        Optional<Bid> userBidOpt = bidRepository.findTopByAuctionAndUserOrderByBidAmountDesc(auction, user);
+        
+        // 미참여한 경우
+        if (userBidOpt.isEmpty()) {
+            return AuctionMyResultResponseDto.createNoParticipationResult(auction);
+        }
+        
+        Bid userBid = userBidOpt.get();
+        
+        // 경매 취소된 경우
+        if (auction.getStatus() == Auction.AuctionStatus.CANCELLED) {
+            return AuctionMyResultResponseDto.createCancelledResult(auction, userBid);
+        }
+        
+        // 종료되지 않은 경매인 경우 에러
+        if (auction.getStatus() != Auction.AuctionStatus.COMPLETED && 
+            auction.getStatus() != Auction.AuctionStatus.FAILED) {
+            throw new BusinessException(ErrorCode.AUCTION_NOT_ENDED);
+        }
+        
+        // 낙찰자 조회
+        Optional<Bid> winnerBidOpt = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
+        
+        if (winnerBidOpt.isEmpty()) {
+            // 입찰 없이 종료된 경우 (이론적으로 불가능하지만 안전장치)
+            return AuctionMyResultResponseDto.createNoParticipationResult(auction);
+        }
+        
+        Bid winnerBid = winnerBidOpt.get();
+        
+        // 낙찰 여부 확인
+        if (winnerBid.getUser().getId().equals(userId)) {
+            // 낙찰
+            return AuctionMyResultResponseDto.createWonResult(auction, winnerBid);
+        } else {
+            // 유찰
+            return AuctionMyResultResponseDto.createLostResult(auction, userBid, winnerBid.getBidAmount());
+        }
     }
 }

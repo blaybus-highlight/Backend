@@ -5,6 +5,7 @@ import com.highlight.highlight_backend.dto.BidCreateRequestDto;
 import com.highlight.highlight_backend.dto.BidResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
+import com.highlight.highlight_backend.dto.AuctionMyResultResponseDto;
 import com.highlight.highlight_backend.service.BidService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -201,6 +202,30 @@ public class BidController {
         
         return ResponseEntity.ok(
             ResponseDto.success(response, "낙찰 상세 정보 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 경매에서 내 결과 조회
+     * 
+     * @param auctionId 경매 ID
+     * @param authentication 현재 로그인한 사용자 정보
+     * @return 경매 내 결과 정보
+     */
+    @GetMapping("/auctions/{auctionId}/my-result")
+    @Operation(summary = "경매에서 내 결과 조회", description = "특정 경매에서 사용자의 최종 결과를 조회합니다. (낙찰/유찰/취소/미참여)")
+    public ResponseEntity<ResponseDto<AuctionMyResultResponseDto>> getMyAuctionResult(
+            @Parameter(description = "경매 ID", required = true)
+            @PathVariable Long auctionId,
+            Authentication authentication) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("GET /api/auctions/{}/my-result - 경매 내 결과 조회 (사용자: {})", auctionId, userId);
+        
+        AuctionMyResultResponseDto response = bidService.getMyAuctionResult(auctionId, userId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "경매 결과 조회가 완료되었습니다.")
         );
     }
 }

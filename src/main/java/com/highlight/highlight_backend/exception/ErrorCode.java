@@ -150,6 +150,8 @@ public enum ErrorCode {
     BID_AMOUNT_TOO_LOW(HttpStatus.BAD_REQUEST, "BID_003", "입찰 금액이 현재 최고가보다 낮습니다."),
     /** 본인 입찰에 재입찰 */
     CANNOT_BID_ON_OWN_BID(HttpStatus.BAD_REQUEST, "BID_004", "본인의 입찰에는 재입찰할 수 없습니다."),
+    /** 경매가 아직 종료되지 않음 */
+    AUCTION_NOT_ENDED(HttpStatus.BAD_REQUEST, "AUCTION_009", "경매가 아직 종료되지 않았습니다."),
     /** 경매 종료로 입찰 불가 */
     AUCTION_ENDED_CANNOT_BID(HttpStatus.BAD_REQUEST, "BID_005", "종료된 경매에는 입찰할 수 없습니다."),
     /** 경매 시작 전 입찰 불가 */
