@@ -84,6 +84,7 @@ public class SecurityConfig {
                         "/api/bids",                       // 입찰 참여
                         "/api/users/bids",                 // 내 입찰 내역
                         "/api/users/wins",                 // 내 낙찰 내역
+                        "/api/users/wins/**",              // 낙찰 상세 정보
                         "/api/user/notifications/**",     // 상품 알림 설정
                         "/api/user/wishlist/**"           // 상품 찜하기
                     ).authenticated()

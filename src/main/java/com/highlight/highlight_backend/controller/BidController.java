@@ -4,6 +4,7 @@ import com.highlight.highlight_backend.dto.AuctionStatusResponseDto;
 import com.highlight.highlight_backend.dto.BidCreateRequestDto;
 import com.highlight.highlight_backend.dto.BidResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
+import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
 import com.highlight.highlight_backend.service.BidService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -149,6 +150,30 @@ public class BidController {
         
         return ResponseEntity.ok(
             ResponseDto.success(response, "내 낙찰 내역 조회가 완료되었습니다.")
+        );
+    }
+    
+    /**
+     * 낙찰 상세 정보 조회
+     * 
+     * @param bidId 입찰 ID
+     * @param authentication 현재 로그인한 사용자 정보
+     * @return 낙찰 상세 정보
+     */
+    @GetMapping("/users/wins/{bidId}")
+    @Operation(summary = "낙찰 상세 정보 조회", description = "특정 낙찰의 상세 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto<WinBidDetailResponseDto>> getWinBidDetail(
+            @Parameter(description = "입찰 ID", required = true)
+            @PathVariable Long bidId,
+            Authentication authentication) {
+        
+        Long userId = (Long) authentication.getPrincipal();
+        log.info("GET /api/users/wins/{} - 낙찰 상세 정보 조회 (사용자: {})", bidId, userId);
+        
+        WinBidDetailResponseDto response = bidService.getWinBidDetail(bidId, userId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "낙찰 상세 정보 조회가 완료되었습니다.")
         );
     }
 }

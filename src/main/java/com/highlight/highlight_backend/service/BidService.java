@@ -6,6 +6,7 @@ import com.highlight.highlight_backend.domain.User;
 import com.highlight.highlight_backend.dto.AuctionStatusResponseDto;
 import com.highlight.highlight_backend.dto.BidCreateRequestDto;
 import com.highlight.highlight_backend.dto.BidResponseDto;
+import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.repository.AuctionRepository;
@@ -177,6 +178,34 @@ public class BidService {
         Page<Bid> wonBids = bidRepository.findWonBidsByUser(user, pageable);
         
         return wonBids.map(BidResponseDto::fromMyBid);
+    }
+    
+    /**
+     * 낙찰 상세 정보 조회
+     * 
+     * @param bidId 입찰 ID
+     * @param userId 사용자 ID
+     * @return 낙찰 상세 정보
+     */
+    public WinBidDetailResponseDto getWinBidDetail(Long bidId, Long userId) {
+        log.info("낙찰 상세 정보 조회: 입찰ID={}, 사용자ID={}", bidId, userId);
+        
+        // 1. 입찰 조회
+        Bid bid = bidRepository.findById(bidId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.BID_NOT_FOUND));
+        
+        // 2. 낙찰된 입찰인지 확인
+        if (bid.getStatus() != Bid.BidStatus.WON) {
+            throw new BusinessException(ErrorCode.BID_NOT_FOUND);
+        }
+        
+        // 3. 본인의 입찰인지 확인
+        if (!bid.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+        
+        // 4. 상세 정보 반환
+        return WinBidDetailResponseDto.from(bid);
     }
     
     /**
