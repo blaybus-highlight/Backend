@@ -77,13 +77,20 @@ public class AuctionService {
         
         // 6. 경매 엔티티 생성
         Auction auction = new Auction();
+
         auction.setProduct(product);
-        auction.setStatus(Auction.AuctionStatus.SCHEDULED);
+        auction.setStatus(Auction.AuctionStatus.SCHEDULED); // 초기 상태는 '예약됨'
         auction.setScheduledStartTime(request.getScheduledStartTime());
         auction.setScheduledEndTime(request.getScheduledEndTime());
         auction.setDescription(request.getDescription());
         auction.setBuyItNowPrice(request.getBuyItNowPrice());
         auction.setCreatedBy(adminId);
+        auction.setBidUnit(request.getBidUnit());
+        auction.setStartPrice(request.getStartPrice());         // 경매 시작가 설정
+        auction.setMinimumBid(request.getMinimumBid());       // 최소 인상폭 설정
+        auction.setMaxBid(request.getMaxBid());               // 최대 인상폭 설정
+        auction.setShippingFee(request.getShippingFee());       // 배송비 설정
+        auction.setIsPickupAvailable(request.getIsPickupAvailable()); // 직접 픽업 가능 여부
         
         // 7. 상품 상태를 경매대기로 변경
         product.setStatus(Product.ProductStatus.AUCTION_READY);
