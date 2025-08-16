@@ -34,8 +34,10 @@ public class CorsConfig {
             "http://localhost:3000",        // React 개발 서버
             "http://localhost:3001",        // Next.js 개발 서버
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
-            "https://your-domain.com",      // 운영 도메인 (실제 도메인으로 변경)
-            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com",      // AWS 배포 (CloudFront, ELB 등)
+            "https://blaybus-highlight-9ai6wfffl-yun-jinwoos-projects.vercel.app",  // Vercel 배포 도메인
+            "https://*.vercel.app",         // Vercel 도메인 패턴
+            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
+            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com",        // AWS 배포
             "https://*.execute-api.*.amazonaws.com"  // API Gateway
         ));
         

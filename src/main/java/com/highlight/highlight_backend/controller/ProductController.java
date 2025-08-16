@@ -16,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 상품 관리 컨트롤러
@@ -205,6 +206,59 @@ public class ProductController {
         
         return ResponseEntity.ok(
             ResponseDto.success(response, message)
+        );
+    }
+    
+    /**
+     * 상품 이미지 업로드
+     * 
+     * @param productId 상품 ID
+     * @param files 업로드할 이미지 파일들
+     * @param authentication 현재 로그인한 관리자 정보
+     * @return 업로드된 이미지 URL 목록
+     */
+    @PostMapping("/{productId}/images")
+    @Operation(summary = "상품 이미지 업로드", 
+               description = "상품에 이미지를 업로드합니다. 여러 개의 이미지를 한 번에 업로드할 수 있습니다.")
+    public ResponseEntity<ResponseDto<java.util.List<String>>> uploadProductImages(
+            @PathVariable Long productId,
+            @RequestParam("files") MultipartFile[] files,
+            Authentication authentication) {
+        
+        Long adminId = (Long) authentication.getPrincipal();
+        log.info("POST /api/admin/products/{}/images - 상품 이미지 업로드 요청: {} 개 파일 (관리자: {})", 
+                productId, files.length, adminId);
+        
+        java.util.List<String> imageUrls = productService.uploadProductImages(productId, files, adminId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(imageUrls, "이미지가 성공적으로 업로드되었습니다.")
+        );
+    }
+    
+    /**
+     * 상품 이미지 삭제
+     * 
+     * @param productId 상품 ID
+     * @param imageId 삭제할 이미지 ID
+     * @param authentication 현재 로그인한 관리자 정보
+     * @return 삭제 완료 메시지
+     */
+    @DeleteMapping("/{productId}/images/{imageId}")
+    @Operation(summary = "상품 이미지 삭제", description = "상품의 특정 이미지를 삭제합니다.")
+    public ResponseEntity<ResponseDto<String>> deleteProductImage(
+            @PathVariable Long productId,
+            @PathVariable Long imageId,
+            Authentication authentication) {
+        
+        Long adminId = (Long) authentication.getPrincipal();
+        log.info("DELETE /api/admin/products/{}/images/{} - 상품 이미지 삭제 요청 (관리자: {})", 
+                productId, imageId, adminId);
+        
+        productService.deleteProductImage(productId, imageId, adminId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success("SUCCESS", "이미지가 성공적으로 삭제되었습니다.")
         );
     }
 }

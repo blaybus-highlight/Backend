@@ -203,7 +203,28 @@ public enum ErrorCode {
     /** WebSocket 연결 해제 오류 */
     WEBSOCKET_DISCONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "WEBSOCKET_005", "연결 해제 중 오류가 발생했습니다."),
     /** 경매 구독 권한 없음 */
-    WEBSOCKET_AUCTION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "WEBSOCKET_006", "해당 경매의 실시간 정보에 접근할 권한이 없습니다."),;
+    WEBSOCKET_AUCTION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "WEBSOCKET_006", "해당 경매의 실시간 정보에 접근할 권한이 없습니다."),
+
+
+    // ===== 이미지 관련 에러 =====
+    /** 이미지를 찾을 수 없음 */
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE_001", "이미지를 찾을 수 없습니다."),
+    /** 이미지 업로드 실패 */
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE_002", "이미지 업로드에 실패했습니다."),
+    /** 업로드할 이미지 파일이 없음 */
+    NO_IMAGE_FILES(HttpStatus.BAD_REQUEST, "IMAGE_003", "업로드할 이미지 파일이 없습니다."),
+    /** 너무 많은 이미지 파일 */
+    TOO_MANY_IMAGE_FILES(HttpStatus.BAD_REQUEST, "IMAGE_004", "최대 10개의 이미지만 업로드할 수 있습니다."),
+    /** 빈 이미지 파일 */
+    EMPTY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "IMAGE_005", "빈 이미지 파일은 업로드할 수 없습니다."),
+    /** 이미지 파일 크기가 너무 큼 */
+    IMAGE_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "IMAGE_006", "이미지 파일 크기는 10MB 이하여야 합니다."),
+    /** 유효하지 않은 이미지 파일 타입 */
+    INVALID_IMAGE_FILE_TYPE(HttpStatus.BAD_REQUEST, "IMAGE_007", "이미지 파일만 업로드할 수 있습니다."),
+    /** 지원하지 않는 이미지 파일 형식 */
+    UNSUPPORTED_IMAGE_FILE_TYPE(HttpStatus.BAD_REQUEST, "IMAGE_008", "지원하지 않는 이미지 파일 형식입니다. (JPEG, PNG, GIF, WebP만 지원)"),
+    /** 이미지가 해당 상품에 속하지 않음 */
+    IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "IMAGE_009", "해당 이미지는 이 상품에 속하지 않습니다."),;
 
 
     /**

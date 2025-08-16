@@ -20,7 +20,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +45,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final AdminRepository adminRepository;
+    private final S3Service s3Service;
     
     /**
      * 상품 등록
@@ -469,5 +474,155 @@ public class ProductService {
         if (request.getBrand() != null && request.getBrand().trim().isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_BRAND);
         }
+    }
+    
+    /**
+     * 상품 이미지 업로드
+     * 
+     * @param productId 상품 ID
+     * @param files 업로드할 파일들
+     * @param adminId 관리자 ID
+     * @return 업로드된 이미지 URL 목록
+     */
+    @Transactional
+    public List<String> uploadProductImages(Long productId, MultipartFile[] files, Long adminId) {
+        log.info("상품 이미지 업로드: 상품={}, 파일개수={}, 관리자={}", productId, files.length, adminId);
+        
+        // 관리자 권한 검증
+        validateProductManagePermission(adminId);
+        
+        // 상품 존재 확인
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        
+        // 파일 검증
+        validateImageFiles(files);
+        
+        List<String> imageUrls = new ArrayList<>();
+        
+        for (MultipartFile file : files) {
+            try {
+                // S3에 파일 업로드
+                String imageUrl = s3Service.uploadProductImage(file, productId);
+                
+                // DB에 이미지 정보 저장
+                ProductImage productImage = new ProductImage(
+                    extractFileNameFromUrl(imageUrl),
+                    file.getOriginalFilename(),
+                    imageUrl,
+                    file.getSize(),
+                    file.getContentType()
+                );
+                
+                // 첫 번째 이미지를 대표 이미지로 설정
+                if (product.getImages().isEmpty()) {
+                    productImage.setPrimary(true);
+                }
+                
+                product.addImage(productImage);
+                imageUrls.add(imageUrl);
+                
+            } catch (IOException e) {
+                log.error("이미지 업로드 실패: 파일={}, 오류={}", file.getOriginalFilename(), e.getMessage());
+                throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
+            }
+        }
+        
+        productRepository.save(product);
+        
+        log.info("상품 이미지 업로드 완료: {} 개 파일", imageUrls.size());
+        return imageUrls;
+    }
+    
+    /**
+     * 상품 이미지 삭제
+     * 
+     * @param productId 상품 ID
+     * @param imageId 이미지 ID
+     * @param adminId 관리자 ID
+     */
+    @Transactional
+    public void deleteProductImage(Long productId, Long imageId, Long adminId) {
+        log.info("상품 이미지 삭제: 상품={}, 이미지={}, 관리자={}", productId, imageId, adminId);
+        
+        // 관리자 권한 검증
+        validateProductManagePermission(adminId);
+        
+        // 상품 존재 확인
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        
+        // 이미지 존재 확인
+        ProductImage productImage = productImageRepository.findById(imageId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+        
+        // 이미지가 해당 상품에 속하는지 확인
+        if (!productImage.getProduct().getId().equals(productId)) {
+            throw new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT);
+        }
+        
+        // S3에서 파일 삭제
+        s3Service.deleteImage(productImage.getImageUrl());
+        
+        // DB에서 이미지 삭제
+        product.removeImage(productImage);
+        productImageRepository.delete(productImage);
+        
+        log.info("상품 이미지 삭제 완료: 이미지ID={}", imageId);
+    }
+    
+    /**
+     * 이미지 파일 검증
+     * 
+     * @param files 검증할 파일들
+     */
+    private void validateImageFiles(MultipartFile[] files) {
+        if (files == null || files.length == 0) {
+            throw new BusinessException(ErrorCode.NO_IMAGE_FILES);
+        }
+        
+        // 파일 개수 제한 (최대 10개)
+        if (files.length > 10) {
+            throw new BusinessException(ErrorCode.TOO_MANY_IMAGE_FILES);
+        }
+        
+        for (MultipartFile file : files) {
+            // 빈 파일 검증
+            if (file.isEmpty()) {
+                throw new BusinessException(ErrorCode.EMPTY_IMAGE_FILE);
+            }
+            
+            // 파일 크기 검증 (최대 10MB)
+            if (file.getSize() > 10 * 1024 * 1024) {
+                throw new BusinessException(ErrorCode.IMAGE_FILE_TOO_LARGE);
+            }
+            
+            // 파일 타입 검증
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new BusinessException(ErrorCode.INVALID_IMAGE_FILE_TYPE);
+            }
+            
+            // 지원하는 이미지 형식 검증
+            List<String> allowedTypes = Arrays.asList("image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp");
+            if (!allowedTypes.contains(contentType.toLowerCase())) {
+                throw new BusinessException(ErrorCode.UNSUPPORTED_IMAGE_FILE_TYPE);
+            }
+        }
+    }
+    
+    /**
+     * URL에서 파일명 추출
+     * 
+     * @param imageUrl 이미지 URL
+     * @return 파일명
+     */
+    private String extractFileNameFromUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return UUID.randomUUID().toString();
+        }
+        
+        String[] parts = imageUrl.split("/");
+        return parts[parts.length - 1];
     }
 }
