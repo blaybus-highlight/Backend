@@ -130,6 +130,19 @@ public class Product {
      */
     @Column(nullable = false)
     private Long registeredBy;
+
+    /**
+     * 판매자 ID
+     */
+    @Column(nullable = false)
+    private Long sellerId;
+
+    /**
+     * 판매자 정보 (Lazy Loading)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    private Seller seller;
     
     /**
      * 상품 이미지 목록

@@ -119,6 +119,19 @@ public enum ErrorCode {
     VERIFICATION_CODE_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER_005", "인증번호가 일치하지 않습니다."),
 
 
+    // ===== 판매자 관련 에러 =====
+    /** 판매자를 찾을 수 없음 */
+    SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "SELLER_001", "판매자를 찾을 수 없습니다."),
+    /** 중복된 판매자 이메일 */
+    DUPLICATE_SELLER_EMAIL(HttpStatus.CONFLICT, "SELLER_002", "이미 존재하는 판매자 이메일입니다."),
+    /** 중복된 사업자 등록번호 */
+    DUPLICATE_BUSINESS_NUMBER(HttpStatus.CONFLICT, "SELLER_003", "이미 존재하는 사업자 등록번호입니다."),
+    /** 비활성화된 판매자 */
+    INACTIVE_SELLER(HttpStatus.FORBIDDEN, "SELLER_004", "비활성화된 판매자입니다."),
+    /** 정지된 판매자 */
+    SUSPENDED_SELLER(HttpStatus.FORBIDDEN, "SELLER_005", "정지된 판매자입니다."),
+
+
     // ===== 입찰 관련 에러 =====
     /** 입찰을 찾을 수 없음 */
     BID_NOT_FOUND(HttpStatus.NOT_FOUND, "BID_001", "입찰을 찾을 수 없습니다."),
