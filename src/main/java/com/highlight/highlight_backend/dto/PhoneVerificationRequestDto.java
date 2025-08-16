@@ -1,18 +1,26 @@
 package com.highlight.highlight_backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 휴대폰 인증 코드 확인 DTO
+ *
+ * @author 전우선
+ * @since 2025.08.16
+ */
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PhoneVerificationRequestDto {
 
-    @NotBlank(message = "휴대폰 번호는 필수입니다.")
+    /**
+     * 휴대폰 번호
+     */
+    @NotBlank(message = "휴대폰 번호는 필수입니다")
+    @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "휴대폰 번호 형식이 올바르지 않습니다 (010-0000-0000)")
     private String phoneNumber;
 
-    @NotBlank(message = "인증 코드는 필수입니다.")
     private String verificationCode;
 }
