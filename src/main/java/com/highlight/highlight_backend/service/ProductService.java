@@ -82,6 +82,7 @@ public class ProductService {
         product.setCondition(request.getCondition());
         product.setRank(request.getRank());
         product.setRegisteredBy(adminId);
+        product.setSellerId(1L); // 고정 판매자 NAFAL (ID=1)
         
         // 상태 설정 (임시저장 또는 활성)
         product.setStatus(request.isDraft() ? Product.ProductStatus.DRAFT : Product.ProductStatus.ACTIVE);
