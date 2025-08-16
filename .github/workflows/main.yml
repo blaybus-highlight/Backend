@@ -1,0 +1,89 @@
+# .github/workflows/main.yml
+
+name: Java CI with Gradle and Docker
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create application.yml
+        run: |
+          mkdir -p src/main/resources
+          echo 'server:' >> src/main/resources/application.yml
+          echo '  port: 8085' >> src/main/resources/application.yml
+          echo 'coolsms:' >> src/main/resources/application.yml
+          echo '  api:' >> src/main/resources/application.yml
+          echo '    key: "${{ secrets.COOLSMS_API_KEY }}"' >> src/main/resources/application.yml
+          echo '    secret: "${{ secrets.COOLSMS_API_SECRET }}"' >> src/main/resources/application.yml
+          echo '  from-number: "${{ secrets.COOLSMS_FROM_NUMBER }}"' >> src/main/resources/application.yml
+          echo 'spring:' >> src/main/resources/application.yml
+          echo '  application:' >> src/main/resources/application.yml
+          echo '    name: Highlight_Backend' >> src/main/resources/application.yml
+          echo '  datasource:' >> src/main/resources/application.yml
+          echo '    url: "${{ secrets.DB_URL }}"' >> src/main/resources/application.yml
+          echo '    driver-class-name: com.mysql.cj.jdbc.Driver' >> src/main/resources/application.yml
+          echo '    username: "${{ secrets.DB_USERNAME }}"' >> src/main/resources/application.yml
+          echo '    password: "${{ secrets.DB_PASSWORD }}"' >> src/main/resources/application.yml
+          echo '  jpa:' >> src/main/resources/application.yml
+          echo '    hibernate:' >> src/main/resources/application.yml
+          echo '      ddl-auto: update' >> src/main/resources/application.yml
+          echo '    properties:' >> src/main/resources/application.yml
+          echo '      hibernate:' >> src/main/resources/application.yml
+          echo '        dialect: org.hibernate.dialect.MySQLDialect' >> src/main/resources/application.yml
+          echo '    show-sql: true' >> src/main/resources/application.yml
+          echo '    open-in-view: false' >> src/main/resources/application.yml
+          echo 'jwt:' >> src/main/resources/application.yml
+          echo '  secret: "${{ secrets.JWT_SECRET }}"' >> src/main/resources/application.yml
+          echo '  access-token-expire-time: 1800000' >> src/main/resources/application.yml
+          echo '  refresh-token-expire-time: 604800000' >> src/main/resources/application.yml
+          echo 'logging:' >> src/main/resources/application.yml
+          echo '  level:' >> src/main/resources/application.yml
+          echo '    com.highlight.highlight_backend: INFO' >> src/main/resources/application.yml
+          echo '    org.springframework.security: INFO' >> src/main/resources/application.yml
+          echo '    org.hibernate.SQL: INFO' >> src/main/resources/application.yml
+          echo 'springdoc:' >> src/main/resources/application.yml
+          echo '  swagger-ui:' >> src/main/resources/application.yml
+          echo '    path: /swagger-ui.html' >> src/main/resources/application.yml
+          echo '    tags-sorter: alpha' >> src/main/resources/application.yml
+          echo '    operations-sorter: alpha' >> src/main/resources/application.yml
+          echo '  api-docs:' >> src/main/resources/application.yml
+          echo '    path: /api-docs' >> src/main/resources/application.yml
+          echo '  default-consumes-media-type: application/json' >> src/main/resources/application.yml
+          echo '  default-produces-media-type: application/json' >> src/main/resources/application.yml
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.build.outputs.metadata.imagedigest }}
+            org.opencontainers.image.revision=${{ github.sha }}
