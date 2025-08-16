@@ -14,7 +14,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import com.highlight.highlight_backend.util.JwtUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JWT 인증 필터
@@ -50,20 +67,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Authorization 헤더에서 토큰 추출
         String authorizationHeader = request.getHeader("Authorization");
         String token = jwtUtil.extractTokenFromBearer(authorizationHeader);
-
+        log.info("JWT token: {}", token);
         // 토큰이 존재하고 유효한 경우 인증 처리
         if (token != null && jwtUtil.validateToken(token)) {
             try {
                 // 토큰에서 사용자 정보 추출
                 Long userId = jwtUtil.getUserId(token);
-                String email = jwtUtil.getEmail(token);
+                String role = jwtUtil.getRole(token);
+
+                List<GrantedAuthority> authorities = new ArrayList<>();
+                if (role != null && !role.isEmpty()) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                }
 
                 // Spring Security 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(
                         userId,                    // Principal (사용자 식별자)
                         null,                      // Credentials (비밀번호, JWT에서는 불필요)
-                        new ArrayList<>()          // Authorities (권한, 필요시 추가)
+                        authorities                // Authorities (권한)
                     );
 
                 // 인증 세부 정보 설정
@@ -89,7 +111,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 필터 적용 여부 결정
      * 
      * 특정 경로는 JWT 검증을 건너뛸 수 있습니다.
-     * 현재는 모든 요청에 대해 필터를 적용합니다.
      * 
      * @param request HTTP 요청
      * @return 필터 적용 여부 (false면 건너뜀)

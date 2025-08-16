@@ -61,8 +61,9 @@ public class AuthService {
         adminRepository.save(admin);
         
         // 4. JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(admin.getId(), admin.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getEmail(), "ADMIN");
+        log.info("accessToken: {}", accessToken);
+        String refreshToken = jwtUtil.generateRefreshToken(admin.getId(), admin.getEmail(), "ADMIN");
         
         log.info("관리자 로그인 성공: {} (ID: {})", admin.getAdminName(), admin.getAdminId());
         

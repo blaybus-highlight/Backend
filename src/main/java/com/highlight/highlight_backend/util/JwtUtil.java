@@ -53,44 +53,58 @@ public class JwtUtil {
      * 
      * @param userId 사용자 ID
      * @param email 사용자 이메일
+     * @param role 사용자 권한
      * @return 생성된 Access Token
      */
-    public String generateAccessToken(Long userId, String email) {
-        return generateToken(userId, email, accessTokenExpireTime, "ACCESS");
+    public String generateAccessToken(Long userId, String email, String role) {
+        return generateToken(userId, email, role, accessTokenExpireTime, "ACCESS");
     }
 
     /**
      * Refresh Token 생성
-     * 
-     * @param userId 사용자 ID  
+     *
+     * @param userId 사용자 ID
      * @param email 사용자 이메일
+     * @param role 사용자 권한
      * @return 생성된 Refresh Token
      */
-    public String generateRefreshToken(Long userId, String email) {
-        return generateToken(userId, email, refreshTokenExpireTime, "REFRESH");
+    public String generateRefreshToken(Long userId, String email, String role) {
+        return generateToken(userId, email, role, refreshTokenExpireTime, "REFRESH");
     }
 
     /**
      * JWT 토큰 생성 (내부 메서드)
-     * 
+     *
      * @param userId 사용자 ID
      * @param email 사용자 이메일
+     * @param role 사용자 권한
      * @param expireTime 만료 시간
      * @param tokenType 토큰 타입
      * @return 생성된 JWT 토큰
      */
-    private String generateToken(Long userId, String email, long expireTime, String tokenType) {
+    private String generateToken(Long userId, String email, String role, long expireTime, String tokenType) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expireTime);
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("email", email)
+                .claim("role", role)
                 .claim("type", tokenType)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    /**
+     * JWT 토큰에서 사용자 권한 추출
+     *
+     * @param token JWT 토큰
+     * @return 사용자 권한
+     */
+    public String getRole(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
     /**
