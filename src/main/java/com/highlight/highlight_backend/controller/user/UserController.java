@@ -27,6 +27,11 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * 
+     * @param signUpRequestDto 회원가입 한 유저 정보
+     * @return 유저정보 반환
+     */
     @PostMapping("/signup")
     @Operation(summary = "User 회원가입", description = "ID, PW, PhoneNumber, Nickname을 요구")
     public ResponseEntity<ResponseDto<UserSignUpRequestDto>> signUP(@Valid @RequestBody UserSignUpRequestDto signUpRequestDto) {
@@ -35,6 +40,11 @@ public class UserController {
         return ResponseEntity.ok(ResponseDto.success(response, "User 회원가입에 성공하였습니다."));
     }
 
+    /**
+     * 
+     * @param loginRequestDto ID, PW 보내기
+     * @return ID, nickname, 토큰 반환
+     */
     @PostMapping("/login")
     @Operation(summary = "User 로그인", description = "ID, PW 로그인 후 JWT 토큰 발급")
     public ResponseEntity<ResponseDto<UserLoginResponseDto>> login(@Valid @RequestBody UserLoginRequestDto loginRequestDto) {

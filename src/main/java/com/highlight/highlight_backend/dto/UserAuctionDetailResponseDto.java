@@ -2,6 +2,7 @@ package com.highlight.highlight_backend.dto;
 
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Product;
+import com.highlight.highlight_backend.domain.Seller;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,42 +23,77 @@ import java.util.stream.Collectors;
 @Builder
 public class UserAuctionDetailResponseDto {
 
-    //private String source; // 출처
     private Long auctionId;
+    private String productName;
     private String shortDescription;  // 짧은 소개
     private String history;  // 히스토리
     private String expectedEffects;  // 기대효과
     private String detailedInfo;  // 상세정보
     private List<ProductResponseDto.ProductImageResponseDto> images;  // 이미지
     private String status;  // 상품상태
-    //private String size; // 상품 사이즈
+    private String rank;
+    private String category;
+    private String material;
+    private String size;
+    private Integer manufactureYear;
+    private Boolean isPremium;
+
+    private String sellerName;
+    private String sellerDescription;
+    private String sellerProfileImageUrl;
+    private String sellerPhoneNumber;
+    private String sellerEmail;
+    private String sellerAddress;
+    private BigDecimal sellerRating;
 
     private LocalDateTime scheduledStartTime;  // 경매 시작 시간
     private LocalDateTime scheduledEndTime;  // 경매 종료 시간
 
     private BigDecimal currentHighestBid;  // 현재가
     private BigDecimal buyItNowPrice;  // 즉시구매가
+    private BigDecimal maxBid;
+    private BigDecimal minimumBid;
 
 
     public static UserAuctionDetailResponseDto from(Auction auction) {
         Product product = auction.getProduct();
+        Seller seller = product.getSeller();
         List<ProductResponseDto.ProductImageResponseDto> imageDtos = product.getImages().stream()
                 .map(ProductResponseDto.ProductImageResponseDto::from)
                 .collect(Collectors.toList());
 
-        return UserAuctionDetailResponseDto.builder()
+        UserAuctionDetailResponseDtoBuilder builder = UserAuctionDetailResponseDto.builder()
                 .auctionId(auction.getId())
+                .productName(product.getProductName())
                 .shortDescription(product.getShortDescription())
                 .history(product.getHistory())
                 .expectedEffects(product.getExpectedEffects())
                 .detailedInfo(product.getDetailedInfo())
                 .images(imageDtos)
                 .status(product.getStatus().getDescription())
+                .rank(product.getRank().getDescription())
+                .category(product.getCategory().getDisplayName())
+                .material(product.getMaterial())
+                .size(product.getSize())
+                .manufactureYear(product.getManufactureYear())
+                .isPremium(product.getIsPremium())
                 .scheduledStartTime(auction.getScheduledStartTime())
                 .scheduledEndTime(auction.getScheduledEndTime())
                 .currentHighestBid(auction.getCurrentHighestBid())
                 .buyItNowPrice(auction.getBuyItNowPrice())
-                .build();
+                .maxBid(auction.getMaxBid())
+                .minimumBid(auction.getMinimumBid());
 
+        if (seller != null) {
+            builder.sellerName(seller.getSellerName())
+                   .sellerDescription(seller.getDescription())
+                   .sellerProfileImageUrl(seller.getProfileImageUrl())
+                   .sellerPhoneNumber(seller.getPhoneNumber())
+                   .sellerEmail(seller.getEmail())
+                   .sellerAddress(seller.getAddress())
+                   .sellerRating(seller.getRating());
+        }
+
+        return builder.build();
     }
 }
