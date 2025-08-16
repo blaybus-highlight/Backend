@@ -14,6 +14,8 @@ import com.highlight.highlight_backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -241,6 +243,37 @@ public class ProductService {
         productRepository.delete(product);
         
         log.info("상품 삭제 완료: {} (ID: {})", product.getProductName(), product.getId());
+    }
+
+    /**
+     * 관련 상품 추천 조회
+     * 
+     * @param productId 기준 상품 ID
+     * @param size 추천 상품 개수
+     * @return 추천 상품 목록
+     */
+    public Page<ProductResponseDto> getRecommendedProducts(Long productId, int size) {
+        log.info("관련 상품 추천 조회: {} (개수: {})", productId, size);
+        
+        // 1. 기준 상품 조회
+        Product baseProduct = productRepository.findById(productId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        
+        // 2. 추천 로직: 동일 카테고리 또는 동일 브랜드 상품 조회
+        List<Product> recommendedProducts = productRepository.findRecommendedProducts(
+            productId, 
+            baseProduct.getCategory(), 
+            baseProduct.getBrand(),
+            PageRequest.of(0, size)
+        );
+        
+        // 3. DTO 변환
+        List<ProductResponseDto> responseDtos = recommendedProducts.stream()
+            .map(ProductResponseDto::from)
+            .toList();
+        
+        // 4. Page 객체로 변환
+        return new PageImpl<>(responseDtos, PageRequest.of(0, size), responseDtos.size());
     }
     
     /**

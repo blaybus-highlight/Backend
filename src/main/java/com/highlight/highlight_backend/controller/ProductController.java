@@ -157,4 +157,26 @@ public class ProductController {
             ResponseDto.success("SUCCESS", "상품이 성공적으로 삭제되었습니다.")
         );
     }
+
+    /**
+     * 관련 상품 추천 조회 (공개 API)
+     * 
+     * @param productId 기준 상품 ID
+     * @param size 추천 상품 개수 (기본 4개)
+     * @return 추천 상품 목록
+     */
+    @GetMapping("/{productId}/recommendations")
+    @Operation(summary = "관련 상품 추천", description = "특정 상품과 관련된 추천 상품 목록을 조회합니다.")
+    public ResponseEntity<ResponseDto<Page<ProductResponseDto>>> getRecommendedProducts(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "4") int size) {
+        
+        log.info("GET /api/products/{}/recommendations - 관련 상품 추천 조회", productId);
+        
+        Page<ProductResponseDto> response = productService.getRecommendedProducts(productId, size);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "관련 상품을 성공적으로 조회했습니다.")
+        );
+    }
 }

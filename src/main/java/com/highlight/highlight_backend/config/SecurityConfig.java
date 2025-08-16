@@ -69,6 +69,7 @@ public class SecurityConfig {
                         "/api/public/**",                  // 공개 API
                         "/api/auctions/*/bids",            // 경매 입찰 내역 조회 (공개)
                         "/api/auctions/*/status",          // 실시간 경매 상태 조회 (공개)
+                        "/api/admin/products/*/recommendations", // 관련 상품 추천 (공개)
                         "/ws/**",                          // WebSocket 엔드포인트
                         "/topic/**",                       // WebSocket 토픽
                         "/queue/**",                       // WebSocket 큐
