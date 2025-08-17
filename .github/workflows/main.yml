@@ -70,7 +70,7 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:main
             
             # 새로운 컨테이너 실행
-            docker run -d -p 8085:8085 --name highlight-backend ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:latest
+            docker run -d -p 8085:8085 --name highlight-backend ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:main
             
             # 사용하지 않는 이미지 정리 (디스크 용량 확보)
             docker image prune -f
