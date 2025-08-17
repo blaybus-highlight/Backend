@@ -31,64 +31,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Create application.yml
-        run: |
-          mkdir -p src/main/resources
-          echo 'server:' >> src/main/resources/application.yml
-          echo '  port: 8085' >> src/main/resources/application.yml
-          echo 'coolsms:' >> src/main/resources/application.yml
-          echo '  api:' >> src/main/resources/application.yml
-          echo '    key: "${{ secrets.COOLSMS_API_KEY }}"' >> src/main/resources/application.yml
-          echo '    secret: "${{ secrets.COOLSMS_API_SECRET }}"' >> src/main/resources/application.yml
-          echo '  from-number: "${{ secrets.COOLSMS_FROM_NUMBER }}"' >> src/main/resources/application.yml
-          echo 'spring:' >> src/main/resources/application.yml
-          echo '  application:' >> src/main/resources/application.yml
-          echo '    name: Highlight_Backend' >> src/main/resources/application.yml
-          echo '  datasource:' >> src/main/resources/application.yml
-          echo '    url: "${{ secrets.DB_URL }}"' >> src/main/resources/application.yml
-          echo '    driver-class-name: com.mysql.cj.jdbc.Driver' >> src/main/resources/application.yml
-          echo '    username: "${{ secrets.DB_USERNAME }}"' >> src/main/resources/application.yml
-          echo '    password: "${{ secrets.DB_PASSWORD }}"' >> src/main/resources/application.yml
-          echo '  jpa:' >> src/main/resources/application.yml
-          echo '    hibernate:' >> src/main/resources/application.yml
-          echo '      ddl-auto: update' >> src/main/resources/application.yml
-          echo '    properties:' >> src/main/resources/application.yml
-          echo '      hibernate:' >> src/main/resources/application.yml
-          echo '        dialect: org.hibernate.dialect.MySQLDialect' >> src/main/resources/application.yml
-          echo '    show-sql: true' >> src/main/resources/application.yml
-          echo '    open-in-view: false' >> src/main/resources/application.yml
-          echo 'jwt:' >> src/main/resources/application.yml
-          echo '  secret: "${{ secrets.JWT_SECRET }}"' >> src/main/resources/application.yml
-          echo '  access-token-expire-time: 1800000' >> src/main/resources/application.yml
-          echo '  refresh-token-expire-time: 604800000' >> src/main/resources/application.yml
-          echo 'logging:' >> src/main/resources/application.yml
-          echo '  level:' >> src/main/resources/application.yml
-          echo '    com.highlight.highlight_backend: INFO' >> src/main/resources/application.yml
-          echo '    org.springframework.security: INFO' >> src/main/resources/application.yml
-          echo '    org.hibernate.SQL: INFO' >> src/main/resources/application.yml
-          echo 'springdoc:' >> src/main/resources/application.yml
-          echo '  swagger-ui:' >> src/main/resources/application.yml
-          echo '    path: /swagger-ui.html' >> src/main/resources/application.yml
-          echo '    tags-sorter: alpha' >> src/main/resources/application.yml
-          echo '    operations-sorter: alpha' >> src/main/resources/application.yml
-          echo '  api-docs:' >> src/main/resources/application.yml
-          echo '    path: /api-docs' >> src/main/resources/application.yml
-          echo '  default-consumes-media-type: application/json' >> src/main/resources/application.yml
-          echo '  default-produces-media-type: application/json' >> src/main/resources/application.yml
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -105,8 +47,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            echo "${{ secrets.ENV_FILE }}" > .env
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ${{ steps.meta.outputs.tags }}
-            docker stop ${{ env.CONTAINER_NAME }} || true
-            docker rm ${{ env.CONTAINER_NAME }} || true
-            docker run -d -p 8085:8085 --name ${{ env.CONTAINER_NAME }} ${{ steps.meta.outputs.tags }}
+            export DOCKER_IMAGE=${{ steps.meta.outputs.tags }}
+            docker-compose -f docker-compose.yml pull highlight-backend
+            docker-compose -f docker-compose.yml up -d --remove-orphans

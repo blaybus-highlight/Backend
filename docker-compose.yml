@@ -17,7 +17,7 @@ services:
       - highlight-network
 
   highlight-backend:
-    build: .
+    image: ${DOCKER_IMAGE}
     container_name: highlight-backend
     depends_on:
       - highlight-db
@@ -38,6 +38,9 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      COOLSMS_API_KEY: ${COOLSMS_API_KEY}
+      COOLSMS_API_SECRET: ${COOLSMS_API_SECRET}
+      COOLSMS_FROM_NUMBER: ${COOLSMS_FROM_NUMBER}
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     networks:
