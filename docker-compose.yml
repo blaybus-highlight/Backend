@@ -5,7 +5,7 @@ services:
   highlight-db:
     image: mysql:8.0
     container_name: highlight-db
-    restart: always # [개선 1] 컨테이너 비정상 종료 시 항상 재시작
+    restart: always # 컨테이너 비정상 종료 시 항상 재시작
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
@@ -17,7 +17,6 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - highlight-network
-    # [개선 2] DB가 연결받을 준비가 되었는지 확인하는 헬스 체크
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -26,32 +25,39 @@ services:
 
   # -------------------- 백엔드 애플리케이션 서비스 --------------------
   highlight-backend:
-    image: ${IMAGE_NAME} # CI/CD 스크립트와 변수명 일치 (DOCKER_IMAGE -> IMAGE_NAME)
+    build: .
+    image: highlight-backend # 로컬 빌드 시 사용할 이미지 이름
     container_name: highlight-backend
-    restart: always # [개선 1] 컨테이너 비정상 종료 시 항상 재시작
+    restart: always # 컨테이너 비정상 종료 시 항상 재시작
     depends_on:
       highlight-db:
-        condition: service_healthy # [개선 2] highlight-db가 healthy 상태가 될 때까지 대기
+        condition: service_healthy # highlight-db가 healthy 상태가 될 때까지 대기
     environment:
+      # Profile
       SPRING_PROFILES_ACTIVE: docker
-      DB_HOST: highlight-db # [개선 3] DB 호스트를 서비스 이름으로 고정
+      # Server
       SERVER_PORT: ${SERVER_PORT}
-      DB_PORT: ${DB_PORT}
+      # Database
+      DB_HOST: highlight-db # DB 호스트를 서비스 이름으로 고정
+      DB_PORT: 3306 # 컨테이너 내부 포트
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DDL_AUTO: ${DB_DDL_AUTO}
       DB_SHOW_SQL: ${DB_SHOW_SQL}
+      # JWT
       JWT_SECRET: ${JWT_SECRET}
-      JWT_ACCESS_TOKEN_EXPIRE_TIME: ${JWT_ACCESS-TOKEN-EXPIRE-TIME}
-      JWT_REFRESH_TOKEN_EXPIRE_TIME: ${JWT_REFRESH-TOKEN-EXPIRE-TIME}
-      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
-      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
-      AWS_S3_REGION: ${AWS_S3_REGION}
+      JWT_ACCESS-TOKEN-EXPIRE-TIME: ${JWT_ACCESS-TOKEN-EXPIRE-TIME}
+      JWT_REFRESH-TOKEN-EXPIRE-TIME: ${JWT_REFRESH-TOKEN-EXPIRE-TIME}
+      # AWS S3
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_ACCESS-KEY: ${AWS_S3_ACCESS-KEY}
+      AWS_S3_SECRET-KEY: ${AWS_S3_SECRET-KEY}
+      # CoolSMS
       COOLSMS_API_KEY: ${COOLSMS_API_KEY}
       COOLSMS_API_SECRET: ${COOLSMS_API_SECRET}
-      COOLSMS_FROM_NUMBER: ${COOLSMS_FROM-NUMBER}
+      COOLSMS_FROM-NUMBER: ${COOLSMS_FROM-NUMBER}
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     networks:
