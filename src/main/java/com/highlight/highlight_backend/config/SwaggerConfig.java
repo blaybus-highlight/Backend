@@ -122,7 +122,7 @@ public class SwaggerConfig {
         return Arrays.asList(
                 new Server()
                         .url("http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085")
-                        .description("Production Server (현재 활성화)"),
+                        .description("Production Server (현재 활성화!!!)"),
                 new Server()
                         .url("http://localhost:8085")
                         .description("Local Development Server")
