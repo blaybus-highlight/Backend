@@ -7,7 +7,7 @@ on:
 # GITHUB_TOKEN이 GHCR에 이미지를 쓸(write) 수 있도록 권한 부여
 permissions:
   contents: read
-  packages: write
+  packages: writed
 
 jobs:
   build-push-and-deploy:
@@ -61,8 +61,8 @@ jobs:
             cd /home/ec2-user/backend
             
             git pull origin main
-            # 배포에 사용할 정확한 이미지 이름 변수 설정 (latest 태그 사용)
-            export IMAGE_NAME="ghcr.io/${{ github.repository }}:latest"
+            # 배포에 사용할 정확한 이미지 이름 변수 설정 (main 태그 사용)
+            export IMAGE_NAME="ghcr.io/${{ github.repository }}:main"
             
             # GitHub Secret을 사용해 .env 파일 생성
             echo "${{ secrets.ENV_FILE }}" > .env
