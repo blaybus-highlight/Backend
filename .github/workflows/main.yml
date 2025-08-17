@@ -52,7 +52,7 @@ jobs:
           context: .
           push: true
           # 태그: <DockerHub 유저명>/<이미지명>:latest
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:main
 
       # 7. EC2에 배포 (GitHub Secrets 사용)
       - name: Deploy to EC2
@@ -67,10 +67,11 @@ jobs:
             docker rm highlight-backend || true
             
             # 최신 이미지 pull
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:main
             
             # 새로운 컨테이너 실행
             docker run -d -p 8085:8085 --name highlight-backend ${{ secrets.DOCKERHUB_USERNAME }}/highlight-backend:latest
             
             # 사용하지 않는 이미지 정리 (디스크 용량 확보)
             docker image prune -f
+            
