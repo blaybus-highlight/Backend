@@ -4,6 +4,9 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.dto.SellerResponseDto;
 import com.highlight.highlight_backend.service.SellerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/public/sellers")
 @RequiredArgsConstructor
-@Tag(name = "판매자 정보 API", description = "판매자 상세 정보, 목록 조회 관련 API (로그인 불필요)")
+@Tag(name = "판매자 정보 조회", description = "판매자 상세 정보 및 목록 조회 API")
 public class SellerController {
     
     private final SellerService sellerService;
@@ -37,8 +40,15 @@ public class SellerController {
      * @return 판매자 상세 정보
      */
     @GetMapping("/{sellerId}")
-    @Operation(summary = "판매자 상세 정보 조회", description = "특정 판매자의 상세 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto<SellerResponseDto>> getSellerDetail(@PathVariable Long sellerId) {
+    @Operation(summary = "판매자 상세 정보 조회", description = "특정 판매자의 상세 정보를 조회합니다. 판매자 이름, 사업자 등록번호, 연락처, 주소 등의 정보를 포함합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "판매자 정보 조회 성공"),
+        @ApiResponse(responseCode = "404", description = "판매자를 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<ResponseDto<SellerResponseDto>> getSellerDetail(
+            @Parameter(description = "조회할 판매자의 고유 ID", required = true, example = "1")
+            @PathVariable Long sellerId) {
         log.info("GET /api/public/sellers/{} - 판매자 상세 정보 조회", sellerId);
         
         SellerResponseDto response = sellerService.getSellerDetail(sellerId);

@@ -5,7 +5,7 @@ import com.highlight.highlight_backend.dto.AdminCreateRequestDto;
 import com.highlight.highlight_backend.dto.AdminResponseDto;
 import com.highlight.highlight_backend.dto.AdminSignUpRequestDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.AdminErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,11 +50,11 @@ public class AdminManagementService {
         
         // 2. 중복 검사
         if (adminRepository.existsByAdminId(request.getAdminId())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_ADMIN_ID);
+            throw new BusinessException(AdminErrorCode.DUPLICATE_ADMIN_ID);
         }
         
         if (adminRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+            throw new BusinessException(AdminErrorCode.DUPLICATE_EMAIL);
         }
         
         // 3. 새 관리자 계정 생성
@@ -89,12 +89,12 @@ public class AdminManagementService {
         
         // 2. 본인 계정은 삭제 불가
         if (adminId.equals(currentAdminId)) {
-            throw new BusinessException(ErrorCode.CANNOT_DELETE_SELF);
+            throw new BusinessException(AdminErrorCode.CANNOT_DELETE_SELF);
         }
         
         // 3. 삭제할 관리자 조회
         Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         
         // 4. 삭제 처리
         adminRepository.delete(admin);
@@ -133,7 +133,7 @@ public class AdminManagementService {
         validateSuperAdminPermission(currentAdminId);
         
         Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         
         return AdminResponseDto.from(admin);
     }
@@ -149,7 +149,7 @@ public class AdminManagementService {
         
         // 1. 중복 검사
         if (adminRepository.existsByAdminId(signUpRequestDto.getAdminId())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_ADMIN_ID);
+            throw new BusinessException(AdminErrorCode.DUPLICATE_ADMIN_ID);
         }
         
         // 2. 새 관리자 계정 생성
@@ -174,10 +174,10 @@ public class AdminManagementService {
      */
     private Admin validateSuperAdminPermission(Long adminId) {
         Admin admin = adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         
         if (admin.getRole() != Admin.AdminRole.SUPER_ADMIN) {
-            throw new BusinessException(ErrorCode.INSUFFICIENT_PERMISSION);
+            throw new BusinessException(AdminErrorCode.INSUFFICIENT_PERMISSION);
         }
         
         return admin;

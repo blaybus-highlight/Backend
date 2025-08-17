@@ -7,8 +7,14 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
 import com.highlight.highlight_backend.dto.AuctionMyResultResponseDto;
 import com.highlight.highlight_backend.service.BidService;
+import com.highlight.highlight_backend.util.AuthenticationUtils;
+import com.highlight.highlight_backend.util.ResponseUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Tag(name = "입찰 관리", description = "입찰 참여, 입찰 내역 조회, 경매 상태 조회 API")
+@Tag(name = "입찰 및 경매 상태", description = "입찰 참여, 입찰 내역 조회, 경매 상태 조회, 낙찰 내역 API")
 public class BidController {
     
     private final BidService bidService;
@@ -45,20 +51,34 @@ public class BidController {
      * @return 입찰 결과
      */
     @PostMapping("/bids")
-    @Operation(summary = "입찰 참여", description = "경매에 입찰을 참여합니다.")
+    @Operation(
+        summary = "입찰 참여", 
+        description = "경매에 입찰을 참여합니다. 입찰 금액은 현재 최고가보다 높아야 하며, 입찰 단위의 배수여야 합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "입찰 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "최소 입찰 금액 미달 또는 경매 종료"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 더 높은 입찰가 존재"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<BidResponseDto>> createBid(
+            @Parameter(description = "입찰 요청 정보 (경매 ID, 입찰 금액)", required = true)
             @Valid @RequestBody BidCreateRequestDto request,
             Authentication authentication) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("POST /api/bids - 입찰 참여 요청 (사용자: {}, 경매: {}, 금액: {})", 
                 userId, request.getAuctionId(), request.getBidAmount());
         
         BidResponseDto response = bidService.createBid(request, userId);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "입찰에 성공했습니다.")
-        );
+        return ResponseUtils.success(response, "입찰에 성공했습니다.");
     }
     
     /**
@@ -69,20 +89,30 @@ public class BidController {
      * @return 입찰 내역 목록
      */
     @GetMapping("/auctions/{auctionId}/bids")
-    @Operation(summary = "경매 입찰 내역 조회 (익명)", description = "특정 경매의 입찰 내역을 익명으로 조회합니다.")
+    @Operation(
+        summary = "경매 입찰 내역 조회 (익명)", 
+        description = "특정 경매의 입찰 내역을 익명으로 조회합니다. 입찰자 정보는 마스킹되어 표시됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "입찰 내역 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<Page<BidResponseDto>>> getAuctionBids(
-            @Parameter(description = "경매 ID", required = true)
+            @Parameter(description = "입찰 내역을 조회할 경매의 고유 ID", required = true, example = "1")
             @PathVariable Long auctionId,
-            @Parameter(description = "페이징 정보")
+            @Parameter(description = "페이징 정보 (기본 20개)")
             @PageableDefault(size = 20) Pageable pageable) {
         
         log.info("GET /api/auctions/{}/bids - 경매 입찰 내역 조회 (익명)", auctionId);
         
         Page<BidResponseDto> response = bidService.getAuctionBids(auctionId, pageable);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "입찰 내역 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "입찰 내역 조회가 완료되었습니다.");
     }
     
     /**
@@ -102,14 +132,12 @@ public class BidController {
             @PageableDefault(size = 20) Pageable pageable,
             Authentication authentication) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("GET /api/auctions/{}/bids/with-user - 경매 입찰 내역 조회 (본인 강조, 사용자: {})", auctionId, userId);
         
         Page<BidResponseDto> response = bidService.getAuctionBidsWithUser(auctionId, userId, pageable);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "입찰 내역 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "입찰 내역 조회가 완료되었습니다.");
     }
     
     /**
@@ -128,9 +156,7 @@ public class BidController {
         
         AuctionStatusResponseDto response = bidService.getAuctionStatus(auctionId);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "경매 상태 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "경매 상태 조회가 완료되었습니다.");
     }
     
     /**
@@ -147,14 +173,12 @@ public class BidController {
             @Parameter(description = "페이징 정보")
             @PageableDefault(size = 20) Pageable pageable) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("GET /api/users/bids - 내 입찰 내역 조회 (사용자: {})", userId);
         
         Page<BidResponseDto> response = bidService.getUserBids(userId, pageable);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "내 입찰 내역 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "내 입찰 내역 조회가 완료되었습니다.");
     }
     
     /**
@@ -171,14 +195,12 @@ public class BidController {
             @Parameter(description = "페이징 정보")
             @PageableDefault(size = 20) Pageable pageable) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("GET /api/users/wins - 내 낙찰 내역 조회 (사용자: {})", userId);
         
         Page<BidResponseDto> response = bidService.getUserWonBids(userId, pageable);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "내 낙찰 내역 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "내 낙찰 내역 조회가 완료되었습니다.");
     }
     
     /**
@@ -195,14 +217,12 @@ public class BidController {
             @PathVariable Long bidId,
             Authentication authentication) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("GET /api/users/wins/{} - 낙찰 상세 정보 조회 (사용자: {})", bidId, userId);
         
         WinBidDetailResponseDto response = bidService.getWinBidDetail(bidId, userId);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "낙찰 상세 정보 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "낙찰 상세 정보 조회가 완료되었습니다.");
     }
     
     /**
@@ -219,13 +239,11 @@ public class BidController {
             @PathVariable Long auctionId,
             Authentication authentication) {
         
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = AuthenticationUtils.extractUserId(authentication);
         log.info("GET /api/auctions/{}/my-result - 경매 내 결과 조회 (사용자: {})", auctionId, userId);
         
         AuctionMyResultResponseDto response = bidService.getMyAuctionResult(auctionId, userId);
         
-        return ResponseEntity.ok(
-            ResponseDto.success(response, "경매 결과 조회가 완료되었습니다.")
-        );
+        return ResponseUtils.success(response, "경매 결과 조회가 완료되었습니다.");
     }
 }

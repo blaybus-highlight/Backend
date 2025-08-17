@@ -6,7 +6,9 @@ import com.highlight.highlight_backend.domain.User;
 import com.highlight.highlight_backend.dto.ProductNotificationRequestDto;
 import com.highlight.highlight_backend.dto.ProductNotificationResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.CommonErrorCode;
+import com.highlight.highlight_backend.exception.UserErrorCode;
+import com.highlight.highlight_backend.exception.ProductErrorCode;
 import com.highlight.highlight_backend.repository.ProductNotificationRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
@@ -194,7 +196,7 @@ public class ProductNotificationService {
         
         // 알림 설정 존재 확인
         if (!notificationRepository.existsByUserIdAndProductId(userId, productId)) {
-            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
+            throw new BusinessException(CommonErrorCode.ENTITY_NOT_FOUND);
         }
         
         notificationRepository.deleteByUserIdAndProductId(userId, productId);
@@ -220,7 +222,7 @@ public class ProductNotificationService {
      */
     private void validateUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
     }
     
@@ -233,7 +235,7 @@ public class ProductNotificationService {
         
         // 상품 존재 확인
         if (!productRepository.existsById(productId)) {
-            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
+            throw new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND);
         }
     }
 }

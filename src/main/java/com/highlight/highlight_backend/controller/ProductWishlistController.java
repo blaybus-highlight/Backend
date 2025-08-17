@@ -4,6 +4,10 @@ import com.highlight.highlight_backend.dto.ProductWishlistResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.ProductWishlistService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/user/wishlist")
 @RequiredArgsConstructor
-@Tag(name = "상품 찜하기 API", description = "상품 찜하기, 취소, 조회 관련 API (로그인 필요)")
+@Tag(name = "상품 찜하기", description = "상품 찜하기, 취소, 조회 관련 API")
 public class ProductWishlistController {
     
     private final ProductWishlistService wishlistService;
@@ -41,10 +45,17 @@ public class ProductWishlistController {
      * @return 찜하기 토글 결과
      */
     @PostMapping("/products/{productId}/toggle")
-    @Operation(summary = "상품 찜하기 토글", description = "상품을 찜하기/취소를 토글합니다.")
+    @Operation(summary = "상품 찜하기 토글", description = "상품을 찜하기/취소를 토글합니다. 이미 찜한 상품이면 취소하고, 찜하지 않은 상품이면 찜합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "찜하기 토글 성공"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
+    })
     public ResponseEntity<ResponseDto<ProductWishlistResponseDto>> toggleWishlist(
+            @Parameter(description = "찜할 상품의 고유 ID", required = true, example = "1")
             @PathVariable Long productId,
-            Authentication authentication) {
+            @Parameter(hidden = true) Authentication authentication) {
         
         Long userId = (Long) authentication.getPrincipal();
         log.info("POST /api/user/wishlist/products/{}/toggle - 상품 찜하기 토글 (사용자: {})", productId, userId);

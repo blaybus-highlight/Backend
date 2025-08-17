@@ -3,7 +3,9 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.ProductWishlist;
 import com.highlight.highlight_backend.dto.ProductWishlistResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.WishlistErrorCode;
+import com.highlight.highlight_backend.exception.UserErrorCode;
+import com.highlight.highlight_backend.exception.ProductErrorCode;
 import com.highlight.highlight_backend.repository.ProductRepository;
 import com.highlight.highlight_backend.repository.ProductWishlistRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
@@ -84,7 +86,7 @@ public class ProductWishlistService {
         
         // 2. 이미 찜했는지 확인
         if (wishlistRepository.existsByUserIdAndProductId(userId, productId)) {
-            throw new BusinessException(ErrorCode.DUPLICATE_WISHLIST);
+            throw new BusinessException(WishlistErrorCode.DUPLICATE_WISHLIST);
         }
         
         // 3. 찜하기 추가
@@ -108,7 +110,7 @@ public class ProductWishlistService {
         
         // 1. 찜하기 존재 확인
         if (!wishlistRepository.existsByUserIdAndProductId(userId, productId)) {
-            throw new BusinessException(ErrorCode.WISHLIST_NOT_FOUND);
+            throw new BusinessException(WishlistErrorCode.WISHLIST_NOT_FOUND);
         }
         
         // 2. 찜하기 삭제
@@ -191,7 +193,7 @@ public class ProductWishlistService {
      */
     private void validateUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
     }
     
@@ -204,7 +206,7 @@ public class ProductWishlistService {
         
         // 상품 존재 확인
         if (!productRepository.existsById(productId)) {
-            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
+            throw new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND);
         }
     }
 }

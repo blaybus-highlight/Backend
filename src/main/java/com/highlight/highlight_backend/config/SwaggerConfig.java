@@ -31,7 +31,7 @@ public class SwaggerConfig {
      */
     private Info buildApiInfo() {
         return new Info()
-                .title("🚀 Highlight Backend API")
+                .title("Highlight 경매 플랫폼 API")
                 .description(buildApiDescription())
                 .version("v1.0.0")
                 .contact(buildContactInfo())
@@ -43,18 +43,28 @@ public class SwaggerConfig {
      */
     private String buildApiDescription() {
         return """
-                ## 📋 블레이버스 해커톤 2025
+                ## 블레이버스 해커톤 2025 - Highlight 팀
                 
-                **Highlight 팀의 MVP 백엔드 API 서비스입니다.**
+                **실시간 경매 플랫폼의 백엔드 API 서비스입니다.**
                 
-                ### 🚨 인증 방법
-                1. `/api/auth/login` 엔드포인트로 로그인
-                2. 응답으로 받은 JWT 토큰을 복사
-                3. 우측 상단 🔒 **Authorize** 버튼 클릭
-                4. `Bearer {토큰}` 형식으로 입력
+                ### 주요 기능
+                - **실시간 경매**: WebSocket을 통한 실시간 입찰
+                - **즉시구매**: 빠른 상품 구매
+                - **사용자 관리**: 회원가입, 로그인, 마이페이지
+                - **관리자 기능**: 상품/경매 관리, 계정 관리
+                - **부가 기능**: 찜하기, 알림 설정
                 
-                ### 📞 문의사항
-                개발 중 이슈나 질문이 있으시면 언제든 연락주세요!
+                ### 인증 방법
+                1. **사용자**: `/api/public/login` 
+                2. **관리자**: `/api/admin/login`
+                3. 응답으로 받은 JWT 토큰을 우측 **Authorize**에 입력
+                
+                ### 실시간 통신
+                - **WebSocket**: `/ws` 엔드포인트로 연결
+                - **구독**: `/topic/auction/{auctionId}` (경매별 실시간 정보)
+                
+                ### 문의사항
+                개발팀에게 언제든 연락주세요.
                 """;
     }
     
@@ -63,7 +73,7 @@ public class SwaggerConfig {
      */
     private Contact buildContactInfo() {
         return new Contact()
-                .name("Highlight Backend Team (전우선, 탁찬홍)")
+                .name("Highlight Backend Team")
                 .email("wooxexn@gmail.com")
                 .url("https://github.com/blaybus-highlight");
     }
@@ -111,11 +121,11 @@ public class SwaggerConfig {
     private List<Server> buildServers() {
         return Arrays.asList(
                 new Server()
-                        .url("http://localhost:8085")
-                        .description("🔧 Local Development Server"),
-                new Server()
                         .url("http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com:8085")
-                        .description("🚀 Production Server (배포 후 활성화)")
+                        .description("Production Server (현재 활성화)"),
+                new Server()
+                        .url("http://localhost:8085")
+                        .description("Local Development Server")
         );
     }
 }

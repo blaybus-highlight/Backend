@@ -6,6 +6,11 @@ import com.highlight.highlight_backend.dto.ProductUpdateRequestDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
-@Tag(name = "상품 관리 API", description = "경매 상품 등록/수정/조회/삭제 관련 API")
+@Tag(name = "상품 관리 (관리자)", description = "경매 상품 등록, 수정, 조회, 삭제 및 이미지 관리 API")
 public class ProductController {
     
     private final ProductService productService;
@@ -43,9 +48,23 @@ public class ProductController {
      * @return 등록된 상품 정보
      */
     @PostMapping
-    @Operation(summary = "상품 등록", 
-               description = "새로운 경매 상품을 등록합니다. 상품 사진, 상품명, 상품소개(25자), 히스토리, 기본 정보, 기대효과, 상세 정보, 시작가, 입장료 등을 입력할 수 있습니다.")
+    @Operation(
+        summary = "상품 등록", 
+        description = "새로운 경매 상품을 등록합니다. 상품 사진, 상품명, 상품소개(25자), 히스토리, 기본 정보, 기대효과, 상세 정보 등을 입력할 수 있습니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "상품 등록 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족 - 관리자만 접근 가능"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<ProductResponseDto>> createProduct(
+            @Parameter(description = "상품 등록 요청 데이터", required = true)
             @Valid @RequestBody ProductCreateRequestDto request,
             Authentication authentication) {
         
@@ -91,9 +110,23 @@ public class ProductController {
      * @return 상품 상세 정보
      */
     @GetMapping("/{productId}")
-    @Operation(summary = "상품 상세 조회", 
-               description = "특정 상품의 상세 정보를 조회합니다. 수정 시 기존 내용을 불러오는데 사용할 수 있습니다.")
+    @Operation(
+        summary = "상품 상세 조회", 
+        description = "특정 상품의 상세 정보를 조회합니다. 상품 이미지, 상세 정보, 판매자 정보 등 모든 데이터를 포함합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "상품 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<ProductResponseDto>> getProduct(
+            @Parameter(description = "조회할 상품의 고유 ID", required = true, example = "1")
             @PathVariable Long productId,
             Authentication authentication) {
         
@@ -167,9 +200,23 @@ public class ProductController {
      * @return 추천 상품 목록
      */
     @GetMapping("/{productId}/recommendations")
-    @Operation(summary = "관련 상품 추천", description = "특정 상품과 관련된 추천 상품 목록을 조회합니다.")
+    @Operation(
+        summary = "관련 상품 추천", 
+        description = "특정 상품과 관련된 추천 상품 목록을 조회합니다. 동일 카테고리나 브랜드의 상품을 우선적으로 추천합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "추천 상품 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "기준 상품을 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<Page<ProductResponseDto>>> getRecommendedProducts(
+            @Parameter(description = "추천 기준이 되는 상품의 고유 ID", required = true, example = "1")
             @PathVariable Long productId,
+            @Parameter(description = "추천 상품 개수", example = "4")
             @RequestParam(defaultValue = "4") int size) {
         
         log.info("GET /api/products/{}/recommendations - 관련 상품 추천 조회", productId);
@@ -218,10 +265,26 @@ public class ProductController {
      * @return 업로드된 이미지 URL 목록
      */
     @PostMapping("/{productId}/images")
-    @Operation(summary = "상품 이미지 업로드", 
-               description = "상품에 이미지를 업로드합니다. 여러 개의 이미지를 한 번에 업로드할 수 있습니다.")
+    @Operation(
+        summary = "상품 이미지 업로드", 
+        description = "상품에 이미지를 업로드합니다. 최대 10개의 이미지를 한 번에 업로드할 수 있으며, 각 파일은 10MB 이하여야 합니다. 지원 형식: JPEG, PNG, GIF, WebP"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "이미지 업로드 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 파일 형식 또는 크기 초과"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     public ResponseEntity<ResponseDto<java.util.List<String>>> uploadProductImages(
+            @Parameter(description = "이미지를 업로드할 상품의 고유 ID", required = true, example = "1")
             @PathVariable Long productId,
+            @Parameter(description = "업로드할 이미지 파일들 (최대 10개, 각 10MB 이하)", required = true)
             @RequestParam("files") MultipartFile[] files,
             Authentication authentication) {
         

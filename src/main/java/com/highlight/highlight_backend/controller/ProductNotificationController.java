@@ -5,6 +5,10 @@ import com.highlight.highlight_backend.dto.ProductNotificationResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.ProductNotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user/notifications")
 @RequiredArgsConstructor
-@Tag(name = "상품 알림 API", description = "상품 알림 설정, 조회, 관리 관련 API (로그인 필요)")
+@Tag(name = "상품 알림 관리", description = "상품 재입고 및 경매 시작 알림 설정 API")
 public class ProductNotificationController {
     
     private final ProductNotificationService notificationService;
@@ -42,11 +46,20 @@ public class ProductNotificationController {
      * @return 알림 설정 결과
      */
     @PostMapping("/products/{productId}")
-    @Operation(summary = "상품 알림 설정", description = "특정 상품에 대한 알림을 설정하거나 해제합니다.")
+    @Operation(summary = "상품 알림 설정", description = "특정 상품에 대한 알림을 설정하거나 해제합니다. 경매 시작, 마감 임박 등의 알림을 받을 수 있습니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "알림 설정 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
+    })
     public ResponseEntity<ResponseDto<ProductNotificationResponseDto>> setProductNotification(
+            @Parameter(description = "알림 설정할 상품의 고유 ID", required = true, example = "1")
             @PathVariable Long productId,
+            @Parameter(description = "알림 설정 요청 데이터", required = true)
             @Valid @RequestBody ProductNotificationRequestDto requestDto,
-            Authentication authentication) {
+            @Parameter(hidden = true) Authentication authentication) {
         
         Long userId = (Long) authentication.getPrincipal();
         log.info("POST /api/user/notifications/products/{} - 상품 알림 설정 (사용자: {})", productId, userId);

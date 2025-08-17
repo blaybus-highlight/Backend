@@ -1,9 +1,12 @@
 package com.highlight.highlight_backend.controller;
 
+import com.highlight.highlight_backend.exception.CommonErrorCode;
 import com.highlight.highlight_backend.exception.ErrorCode;
 import com.highlight.highlight_backend.service.WebSocketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +27,7 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@Tag(name = "WebSocket 관리", description = "실시간 경매 정보 전송을 위한 WebSocket 메시지 처리 API")
+@Tag(name = "WebSocket 실시간 통신", description = "실시간 경매 정보 및 입찰 알림을 위한 WebSocket API")
 public class WebSocketController {
     
     private final WebSocketService webSocketService;
@@ -37,9 +40,16 @@ public class WebSocketController {
      * @param auctionId 구독할 경매 ID
      */
     @SubscribeMapping("/topic/auction/{auctionId}")
-    @Operation(summary = "특정 경매 구독", description = "클라이언트가 특정 경매의 실시간 정보를 구독합니다.")
+    @Operation(
+        summary = "특정 경매 실시간 구독", 
+        description = "클라이언트가 특정 경매의 실시간 정보(입찰 현황, 가격 변동, 종료 시간 등)를 구독합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "구독 성공"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음")
+    })
     public void subscribeToAuction(
-            @Parameter(description = "구독할 경매 ID", required = true)
+            @Parameter(description = "구독할 경매의 고유 ID", required = true, example = "1")
             @DestinationVariable Long auctionId) {
         log.info("WebSocket - 경매 구독: 경매ID={}", auctionId);
         
@@ -80,7 +90,7 @@ public class WebSocketController {
             log.info("WebSocket - 경매 상태 요청 처리 완료: 경매ID={}", auctionId);
         } catch (Exception e) {
             log.error("WebSocket - 경매 상태 요청 처리 실패: 경매ID={}, 오류={}", auctionId, e.getMessage());
-            webSocketService.sendErrorMessage(auctionId, ErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED);
+            webSocketService.sendErrorMessage(auctionId, CommonErrorCode.WEBSOCKET_MESSAGE_SEND_FAILED);
         }
     }
 }

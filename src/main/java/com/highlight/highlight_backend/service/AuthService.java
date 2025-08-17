@@ -4,7 +4,7 @@ import com.highlight.highlight_backend.domain.Admin;
 import com.highlight.highlight_backend.dto.LoginRequestDto;
 import com.highlight.highlight_backend.dto.LoginResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.AdminErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -47,13 +47,13 @@ public class AuthService {
         Admin admin = adminRepository.findByAdminIdAndIsActiveTrue(request.getAdminId())
             .orElseThrow(() -> {
                 log.warn("로그인 실패 - 존재하지 않는 관리자 ID 또는 비활성화된 계정");
-                return new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+                return new BusinessException(AdminErrorCode.INVALID_LOGIN_CREDENTIALS);
             });
         
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
             log.warn("로그인 실패 - 잘못된 비밀번호");
-            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+            throw new BusinessException(AdminErrorCode.INVALID_LOGIN_CREDENTIALS);
         }
         
         // 3. 마지막 로그인 시간 업데이트
@@ -95,6 +95,6 @@ public class AuthService {
     public Admin getAdminFromToken(String token) {
         Long adminId = jwtUtil.getUserId(token);
         return adminRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
     }
 }

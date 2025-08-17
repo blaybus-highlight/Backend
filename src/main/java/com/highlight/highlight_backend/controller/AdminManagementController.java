@@ -6,6 +6,10 @@ import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.service.AdminManagementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/admin-management")
 @RequiredArgsConstructor
-@Tag(name = "관리자 계정 관리 API", description = "백오피스 관리자 계정 생성/수정/삭제 관련 API")
+@Tag(name = "관리자 계정 관리", description = "관리자 계정 조회, 수정, 비활성화 관련 API")
 public class AdminManagementController {
     
     private final AdminManagementService adminManagementService;
@@ -44,10 +48,19 @@ public class AdminManagementController {
      * @return 생성된 관리자 정보
      */
     @PostMapping("/admins")
-    @Operation(summary = "관리자 계정 생성", description = "새로운 관리자 계정을 생성합니다. (SUPER_ADMIN 권한 필요)")
+    @Operation(summary = "관리자 계정 생성", description = "새로운 관리자 계정을 생성합니다. SUPER_ADMIN 권한이 필요하며, 상세한 개인정보를 포함합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "관리자 계정 생성 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "SUPER_ADMIN 권한 필요"),
+        @ApiResponse(responseCode = "409", description = "이미 존재하는 관리자 ID")
+    })
     public ResponseEntity<ResponseDto<AdminResponseDto>> createAdmin(
+            @Parameter(description = "관리자 계정 생성 요청 데이터", required = true)
             @Valid @RequestBody AdminCreateRequestDto request,
-            Authentication authentication) {
+            @Parameter(hidden = true) Authentication authentication) {
         
         Long currentAdminId = getCurrentAdminId(authentication);
         log.info("POST /api/admin-management/admins - 관리자 계정 생성 요청: {} (요청자: {})", 

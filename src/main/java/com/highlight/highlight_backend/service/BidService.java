@@ -9,7 +9,11 @@ import com.highlight.highlight_backend.dto.BidResponseDto;
 import com.highlight.highlight_backend.dto.WinBidDetailResponseDto;
 import com.highlight.highlight_backend.dto.AuctionMyResultResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
-import com.highlight.highlight_backend.exception.ErrorCode;
+import com.highlight.highlight_backend.exception.AuctionErrorCode;
+import com.highlight.highlight_backend.exception.BidErrorCode;
+import com.highlight.highlight_backend.exception.UserErrorCode;
+import com.highlight.highlight_backend.exception.AuthErrorCode;
+import com.highlight.highlight_backend.exception.CommonErrorCode;
 import com.highlight.highlight_backend.repository.AuctionRepository;
 import com.highlight.highlight_backend.repository.BidRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
@@ -53,11 +57,11 @@ public class BidService {
         
         // 1. 사용자 조회
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 2. 경매 조회 (비관적 락으로 동시 입찰 방지)
         Auction auction = auctionRepository.findByIdWithLock(request.getAuctionId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 입찰 가능 상태 검증
         validateBidRequest(auction, request, user);
@@ -66,7 +70,7 @@ public class BidService {
         Optional<Bid> existingSamePriceBid = bidRepository.findByAuctionAndBidAmount(auction, request.getBidAmount());
         if (existingSamePriceBid.isPresent()) {
             // 동일한 금액으로 이미 입찰이 있는 경우 거부 (선도착 우선)
-            throw new BusinessException(ErrorCode.BID_AMOUNT_TOO_LOW);
+            throw new BusinessException(AuctionErrorCode.BID_AMOUNT_TOO_LOW);
         }
         
         // 5. 기존 최고 입찰 조회
@@ -119,7 +123,7 @@ public class BidService {
         log.info("경매 입찰 내역 조회 (익명): 경매ID={}", auctionId);
         
         Auction auction = auctionRepository.findById(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
         
@@ -138,7 +142,7 @@ public class BidService {
         log.info("경매 입찰 내역 조회 (본인 강조): 경매ID={}, 사용자ID={}", auctionId, userId);
         
         Auction auction = auctionRepository.findById(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
         
@@ -155,7 +159,7 @@ public class BidService {
         log.info("실시간 경매 상태 조회: 경매ID={}", auctionId);
         
         Auction auction = auctionRepository.findById(auctionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 입찰 통계 조회
         Long totalBidders = bidRepository.countDistinctBiddersByAuction(auction);
@@ -182,7 +186,7 @@ public class BidService {
         log.info("사용자 입찰 내역 조회: 사용자ID={}", userId);
         
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         Page<Bid> bids = bidRepository.findByUserOrderByCreatedAtDesc(user, pageable);
         
@@ -200,7 +204,7 @@ public class BidService {
         log.info("사용자 낙찰 내역 조회: 사용자ID={}", userId);
         
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         Page<Bid> wonBids = bidRepository.findWonBidsByUser(user, pageable);
         
@@ -219,16 +223,16 @@ public class BidService {
         
         // 1. 입찰 조회
         Bid bid = bidRepository.findById(bidId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.BID_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(BidErrorCode.BID_NOT_FOUND));
         
         // 2. 낙찰된 입찰인지 확인
         if (bid.getStatus() != Bid.BidStatus.WON) {
-            throw new BusinessException(ErrorCode.BID_NOT_FOUND);
+            throw new BusinessException(BidErrorCode.BID_NOT_FOUND);
         }
         
         // 3. 본인의 입찰인지 확인
         if (!bid.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+            throw new BusinessException(AuthErrorCode.ACCESS_DENIED);
         }
         
         // 4. 상세 정보 반환
@@ -241,7 +245,7 @@ public class BidService {
     private void validateBidRequest(Auction auction, BidCreateRequestDto request, User user) {
         // 경매 진행 중 여부 확인
         if (!auction.isInProgress()) {
-            throw new BusinessException(ErrorCode.CANNOT_START_AUCTION);
+            throw new BusinessException(AuctionErrorCode.CANNOT_START_AUCTION);
         }
         
         // 입찰 금액 검증
@@ -249,27 +253,27 @@ public class BidService {
             // 기존 입찰이 있는 경우: 현재 최고가 + 최소 인상폭 이상
             BigDecimal minimumRequiredBid = auction.getCurrentHighestBid().add(auction.getMinimumBid());
             if (request.getBidAmount().compareTo(minimumRequiredBid) < 0) {
-                throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
+                throw new BusinessException(AuctionErrorCode.INVALID_MINIMUM_BID);
             }
         } else {
             // 첫 입찰인 경우: 시작가 이상
             if (request.getBidAmount().compareTo(auction.getStartPrice()) < 0) {
-                throw new BusinessException(ErrorCode.INVALID_MINIMUM_BID);
+                throw new BusinessException(AuctionErrorCode.INVALID_MINIMUM_BID);
             }
         }
         
         // 입찰 단위 확인
         if (!isValidBidUnit(request.getBidAmount(), auction.getBidUnit())) {
-            throw new BusinessException(ErrorCode.BID_UNIT_MISMATCH);
+            throw new BusinessException(AuctionErrorCode.BID_UNIT_MISMATCH);
         }
         
         // 자동 입찰인 경우 추가 검증
         if (request.getIsAutoBid() != null && request.getIsAutoBid()) {
             if (request.getMaxAutoBidAmount() == null) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+                throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
             }
             if (request.getMaxAutoBidAmount().compareTo(request.getBidAmount()) < 0) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+                throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
             }
         }
     }
@@ -311,11 +315,11 @@ public class BidService {
         
         // 경매 조회
         Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUCTION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 사용자의 해당 경매 입찰 내역 조회
         Optional<Bid> userBidOpt = bidRepository.findTopByAuctionAndUserOrderByBidAmountDesc(auction, user);
@@ -335,7 +339,7 @@ public class BidService {
         // 종료되지 않은 경매인 경우 에러
         if (auction.getStatus() != Auction.AuctionStatus.COMPLETED && 
             auction.getStatus() != Auction.AuctionStatus.FAILED) {
-            throw new BusinessException(ErrorCode.AUCTION_NOT_ENDED);
+            throw new BusinessException(BidErrorCode.AUCTION_NOT_ENDED);
         }
         
         // 낙찰자 조회
