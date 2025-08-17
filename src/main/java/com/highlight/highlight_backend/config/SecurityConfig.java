@@ -65,6 +65,7 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/admin-auth/**",              // 관리자 인증 관련 API
                         "/api/admin/signup",               // 관리자 회원가입
+                        "/api/admin/login",               // 관리자 회원가입
                         "/api/public/**",                  // 공개 API (사용자 인증, 경매 목록, 판매자 정보 등)
                         "/api/auctions/*/bids",            // 경매 입찰 내역 조회 (익명)
                         "/api/auctions/*/status",          // 실시간 경매 상태 조회
