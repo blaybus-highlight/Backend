@@ -36,8 +36,9 @@ public class CorsConfig {
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
             "https://blaybus-highlight-9ai6wfffl-yun-jinwoos-projects.vercel.app",  // Vercel 배포 도메인
             "https://*.vercel.app",         // Vercel 도메인 패턴
-            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
-            "http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com",        // AWS 배포
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3306",        // DB서버 배포
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // AWS 배포
             "https://*.execute-api.*.amazonaws.com"  // API Gateway
         ));
         
