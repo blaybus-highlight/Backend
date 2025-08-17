@@ -31,7 +31,7 @@ public class SwaggerConfig {
      */
     private Info buildApiInfo() {
         return new Info()
-                .title("🔥 Highlight 경매 플랫폼 API")
+                .title("Highlight 경매 플랫폼 API")
                 .description(buildApiDescription())
                 .version("v1.0.0")
                 .contact(buildContactInfo())
@@ -43,28 +43,28 @@ public class SwaggerConfig {
      */
     private String buildApiDescription() {
         return """
-                ## 🏆 블레이버스 해커톤 2025 - Highlight 팀
+                ## 블레이버스 해커톤 2025 - Highlight 팀
                 
                 **실시간 경매 플랫폼의 백엔드 API 서비스입니다.**
                 
-                ### ✨ 주요 기능
-                - 🛒 **실시간 경매**: WebSocket을 통한 실시간 입찰
-                - ⚡ **즉시구매**: 빠른 상품 구매
-                - 👤 **사용자 관리**: 회원가입, 로그인, 마이페이지
-                - 🔐 **관리자 기능**: 상품/경매 관리, 계정 관리
-                - ❤️ **부가 기능**: 찜하기, 알림 설정
+                ### 주요 기능
+                - **실시간 경매**: WebSocket을 통한 실시간 입찰
+                - **즉시구매**: 빠른 상품 구매
+                - **사용자 관리**: 회원가입, 로그인, 마이페이지
+                - **관리자 기능**: 상품/경매 관리, 계정 관리
+                - **부가 기능**: 찜하기, 알림 설정
                 
-                ### 🔐 인증 방법
+                ### 인증 방법
                 1. **사용자**: `/api/public/login` 
                 2. **관리자**: `/api/admin/login`
-                3. 응답으로 받은 JWT 토큰을 우측 🔒 **Authorize**에 입력
+                3. 응답으로 받은 JWT 토큰을 우측 **Authorize**에 입력
                 
-                ### 🌐 실시간 통신
+                ### 실시간 통신
                 - **WebSocket**: `/ws` 엔드포인트로 연결
                 - **구독**: `/topic/auction/{auctionId}` (경매별 실시간 정보)
                 
-                ### 📞 문의사항
-                개발팀에게 언제든 연락주세요! 🚀
+                ### 문의사항
+                개발팀에게 언제든 연락주세요.
                 """;
     }
     
@@ -73,7 +73,7 @@ public class SwaggerConfig {
      */
     private Contact buildContactInfo() {
         return new Contact()
-                .name("🔥 Highlight Backend Team")
+                .name("Highlight Backend Team")
                 .email("wooxexn@gmail.com")
                 .url("https://github.com/blaybus-highlight");
     }
@@ -112,7 +112,7 @@ public class SwaggerConfig {
                 .bearerFormat("JWT")
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization")
-                .description("🔑 JWT 토큰을 입력하세요. Bearer 접두사는 자동으로 추가됩니다.");
+                .description("JWT 토큰을 입력하세요. Bearer 접두사는 자동으로 추가됩니다.");
     }
     
     /**
@@ -122,10 +122,10 @@ public class SwaggerConfig {
         return Arrays.asList(
                 new Server()
                         .url("http://ec2-43-201-71-156.ap-northeast-2.compute.amazonaws.com:8085")
-                        .description("🚀 Production Server (현재 활성화)"),
+                        .description("Production Server (현재 활성화)"),
                 new Server()
                         .url("http://localhost:8085")
-                        .description("🔧 Local Development Server")
+                        .description("Local Development Server")
         );
     }
 }
