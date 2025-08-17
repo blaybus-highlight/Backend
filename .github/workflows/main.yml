@@ -37,7 +37,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name.toLowerCase() }}
 
       # 4. Docker 이미지 빌드 및 푸시
       - name: Build and push Docker image
@@ -57,6 +57,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            
+            cd /home/ec2-user/Backend
+            
+            git pull origin main
             # 배포에 사용할 정확한 이미지 이름 변수 설정 (latest 태그 사용)
             export IMAGE_NAME="ghcr.io/${{ github.repository }}:latest"
             
