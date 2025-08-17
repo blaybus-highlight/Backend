@@ -1,9 +1,11 @@
 version: '3.8'
 
 services:
+  # -------------------- 데이터베이스 서비스 --------------------
   highlight-db:
     image: mysql:8.0
     container_name: highlight-db
+    restart: always # [개선 1] 컨테이너 비정상 종료 시 항상 재시작
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
@@ -15,16 +17,25 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - highlight-network
+    # [개선 2] DB가 연결받을 준비가 되었는지 확인하는 헬스 체크
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # -------------------- 백엔드 애플리케이션 서비스 --------------------
   highlight-backend:
-    image: ${DOCKER_IMAGE}
+    image: ${IMAGE_NAME} # CI/CD 스크립트와 변수명 일치 (DOCKER_IMAGE -> IMAGE_NAME)
     container_name: highlight-backend
+    restart: always # [개선 1] 컨테이너 비정상 종료 시 항상 재시작
     depends_on:
-      - highlight-db
+      highlight-db:
+        condition: service_healthy # [개선 2] highlight-db가 healthy 상태가 될 때까지 대기
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: highlight-db # [개선 3] DB 호스트를 서비스 이름으로 고정
       SERVER_PORT: ${SERVER_PORT}
-      DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
@@ -46,6 +57,7 @@ services:
     networks:
       - highlight-network
 
+# -------------------- 볼륨 및 네트워크 정의 --------------------
 volumes:
   mysql_data:
 
