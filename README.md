@@ -9,7 +9,8 @@
 ## 기술 스택
 
 - **Backend**: Spring Boot 3.4.5, Java 17
-- **Database**: MySQL 8.0
+- **Database**: MySQL 8.0 (AWS RDS)
+- **Server**: AWS EC2 (프리티어, 스왑메모리 설정)
 - **Authentication**: JWT (Access Token + Refresh Token)
 - **Real-time**: WebSocket (STOMP)
 - **Cloud Storage**: AWS S3
