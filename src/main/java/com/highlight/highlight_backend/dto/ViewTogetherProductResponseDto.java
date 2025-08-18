@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  * ProductCard와 동일한 구조로 설계되어
  * 프론트엔드에서 기존 상품 카드 컴포넌트를 재사용할 수 있습니다.
  * 
- * @author Claude  
+ * @author 전우선  
  * @since 2025.08.18
  */
 @Getter

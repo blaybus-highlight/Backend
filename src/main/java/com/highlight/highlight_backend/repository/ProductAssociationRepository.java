@@ -15,7 +15,7 @@ import java.util.Optional;
 /**
  * 상품 연관도 Repository
  * 
- * @author Claude
+ * @author 전우선
  * @since 2025.08.18
  */
 @Repository

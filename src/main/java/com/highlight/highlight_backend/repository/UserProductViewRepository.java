@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * 사용자 상품 조회 이력 Repository
  * 
- * @author Claude
+ * @author 전우선
  * @since 2025.08.18
  */
 @Repository

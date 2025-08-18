@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
  * - 연관도 계산: 매일 새벽 3시
  * - 데이터 정리: 매주 일요일 새벽 4시
  * 
- * @author Claude
+ * @author 전우선
  * @since 2025.08.18
  */
 @Slf4j

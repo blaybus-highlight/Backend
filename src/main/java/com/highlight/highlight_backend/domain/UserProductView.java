@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * 사용자가 상품을 조회한 기록을 저장하여
  * "함께 본 상품" 추천 기능의 기반 데이터로 활용합니다.
  * 
- * @author Claude
+ * @author 전우선
  * @since 2025.08.18
  */
 @Entity

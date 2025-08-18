@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
  * - 시간적 근접성 (같은 시간대에 조회)
  * - 카테고리/브랜드 유사성 가중치
  * 
- * @author Claude
+ * @author 전우선
  * @since 2025.08.18
  */
 @Entity
