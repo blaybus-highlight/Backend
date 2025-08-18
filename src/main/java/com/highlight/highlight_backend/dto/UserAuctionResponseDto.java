@@ -29,6 +29,7 @@ public class UserAuctionResponseDto {
     // Auction 에서 가져올 정보
     private BigDecimal currentPrice;   // 현재가
     private BigDecimal buyNowPrice;    // 즉시구매가
+    private BigDecimal minimumBid;     // 최소 입찰가 (시작가)
     private Integer bidCount;      // 입찰 수
     private LocalDateTime endTime; // 종료 시간
     private String auctionStatus;  // 현재 경매 상태
@@ -53,6 +54,7 @@ public class UserAuctionResponseDto {
                 // Auction 정보
                 .buyNowPrice(auction.getBuyItNowPrice())
                 .currentPrice(auction.getCurrentHighestBid())
+                .minimumBid(auction.getStartPrice())
                 .bidCount(auction.getTotalBids())
                 .endTime(auction.getScheduledEndTime())
                 .auctionStatus(auction.getStatus().name()) // Enum 값을 문자열로 변환
