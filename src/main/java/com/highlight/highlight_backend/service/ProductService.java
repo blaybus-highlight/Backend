@@ -3,15 +3,19 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.Admin;
 import com.highlight.highlight_backend.domain.Product;
 import com.highlight.highlight_backend.domain.ProductImage;
+import com.highlight.highlight_backend.domain.UserProductView;
 import com.highlight.highlight_backend.dto.ProductCreateRequestDto;
 import com.highlight.highlight_backend.dto.ProductResponseDto;
 import com.highlight.highlight_backend.dto.ProductUpdateRequestDto;
+import com.highlight.highlight_backend.dto.ViewTogetherProductResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ProductErrorCode;
 import com.highlight.highlight_backend.exception.AdminErrorCode;
 import com.highlight.highlight_backend.repository.AdminRepository;
 import com.highlight.highlight_backend.repository.ProductImageRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
+import com.highlight.highlight_backend.repository.UserProductViewRepository;
+import com.highlight.highlight_backend.repository.ProductAssociationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,10 +28,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 상품 관리 서비스
@@ -47,6 +57,8 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
     private final AdminRepository adminRepository;
     private final S3Service s3Service;
+    private final UserProductViewRepository userProductViewRepository;
+    private final ProductAssociationRepository productAssociationRepository;
     
     /**
      * 상품 등록
@@ -277,6 +289,212 @@ public class ProductService {
         
         // 4. Page 객체로 변환
         return new PageImpl<>(responseDtos, PageRequest.of(0, size), responseDtos.size());
+    }
+
+    /**
+     * 상품 조회 이력 저장
+     * 
+     * @param productId 조회한 상품 ID
+     * @param userId 사용자 ID (비회원일 경우 null)
+     * @param sessionId 세션 ID
+     * @param ipAddress IP 주소
+     * @param userAgent User-Agent 정보
+     */
+    @Transactional
+    public void recordProductView(Long productId, Long userId, String sessionId, 
+                                  String ipAddress, String userAgent) {
+        try {
+            // 1. 상품 존재 확인
+            Product product = productRepository.findById(productId)
+                .orElse(null);
+            
+            if (product == null) {
+                log.warn("존재하지 않는 상품 조회 시도: {}", productId);
+                return;
+            }
+
+            // 2. 중복 조회 방지 (30분 이내 동일 상품 조회는 무시)
+            var recentView = userProductViewRepository.findRecentViewByUserOrSessionAndProduct(
+                userId, sessionId, productId, LocalDateTime.now().minusMinutes(30)
+            );
+            
+            if (recentView.isPresent()) {
+                log.debug("최근 조회 기록이 존재하여 중복 저장 방지: productId={}, userId={}, sessionId={}", 
+                         productId, userId, sessionId);
+                return;
+            }
+
+            // 3. 조회 이력 저장
+            UserProductView productView = new UserProductView(
+                userId, sessionId, product, ipAddress, userAgent
+            );
+            
+            userProductViewRepository.save(productView);
+            
+            log.debug("상품 조회 이력 저장 완료: productId={}, userId={}, sessionId={}", 
+                     productId, userId, sessionId);
+                     
+        } catch (Exception e) {
+            // 조회 이력 저장 실패가 상품 조회 자체를 방해하지 않도록 예외 처리
+            log.error("상품 조회 이력 저장 실패: productId={}, error={}", productId, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 함께 본 상품 추천 조회
+     * 
+     * @param productId 기준 상품 ID
+     * @param size 추천 상품 개수 (기본값: 4)
+     * @return 함께 본 상품 목록
+     */
+    public Page<ViewTogetherProductResponseDto> getViewedTogetherProducts(Long productId, int size) {
+        log.info("함께 본 상품 추천 조회: {} (개수: {})", productId, size);
+        
+        try {
+            // 1. 기준 상품 존재 확인
+            Product baseProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+            // 2. 연관도 기반 추천 상품 조회
+            List<ViewTogetherProductResponseDto> associationBasedRecommendations = 
+                getAssociationBasedRecommendations(productId, size);
+            
+            // 3. 연관도 기반 추천이 충분하지 않은 경우 카테고리/브랜드 기반 보완
+            if (associationBasedRecommendations.size() < size) {
+                int remainingSize = size - associationBasedRecommendations.size();
+                List<ViewTogetherProductResponseDto> fallbackRecommendations = 
+                    getFallbackRecommendations(baseProduct, remainingSize, associationBasedRecommendations);
+                
+                associationBasedRecommendations.addAll(fallbackRecommendations);
+            }
+            
+            // 4. 최종 결과를 size만큼 제한
+            List<ViewTogetherProductResponseDto> finalRecommendations = associationBasedRecommendations
+                .stream()
+                .limit(size)
+                .toList();
+                
+            log.info("함께 본 상품 추천 조회 완료: {} -> {} 개", productId, finalRecommendations.size());
+            
+            // 5. Page 객체로 변환
+            return new PageImpl<>(finalRecommendations, PageRequest.of(0, size), finalRecommendations.size());
+            
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("함께 본 상품 추천 조회 실패: productId={}, error={}", productId, e.getMessage(), e);
+            
+            // 오류 발생 시 빈 결과 반환 (서비스 중단 방지)
+            return new PageImpl<>(List.of(), PageRequest.of(0, size), 0);
+        }
+    }
+
+    /**
+     * 연관도 기반 추천 상품 조회
+     */
+    private List<ViewTogetherProductResponseDto> getAssociationBasedRecommendations(Long productId, int size) {
+        // 1. 상품 연관도 테이블에서 조회
+        var associations = productAssociationRepository.findBySourceProductIdOrderByScoreDesc(
+            productId, PageRequest.of(0, size)
+        );
+        
+        if (!associations.isEmpty()) {
+            log.debug("연관도 테이블에서 {} 개의 추천 상품 발견", associations.size());
+            return associations.stream()
+                .map(ViewTogetherProductResponseDto::fromAssociation)
+                .toList();
+        }
+        
+        // 2. 연관도 테이블에 데이터가 없으면 실시간 계산
+        log.debug("연관도 테이블이 비어있음, 실시간 계산 시작");
+        return calculateRealTimeAssociations(productId, size);
+    }
+
+    /**
+     * 실시간 연관도 계산 (배치 작업이 아직 실행되지 않았을 때)
+     */
+    private List<ViewTogetherProductResponseDto> calculateRealTimeAssociations(Long productId, int size) {
+        try {
+            LocalDateTime since30Days = LocalDateTime.now().minusDays(30);
+            
+            // 1. 세션 기반 함께 조회된 상품들
+            List<Object[]> sessionBasedViews = userProductViewRepository
+                .findCoViewedProductsBySession(productId, since30Days);
+                
+            // 2. 사용자 기반 함께 조회된 상품들
+            List<Object[]> userBasedViews = userProductViewRepository
+                .findCoViewedProductsByUser(productId, since30Days);
+            
+            // 3. 결과를 합치고 점수 계산
+            Map<Long, Double> productScores = new HashMap<>();
+            
+            // 세션 기반 점수 (가중치 2.0)
+            for (Object[] result : sessionBasedViews) {
+                Long targetProductId = (Long) result[0];
+                Long coViewCount = (Long) result[1];
+                productScores.put(targetProductId, 
+                    productScores.getOrDefault(targetProductId, 0.0) + coViewCount * 2.0);
+            }
+            
+            // 사용자 기반 점수 (가중치 1.5)
+            for (Object[] result : userBasedViews) {
+                Long targetProductId = (Long) result[0];
+                Long coViewCount = (Long) result[1];
+                productScores.put(targetProductId, 
+                    productScores.getOrDefault(targetProductId, 0.0) + coViewCount * 1.5);
+            }
+            
+            // 4. 점수순으로 정렬하여 상위 N개 선택
+            List<Long> topProductIds = productScores.entrySet().stream()
+                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
+                .limit(size)
+                .map(Map.Entry::getKey)
+                .toList();
+                
+            // 5. 상품 정보 조회 및 DTO 변환
+            List<ViewTogetherProductResponseDto> recommendations = new ArrayList<>();
+            for (Long targetProductId : topProductIds) {
+                Product product = productRepository.findById(targetProductId).orElse(null);
+                if (product != null && product.getStatus() == Product.ProductStatus.ACTIVE) {
+                    BigDecimal score = BigDecimal.valueOf(productScores.get(targetProductId));
+                    recommendations.add(ViewTogetherProductResponseDto.fromProduct(product, score));
+                }
+            }
+            
+            log.debug("실시간 계산으로 {} 개의 추천 상품 생성", recommendations.size());
+            return recommendations;
+            
+        } catch (Exception e) {
+            log.error("실시간 연관도 계산 실패: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    /**
+     * 폴백 추천 (카테고리/브랜드 기반)
+     */
+    private List<ViewTogetherProductResponseDto> getFallbackRecommendations(
+            Product baseProduct, int size, List<ViewTogetherProductResponseDto> existingRecommendations) {
+        
+        // 이미 추천된 상품 ID 목록
+        Set<Long> excludeIds = existingRecommendations.stream()
+            .map(ViewTogetherProductResponseDto::getId)
+            .collect(Collectors.toSet());
+        excludeIds.add(baseProduct.getId()); // 자기 자신도 제외
+        
+        // 카테고리/브랜드 기반 관련 상품 조회
+        List<Product> fallbackProducts = productRepository.findRecommendedProducts(
+            baseProduct.getId(), 
+            baseProduct.getCategory(), 
+            baseProduct.getBrand(),
+            PageRequest.of(0, size * 2) // 여유있게 조회
+        );
+        
+        return fallbackProducts.stream()
+            .filter(product -> !excludeIds.contains(product.getId()))
+            .limit(size)
+            .map(product -> ViewTogetherProductResponseDto.fromProduct(product, BigDecimal.ZERO))
+            .toList();
     }
     
     /**

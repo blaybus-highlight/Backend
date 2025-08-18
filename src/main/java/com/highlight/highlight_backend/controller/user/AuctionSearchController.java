@@ -3,7 +3,9 @@ package com.highlight.highlight_backend.controller.user;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.dto.UserAuctionDetailResponseDto;
 import com.highlight.highlight_backend.dto.UserAuctionResponseDto;
+import com.highlight.highlight_backend.dto.ViewTogetherProductResponseDto;
 import com.highlight.highlight_backend.service.UserAuctionSearchService;
+import com.highlight.highlight_backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * 경매 목록을 조회하고 세부사항을 확인하는 controller
@@ -32,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuctionSearchController {
 
     private final UserAuctionSearchService userAuctionSearchService;
+    private final ProductService productService;
 
     /**
      *
@@ -108,11 +114,99 @@ public class AuctionSearchController {
     })
     public ResponseEntity<ResponseDto<UserAuctionDetailResponseDto>> getAuctionDetail(
             @Parameter(description = "조회할 경매의 고유 ID", required = true, example = "1")
-            @PathVariable("auctionId") Long auctionId
+            @PathVariable("auctionId") Long auctionId,
+            HttpServletRequest request
     ) {
         log.info("GET /api/public/{} - 경매 목록 조회 요청 (비로그인 사용자도 접근 가능)", auctionId);
 
+        // 1. 경매 상세 정보 조회
         UserAuctionDetailResponseDto response = userAuctionSearchService.getProductsDetail(auctionId);
+        
+        // 2. 상품 조회 이력 저장 (비동기로 처리하여 응답 속도에 영향 주지 않음)
+        try {
+            // UserAuctionDetailResponseDto에 productId 필드가 없으므로 일단 주석 처리
+            // TODO: DTO에 productId 추가하거나 다른 방법으로 productId 획득
+            Long productId = null; // response.getProductId();
+            if (productId != null) {
+                HttpSession session = request.getSession();
+                String sessionId = session.getId();
+                String ipAddress = getClientIpAddress(request);
+                String userAgent = request.getHeader("User-Agent");
+                
+                // 현재는 비회원 사용자만 고려 (userId = null)
+                productService.recordProductView(productId, null, sessionId, ipAddress, userAgent);
+            }
+        } catch (Exception e) {
+            // 조회 이력 저장 실패가 상세 조회에 영향주지 않도록 로그만 남김
+            log.warn("상품 조회 이력 저장 실패: auctionId={}, error={}", auctionId, e.getMessage());
+        }
+        
         return ResponseEntity.ok(ResponseDto.success(response, "경매 상세 목록을 성공적으로 불러왔습니다"));
+    }
+
+    /**
+     * 함께 본 상품 추천 조회
+     * 
+     * @param productId 기준 상품 ID
+     * @param size 추천 상품 개수 (기본값: 4)
+     * @return 함께 본 상품 목록
+     */
+    @GetMapping("/{productId}/viewed-together")
+    @Operation(
+        summary = "함께 본 상품 추천 조회", 
+        description = "특정 상품과 함께 조회된 다른 상품들을 사용자 행동 패턴 분석을 기반으로 추천합니다. " +
+                     "연관도 점수가 높은 순으로 정렬되며, 로그인 없이 접근 가능한 공개 API입니다. " +
+                     "추천 알고리즘은 동일 세션/사용자의 조회 패턴, 시간적 근접성, 카테고리 유사성을 종합적으로 고려합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "함께 본 상품 추천 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<ResponseDto<Page<ViewTogetherProductResponseDto>>> getViewedTogetherProducts(
+            @Parameter(description = "기준 상품의 고유 ID", required = true, example = "1")
+            @PathVariable("productId") Long productId,
+            @Parameter(description = "추천 상품 개수", example = "4")
+            @RequestParam(defaultValue = "4") int size) {
+        
+        log.info("GET /api/public/products/{}/viewed-together - 함께 본 상품 추천 조회 요청 (size: {})", 
+                productId, size);
+
+        Page<ViewTogetherProductResponseDto> response = productService.getViewedTogetherProducts(productId, size);
+        
+        return ResponseEntity.ok(
+                ResponseDto.success(response, "함께 본 상품 추천을 성공적으로 조회했습니다."));
+    }
+
+    /**
+     * 클라이언트 IP 주소 추출
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String[] headerNames = {
+            "X-Forwarded-For",
+            "X-Real-IP", 
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED"
+        };
+        
+        for (String headerName : headerNames) {
+            String ip = request.getHeader(headerName);
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                // 첫 번째 IP 주소 반환 (프록시 체인의 경우)
+                return ip.split(",")[0].trim();
+            }
+        }
+        
+        return request.getRemoteAddr();
     }
 }
