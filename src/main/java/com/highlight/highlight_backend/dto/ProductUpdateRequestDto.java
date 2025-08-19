@@ -84,6 +84,11 @@ public class ProductUpdateRequestDto {
      * 상품 등급
      */
     private Product.ProductRank rank;
+
+    /**
+     * 프리미엄 여부
+     */
+    private Boolean isPremium;
     
     /**
      * 상품 상태

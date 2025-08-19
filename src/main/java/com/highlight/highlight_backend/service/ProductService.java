@@ -193,6 +193,9 @@ public class ProductService {
         if (request.getImages() != null) {
             updateProductImages(product, request.getImages());
         }
+        if (request.getIsPremium() != null) {
+            product.setIsPremium(request.getIsPremium());
+        }
         
         Product updatedProduct = productRepository.save(product);
         
