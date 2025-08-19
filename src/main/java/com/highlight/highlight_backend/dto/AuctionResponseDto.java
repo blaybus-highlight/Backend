@@ -56,7 +56,11 @@ public class AuctionResponseDto {
      * 실제 경매 종료 시간
      */
     private LocalDateTime actualEndTime;
-    
+
+    /**
+     * 시작가
+     */
+    private BigDecimal startPrice;
     /**
      * 현재 최고 입찰가
      */
@@ -130,6 +134,7 @@ public class AuctionResponseDto {
             auction.getActualEndTime(),
             auction.getCurrentHighestBid(),
             auction.getBuyItNowPrice(),
+            auction.getStartPrice(),
             auction.getTotalBidders(),
             auction.getTotalBids(),
             auction.getCreatedBy(),
@@ -157,6 +162,7 @@ public class AuctionResponseDto {
             auction.getActualEndTime(),
             auction.getCurrentHighestBid(),
             auction.getBuyItNowPrice(),
+            auction.getStartPrice(),
             auction.getTotalBidders(),
             auction.getTotalBids(),
             auction.getCreatedBy(),

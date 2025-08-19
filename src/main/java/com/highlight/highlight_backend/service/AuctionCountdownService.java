@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,7 @@ public class AuctionCountdownService {
     /**
      * 진행 중인 경매의 남은 시간을 주기적으로 전송 (1초마다)
      */
+    @Transactional(readOnly = true)
     @Scheduled(fixedRate = 1000) // 1초마다 실행
     public void sendCountdownUpdates() {
         try {
