@@ -11,7 +11,7 @@ import lombok.Getter;
 public class UserLoginResponseDto {
 
 
-    private String user_id;
+    private String userId;
 
     private String nickname;
 

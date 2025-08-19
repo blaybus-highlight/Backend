@@ -159,7 +159,7 @@ public class UserService {
 
     public UserLoginResponseDto login(UserLoginRequestDto loginRequestDto) {
         // 1. 사용자 조회
-        User user = userRepository.findByUserId(loginRequestDto.getUser_id())
+        User user = userRepository.findByUserId(loginRequestDto.getUserId())
                 .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_LOGIN_CREDENTIALS));
 
         // 2. 비밀번호 검증
@@ -173,7 +173,7 @@ public class UserService {
 
         // 4. UserResponseDto 생성 및 반환
         return UserLoginResponseDto.builder()
-                .user_id(user.getUserId())
+                .userId(user.getUserId())
                 .nickname(user.getNickname())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

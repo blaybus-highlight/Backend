@@ -12,7 +12,7 @@ public class UserLoginRequestDto {
 
     @Column(nullable = false)
     @Size(min = 6, max = 15)
-    private String user_id;
+    private String userId;
 
     @Size(min = 8, max = 15)
     @Column(nullable = false)
