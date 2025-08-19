@@ -322,6 +322,48 @@ public class WebSocketService {
     }
     
     /**
+     * 경매 취소 알림 전송
+     * 
+     * @param auction 취소된 경매
+     */
+    public void sendAuctionCancelledNotification(Auction auction) {
+        Long auctionId = auction.getId();
+        log.info("WebSocket - 경매 취소 알림 전송: 경매={}", auctionId);
+        
+        WebSocketMessageDto message = WebSocketMessageDto.of(
+            WebSocketMessageType.AUCTION_CANCELLED, 
+            auctionId, 
+            "경매가 취소되었습니다"
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, message);
+        
+        log.info("WebSocket - 경매 취소 알림 전송 완료: {}", destination);
+    }
+    
+    /**
+     * 경매 정보 수정 알림 전송
+     * 
+     * @param auction 수정된 경매
+     */
+    public void sendAuctionUpdatedNotification(Auction auction) {
+        Long auctionId = auction.getId();
+        log.info("WebSocket - 경매 정보 수정 알림 전송: 경매={}", auctionId);
+        
+        WebSocketMessageDto message = WebSocketMessageDto.of(
+            WebSocketMessageType.AUCTION_UPDATED, 
+            auctionId, 
+            "경매 정보가 수정되었습니다"
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, message);
+        
+        log.info("WebSocket - 경매 정보 수정 알림 전송 완료: {}", destination);
+    }
+    
+    /**
      * 연결 끊김 알림 전송
      * 
      * @param auctionId 경매 ID
