@@ -203,20 +203,26 @@ public class AuctionService {
         }
         
         // 5. 종료 처리
+        Auction updatedAuction;
         if (request.isCancel()) {
             // 경매 중단
             auction.cancelAuction(adminId, request.getEndReason());
             auction.getProduct().setStatus(Product.ProductStatus.ACTIVE); // 상품 상태를 다시 활성으로
+            
+            updatedAuction = auctionRepository.save(auction);
+            
+            // 경매 취소 알림 전송
+            webSocketService.sendAuctionCancelledNotification(updatedAuction);
         } else {
             // 경매 정상 종료
             auction.endAuction(adminId, request.getEndReason());
             auction.getProduct().setStatus(Product.ProductStatus.AUCTION_COMPLETED);
+            
+            updatedAuction = auctionRepository.save(auction);
+            
+            // 6. WebSocket으로 경매 종료 알림 전송
+            webSocketService.sendAuctionEndedNotification(updatedAuction, winnerBid);
         }
-        
-        Auction updatedAuction = auctionRepository.save(auction);
-        
-        // 6. WebSocket으로 경매 종료 알림 전송
-        webSocketService.sendAuctionEndedNotification(updatedAuction, winnerBid);
         
         log.info("경매 {}완료: {} (ID: {})", 
                 request.isCancel() ? "중단 " : "", 

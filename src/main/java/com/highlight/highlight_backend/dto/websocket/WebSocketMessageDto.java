@@ -60,6 +60,7 @@ public class WebSocketMessageDto {
         AUCTION_STARTED("경매 시작"),              // 경매 시작
         AUCTION_ENDED("경매 종료"),                // 경매 종료
         AUCTION_CANCELLED("경매 취소"),            // 경매 취소
+        AUCTION_UPDATED("경매 정보 수정"),          // 경매 정보 수정 알림
         AUCTION_ENDING_SOON("경매 종료 임박"),      // 경매 종료 임박 (1분 이내)
         BID_OUTBID("입찰 경합 패배"),              // 내 입찰이 다른 입찰에 밀림
         CONNECTION_ESTABLISHED("연결 성공"),       // WebSocket 연결 성공
