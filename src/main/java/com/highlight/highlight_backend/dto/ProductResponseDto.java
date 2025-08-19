@@ -39,7 +39,31 @@ public class ProductResponseDto {
      * 상품 히스토리
      */
     private String history;
-    
+
+    /**
+     * 사이즈
+     */
+    private String size;
+
+    /**
+     * 갯수
+     */
+    private Long productCount;
+
+    /**
+     * 재질
+     */
+    private String material;
+
+    /**
+     * 생산년도
+     */
+    private Integer manufactureYear;
+
+    /**
+     * 브랜드 명
+     */
+    private String brand;
     /**
      * 기본 정보
      */
@@ -122,6 +146,11 @@ public class ProductResponseDto {
             product.getProductName(),
             product.getShortDescription(),
             product.getHistory(),
+            product.getSize(),
+            product.getProductCount(),
+            product.getMaterial(),
+            product.getManufactureYear(),
+            product.getBrand(),
             product.getExpectedEffects(),
             product.getDetailedInfo(),
             product.getStatus(),
