@@ -51,6 +51,12 @@ public class ProductCreateRequestDto {
      */
     @Size(max = 5000, message = "상세 정보는 5000자를 초과할 수 없습니다")
     private String detailedInfo;
+
+    /**
+     * 상세 정보
+     */
+    @Size(max = 5000, message = "상세 정보는 5000자를 초과할 수 없습니다")
+    private Boolean isPremium;
     
     
     
