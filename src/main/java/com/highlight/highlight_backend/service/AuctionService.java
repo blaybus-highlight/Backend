@@ -243,7 +243,7 @@ public class AuctionService {
         
         validateAuctionManagePermission(adminId);
         
-        return auctionRepository.findAll(pageable)
+        return auctionRepository.findByCreatedByOrderByCreatedAtDesc(adminId, pageable)
             .map(AuctionResponseDto::from);
     }
     
