@@ -23,7 +23,7 @@ public class ProductUpdateRequestDto {
     private String productName;
     
     /**
-     * 상품 소개 (25자 제한)
+     * 상품 소개 (50자 제한)
      */
     private String shortDescription;
     

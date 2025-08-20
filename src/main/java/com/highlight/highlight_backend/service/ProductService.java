@@ -139,7 +139,7 @@ public class ProductService {
         
         // 3. 상품 소개 글자 수 검증
         if (StringUtils.hasText(request.getShortDescription()) && 
-            request.getShortDescription().length() > 25) {
+            request.getShortDescription().length() > 50) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
