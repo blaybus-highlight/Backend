@@ -155,4 +155,35 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.bidAmount DESC")
     Optional<Bid> findTopByAuctionAndUserOrderByBidAmountDesc(@Param("auction") Auction auction, @Param("user") User user);
+    
+    /**
+     * 사용자별 경매 참여 횟수 기준 랭킹 조회
+     * 
+     * 각 사용자가 참여한 고유한 경매 수를 기준으로 랭킹을 생성합니다.
+     * 취소된 입찰은 제외하고 계산하며, 참여 횟수가 같은 경우 userId 오름차순으로 정렬합니다.
+     * 
+     * @param pageable 페이지네이션 정보 (페이지 번호, 크기)
+     * @return Object[] 배열의 리스트 - [userId, nickname, auctionCount] 순서
+     *         - userId (Long): 사용자 ID
+     *         - nickname (String): 사용자 닉네임  
+     *         - auctionCount (Long): 참여한 고유 경매 수
+     */
+    @Query("SELECT u.id as userId, u.nickname as nickname, COUNT(DISTINCT b.auction) as auctionCount " +
+           "FROM User u " +
+           "JOIN Bid b ON u.id = b.user.id " +
+           "WHERE b.status != 'CANCELLED' " +
+           "GROUP BY u.id, u.nickname " +
+           "ORDER BY COUNT(DISTINCT b.auction) DESC, u.id ASC")
+    List<Object[]> findUserRankingByAuctionParticipation(Pageable pageable);
+    
+    /**
+     * 경매에 참여한 총 사용자 수 조회
+     * 
+     * 적어도 하나 이상의 입찰을 한 사용자의 수를 반환합니다.
+     * 취소된 입찰은 제외하고 계산합니다.
+     * 
+     * @return 경매에 참여한 총 사용자 수 (중복 제거)
+     */
+    @Query("SELECT COUNT(DISTINCT b.user) FROM Bid b WHERE b.status != 'CANCELLED'")
+    Long countDistinctUsers();
 }
