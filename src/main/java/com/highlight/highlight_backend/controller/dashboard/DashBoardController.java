@@ -26,7 +26,7 @@ public class DashBoardController {
 
     private final AdminDashBoardService adminDashBoardService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<ResponseDto<AdminDashBoardStatsResponseDto>> getDashboardStats(
             Authentication authentication
     ) {
