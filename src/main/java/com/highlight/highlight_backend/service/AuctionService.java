@@ -107,6 +107,12 @@ public class AuctionService {
         productRepository.save(product);
         
         Auction savedAuction = auctionRepository.save(auction);
+
+        // 9. 관리자 경매 보류 건수 증가
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
+        admin.setPending(admin.getPending() == null ? 1L : admin.getPending() + 1);
+        adminRepository.save(admin);
         
         log.info("경매 예약 완료: {} (ID: {})", product.getProductName(), savedAuction.getId());
         
@@ -160,6 +166,13 @@ public class AuctionService {
         
         // 6. WebSocket으로 경매 시작 알림 전송
         webSocketService.sendAuctionStartedNotification(updatedAuction);
+
+        // 7. 관리자 경매 상태 카운트 업데이트 (pending -> inProgress)
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
+        admin.setPending(admin.getPending() == null || admin.getPending() <= 0 ? 0L : admin.getPending() - 1);
+        admin.setInProgress(admin.getInProgress() == null ? 1L : admin.getInProgress() + 1);
+        adminRepository.save(admin);
         
         log.info("경매 시작 완료: {} (ID: {})", 
                 auction.getProduct().getProductName(), updatedAuction.getId());
@@ -223,6 +236,13 @@ public class AuctionService {
             // 6. WebSocket으로 경매 종료 알림 전송
             webSocketService.sendAuctionEndedNotification(updatedAuction, winnerBid);
         }
+
+        // 관리자 경매 상태 카운트 업데이트 (inProgress -> completed)
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
+        admin.setInProgress(admin.getInProgress() == null || admin.getInProgress() <= 0 ? 0L : admin.getInProgress() - 1);
+        admin.setCompleted(admin.getCompleted() == null ? 1L : admin.getCompleted() + 1);
+        adminRepository.save(admin);
         
         log.info("경매 {}완료: {} (ID: {})", 
                 request.isCancel() ? "중단 " : "", 
