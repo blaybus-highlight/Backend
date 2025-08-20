@@ -55,7 +55,7 @@ public class ProductCreateRequestDto {
     /**
      * 상세 정보
      */
-    @Size(max = 5000, message = "상세 정보는 5000자를 초과할 수 없습니다")
+    @NotNull(message = "프리미엄 여부는 필수입니다")
     private Boolean isPremium;
     
     
