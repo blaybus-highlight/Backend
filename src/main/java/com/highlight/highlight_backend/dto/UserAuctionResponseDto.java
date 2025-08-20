@@ -26,6 +26,7 @@ public class UserAuctionResponseDto {
     private Long id;  // 상품 ID
     private String thumbnailUrl; // 썸네일 이미지 URL
     private String productName;  // 상품명
+    private String brand; // 브렌드명
     // Auction 에서 가져올 정보
     private BigDecimal currentPrice;   // 현재가
     private BigDecimal buyNowPrice;    // 즉시구매가
@@ -51,6 +52,7 @@ public class UserAuctionResponseDto {
                 .id(auction.getId())
                 .thumbnailUrl(thumbnailUrl)
                 .productName(product.getProductName())
+                .brand(product.getBrand())
                 // Auction 정보
                 .buyNowPrice(auction.getBuyItNowPrice())
                 .currentPrice(auction.getCurrentHighestBid())
