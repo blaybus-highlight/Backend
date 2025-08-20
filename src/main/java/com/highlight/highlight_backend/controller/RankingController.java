@@ -109,6 +109,6 @@ public class RankingController {
         
         log.info("랭킹 대시보드 조회 완료 - 반환된 랭킹 수: {}", rankingDashboard.getRankings().size());
         
-        return ResponseUtils.success("랭킹 대시보드 조회 성공", rankingDashboard);
+        return ResponseUtils.success(rankingDashboard, "랭킹 대시보드 조회 성공");
     }
 }
