@@ -34,6 +34,7 @@ public class CorsConfig {
             "http://localhost:3000",        // React 개발 서버
             "http://localhost:3001",        // Next.js 개발 서버
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",  // frontend 배포 도메인
             "https://blaybus-highlight-9ai6wfffl-yun-jinwoos-projects.vercel.app",  // Vercel 배포 도메인
             "https://*.vercel.app",         // Vercel 도메인 패턴
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
