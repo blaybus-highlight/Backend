@@ -1,6 +1,9 @@
 package com.highlight.highlight_backend.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,6 +26,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Bid {
     
@@ -55,18 +60,21 @@ public class Bid {
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private BidStatus status = BidStatus.ACTIVE;
     
     /**
      * 자동 입찰 여부
      */
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isAutoBid = false;
     
     /**
      * 즉시구매 여부
      */
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isBuyItNow = false;
     
     /**

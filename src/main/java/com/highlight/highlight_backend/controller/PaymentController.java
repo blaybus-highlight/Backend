@@ -115,7 +115,7 @@ public class PaymentController {
         return ResponseEntity.ok(ResponseDto.success(result));
     }
     /**
-     * 즉시 구매 처리
+     * 즉시 구매 처리 (경매 종료만)
      *
      * @param request 즉시 구매 요청
      * @param authentication 인증 정보
@@ -123,8 +123,8 @@ public class PaymentController {
      */
     @PostMapping("/buy-it-now")
     @Operation(
-            summary = "즉시 구매",
-            description = "경매 상품을 즉시 구매합니다. 포인트를 사용하여 구매 금액을 할인받을 수 있습니다."
+            summary = "즉시 구매 (경매 종료)",
+            description = "경매 상품을 즉시 구매하여 경매를 종료합니다. 실제 결제는 별도 API에서 처리됩니다."
     )
     @ApiResponses({
             @ApiResponse(
