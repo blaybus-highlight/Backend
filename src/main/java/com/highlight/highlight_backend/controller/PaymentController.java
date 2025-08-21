@@ -43,7 +43,7 @@ public class PaymentController {
      * @param auctionId 경매 ID
      * @return 결제 미리보기 정보
      */
-    @GetMapping("/preview/{auctionId}")
+    @PostMapping("/preview/{auctionId}")
     @Operation(
         summary = "결제 미리보기 조회", 
         description = "경매 낙찰 후 결제 전 미리보기 정보를 조회합니다. 낙찰가, 보유 포인트, 실제 결제 금액 등을 확인할 수 있습니다."
