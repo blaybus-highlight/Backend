@@ -171,12 +171,15 @@ public class PaymentService {
         BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
         BigDecimal finalPoint = remainingPoint.add(pointReward);
         user.setPoint(finalPoint);
+        
+        // 11. 사용자 참여 횟수 증가 및 랭크 업데이트 (결제 완료 시)
+        user.participateInAuction();
         userRepository.save(user);
         
-        log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 사용자ID={}, 포인트 적립={}", 
-                auctionId, userId, pointReward);
+        log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 사용자ID={}, 포인트 적립={}, 참여횟수={}", 
+                auctionId, userId, pointReward, user.getParticipationCount());
         
-        // 11. WebSocket으로 결제 완료 알림 전송
+        // 12. WebSocket으로 결제 완료 알림 전송
         webSocketService.sendPaymentCompletedNotification(auctionId, actualPaymentAmount);
         
         return PaymentResponseDto.builder()
@@ -235,8 +238,8 @@ public class PaymentService {
             throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
         }
         
-        // 5. 즉시 구매를 위한 입찰 생성 (낙찰자로 설정)
-
+                // 5. 즉시 구매를 위한 입찰 생성 (낙찰자로 설정)
+ 
         Bid buyItNowBid = Bid.builder()
             .auction(auction)
             .user(user)
@@ -246,20 +249,24 @@ public class PaymentService {
             .build();
         bidRepository.save(buyItNowBid);
         
-        // 6. 경매 종료 처리
+        // 6. 사용자 참여 횟수 증가 및 랭크 업데이트
+        user.participateInAuction();
+        userRepository.save(user);
+        
+        // 7. 경매 종료 처리
         auction.setStatus(Auction.AuctionStatus.COMPLETED);
         auction.setActualEndTime(LocalDateTime.now());
         auction.setEndReason("즉시 구매로 인한 경매 종료");
         auction.setEndedBy(userId);
         auctionRepository.save(auction);
         
-        log.info("즉시 구매 경매 종료 완료: 경매ID={}, 사용자ID={}, 즉시구매가={}", 
-                request.getAuctionId(), userId, auction.getBuyItNowPrice());
+        log.info("즉시 구매 경매 종료 완료: 경매ID={}, 사용자ID={}, 즉시구매가={}, 참여횟수={}", 
+                request.getAuctionId(), userId, auction.getBuyItNowPrice(), user.getParticipationCount());
         
-        // 7. WebSocket으로 즉시 구매 완료 알림 전송
+        // 8. WebSocket으로 즉시 구매 완료 알림 전송
         webSocketService.sendBuyItNowCompletedNotification(request.getAuctionId(), auction.getBuyItNowPrice());
         
-        // 8. 결제 미리보기용 정보 반환 (실제 결제는 별도 API에서 처리)
+        // 9. 결제 미리보기용 정보 반환 (실제 결제는 별도 API에서 처리)
         BigDecimal shippingFee = auction.getShippingFee() != null ? auction.getShippingFee() : BigDecimal.ZERO;
         BigDecimal totalAmount = auction.getBuyItNowPrice().add(shippingFee);
         
