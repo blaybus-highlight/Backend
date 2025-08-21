@@ -3,8 +3,8 @@ package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Product;
-import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
 import com.highlight.highlight_backend.repository.AuctionRepository;
+import com.highlight.highlight_backend.repository.BidRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +27,9 @@ public class AuctionSchedulerService {
 
     private final TaskScheduler taskScheduler;
     private final AuctionRepository auctionRepository;
+    private final BidRepository bidRepository;
     private final ProductRepository productRepository;
     private final WebSocketService webSocketService;
-    private final AuctionService auctionService;
 
     private final Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
@@ -102,12 +102,19 @@ public class AuctionSchedulerService {
             log.info("{}개의 종료된 경매를 발견했습니다. 지금 종료합니다.", expiredAuctions.size());
             for (Auction auction : expiredAuctions) {
                 try {
-                    AuctionEndRequestDto request = new AuctionEndRequestDto();
-                    request.setEndReason("경매 시간 만료로 인한 자동 종료");
-                    request.setImmediateEnd(true);
-                    request.setCancel(false);
+                    // 경매 상태를 COMPLETED로 변경
+                    auction.setStatus(Auction.AuctionStatus.COMPLETED);
+                    auction.setActualEndTime(LocalDateTime.now());
+                    auction.setEndReason("경매 시간 만료로 인한 자동 종료");
+                    auction.setEndedBy(1L); // 시스템 자동 종료
+                    auctionRepository.save(auction);
                     
-                    auctionService.endAuction(auction.getId(), request, 1L); // 시스템 자동 종료 (adminId = 1L)
+                    // 낙찰자 찾기
+                    var winnerBid = bidRepository.findCurrentHighestBidByAuction(auction).orElse(null);
+                    
+                    // WebSocket으로 경매 종료 알림 전송
+                    webSocketService.sendAuctionEndedNotification(auction, winnerBid);
+                    
                     log.info("경매가 자동으로 종료되었습니다. 경매 ID: {}", auction.getId());
                 } catch (Exception e) {
                     log.error("경매 자동 종료 중 오류 발생. 경매 ID: {}, 오류: {}", auction.getId(), e.getMessage(), e);

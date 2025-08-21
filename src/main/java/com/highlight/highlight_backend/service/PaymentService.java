@@ -6,7 +6,6 @@ import com.highlight.highlight_backend.domain.User;
 import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
 import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.dto.PaymentPreviewDto;
-import com.highlight.highlight_backend.dto.PaymentRequestDto;
 import com.highlight.highlight_backend.dto.PaymentResponseDto;
 import com.highlight.highlight_backend.exception.AuctionErrorCode;
 import com.highlight.highlight_backend.exception.BusinessException;
