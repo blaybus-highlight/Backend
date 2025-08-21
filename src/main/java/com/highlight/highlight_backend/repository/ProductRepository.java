@@ -1,5 +1,6 @@
 package com.highlight.highlight_backend.repository;
 
+import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return 해당 카테고리의 상품 목록
      */
     Page<Product> findByCategory(String category, Pageable pageable);
+
+
+    Page<Product> findByCreatedByOrderByCreatedAtDesc(Long createdBy, Pageable pageable);
     
     /**
      * 등록한 관리자로 조회
