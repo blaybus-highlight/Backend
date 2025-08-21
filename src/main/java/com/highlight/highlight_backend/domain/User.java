@@ -43,7 +43,7 @@ public class User {
     private BigDecimal point = BigDecimal.valueOf(0); // 포인트
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "user_rank", nullable = false)
     private Rank rank = Rank.SEED; // 기본 등급은 SEED
 
     @Column(nullable = false)
