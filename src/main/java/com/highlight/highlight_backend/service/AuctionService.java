@@ -235,6 +235,11 @@ public class AuctionService {
             
             // 6. WebSocket으로 경매 종료 알림 전송
             webSocketService.sendAuctionEndedNotification(updatedAuction, winnerBid);
+            
+            // 7. 낙찰자에게 결제 필요 알림 전송
+            if (winnerBid != null) {
+                webSocketService.sendPaymentRequiredNotification(auctionId, winnerBid.getBidAmount());
+            }
         }
 
         // 관리자 경매 상태 카운트 업데이트 (inProgress -> completed)

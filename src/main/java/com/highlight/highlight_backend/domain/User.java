@@ -8,6 +8,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,6 +38,16 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String phoneNumber;
+
+    @Column(nullable = false)
+    private BigDecimal point = 0; // 포인트
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Rank rank = Rank.SEED; // 기본 등급은 SEED
+
+    @Column(nullable = false)
+    private Long participationCount = 0; // 참여 횟수
     
     /**
      * 휴대폰 인증 여부
@@ -70,4 +81,74 @@ public class User {
     private boolean eventSnsEnabled;  // 이벤트 광고 SNS 수신 여부
 
     private LocalDateTime deletedAt;
+
+    public enum Rank {
+        SEED("새싹"),
+        Leaflet("잎새"),
+        Trunker("줄기"),
+        Flower("꽃");
+
+        private final String description;
+
+        Rank(String description) {
+            this.description = description;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+        
+        /**
+         * 참여 횟수에 따른 등급 반환
+         */
+        public static Rank getRankByParticipationCount(Long participationCount) {
+            if (participationCount >= 0 && participationCount <= 4) {
+                return SEED;
+            } else if (participationCount >= 5 && participationCount <= 9) {
+                return Leaflet;
+            } else if (participationCount >= 10 && participationCount <= 14) {
+                return Trunker;
+            } else if (participationCount >= 15 && participationCount <= 20) {
+                return Flower;
+            } else {
+                return Flower; // 20 이상은 최고 등급
+            }
+        }
+        
+        /**
+         * 다음 등급까지 필요한 참여 횟수 반환
+         */
+        public static Long getRequiredParticipationForNextRank(Long currentParticipationCount) {
+            Rank currentRank = getRankByParticipationCount(currentParticipationCount);
+            
+            switch (currentRank) {
+                case SEED:
+                    return 5L - currentParticipationCount;
+                case Leaflet:
+                    return 10L - currentParticipationCount;
+                case Trunker:
+                    return 15L - currentParticipationCount;
+                case Flower:
+                    return 0L; // 이미 최고 등급
+                default:
+                    return 0L;
+            }
+        }
+    }
+    
+    /**
+     * 경매 참여 시 호출되는 메서드
+     * 참여 횟수를 증가시키고 등급을 업데이트
+     */
+    public void participateInAuction() {
+        this.participationCount++;
+        this.rank = Rank.getRankByParticipationCount(this.participationCount);
+    }
+    
+    /**
+     * 다음 등급까지 필요한 참여 횟수 반환
+     */
+    public Long getRequiredParticipationForNextRank() {
+        return Rank.getRequiredParticipationForNextRank(this.participationCount);
+    }
 }

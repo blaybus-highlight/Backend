@@ -248,4 +248,12 @@ public class Product {
             .findFirst()
             .orElse(images.isEmpty() ? null : images.get(0));
     }
+    
+    /**
+     * 대표 이미지 URL 조회
+     */
+    public String getMainImageUrl() {
+        ProductImage primaryImage = getPrimaryImage();
+        return primaryImage != null ? primaryImage.getImageUrl() : null;
+    }
 }

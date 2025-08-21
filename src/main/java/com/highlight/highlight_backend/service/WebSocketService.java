@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -391,5 +392,51 @@ public class WebSocketService {
      */
     public void sendErrorMessage(Long auctionId, ErrorCode errorCode) {
         sendErrorMessage(auctionId, errorCode.getMessage());
+    }
+    
+    /**
+     * 결제 필요 알림 전송
+     * 
+     * @param auctionId 경매 ID
+     * @param winningBidAmount 낙찰가
+     */
+    public void sendPaymentRequiredNotification(Long auctionId, BigDecimal winningBidAmount) {
+        log.info("WebSocket - 결제 필요 알림 전송: 경매={}, 낙찰가={}", auctionId, winningBidAmount);
+        
+        String message = String.format("축하합니다! %s원에 낙찰되었습니다. 결제를 진행해주세요.", winningBidAmount);
+        
+        WebSocketMessageDto webSocketMessage = WebSocketMessageDto.of(
+            WebSocketMessageType.PAYMENT_REQUIRED, 
+            auctionId, 
+            message
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, webSocketMessage);
+        
+        log.info("WebSocket - 결제 필요 알림 전송 완료: {}", destination);
+    }
+    
+    /**
+     * 결제 완료 알림 전송
+     * 
+     * @param auctionId 경매 ID
+     * @param paymentAmount 결제 금액
+     */
+    public void sendPaymentCompletedNotification(Long auctionId, BigDecimal paymentAmount) {
+        log.info("WebSocket - 결제 완료 알림 전송: 경매={}, 결제금액={}", auctionId, paymentAmount);
+        
+        String message = String.format("결제가 완료되었습니다! 결제 금액: %s원", paymentAmount);
+        
+        WebSocketMessageDto webSocketMessage = WebSocketMessageDto.of(
+            WebSocketMessageType.PAYMENT_COMPLETED, 
+            auctionId, 
+            message
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, webSocketMessage);
+        
+        log.info("WebSocket - 결제 완료 알림 전송 완료: {}", destination);
     }
 }

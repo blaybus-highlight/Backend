@@ -2,6 +2,7 @@ package com.highlight.highlight_backend.dto;
 
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Bid;
+import com.highlight.highlight_backend.dto.PaymentPreviewDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,8 +44,8 @@ public class AuctionMyResultResponseDto {
     @Schema(description = "경매 종료 시간", example = "2025-08-16T15:30:00")
     private LocalDateTime endTime;
     
-    @Schema(description = "결과 메시지", example = "축하합니다! 낙찰받으셨습니다.")
-    private String message;
+    @Schema(description = "상품 이미지 URL", example = "https://example.com/image.jpg")
+    private String productImageUrl;
     
     @Schema(description = "액션 버튼 텍스트", example = "결제하기")
     private String actionButtonText;
@@ -83,9 +84,9 @@ public class AuctionMyResultResponseDto {
             winningBid.getBidAmount(),
             winningBid.getBidAmount(),
             auction.getActualEndTime() != null ? auction.getActualEndTime() : auction.getScheduledEndTime(),
-            "입찰 결과가 나왔어요! 축하합니다 지금 결제를 진행해 보세요.",
+            auction.getProduct().getMainImageUrl(), // 상품 이미지 URL
             "결제하기",
-            "/payment/" + auction.getId()
+            "/api/payments/preview/" + auction.getId()
         );
     }
     
@@ -100,7 +101,7 @@ public class AuctionMyResultResponseDto {
             userBid.getBidAmount(),
             winningAmount,
             auction.getActualEndTime() != null ? auction.getActualEndTime() : auction.getScheduledEndTime(),
-            "아쉽게도 이번엔 놓쳤습니다. 비슷한 상품 경매가 열리고 있어요.",
+            auction.getProduct().getMainImageUrl(), // 상품 이미지 URL
             "다른 경매 참여하기",
             "/auctions?category=" + auction.getProduct().getCategory()
         );
@@ -117,7 +118,7 @@ public class AuctionMyResultResponseDto {
             userBid.getBidAmount(),
             null,
             auction.getActualEndTime() != null ? auction.getActualEndTime() : auction.getScheduledEndTime(),
-            "입찰이 취소되었습니다.",
+            auction.getProduct().getMainImageUrl(), // 상품 이미지 URL
             "내 입찰 내역 확인하기",
             "/my-bids"
         );
@@ -134,7 +135,7 @@ public class AuctionMyResultResponseDto {
             null,
             null,
             auction.getActualEndTime() != null ? auction.getActualEndTime() : auction.getScheduledEndTime(),
-            "이 경매에 참여하지 않으셨습니다.",
+            auction.getProduct().getMainImageUrl(), // 상품 이미지 URL
             "다른 경매 보기",
             "/auctions"
         );

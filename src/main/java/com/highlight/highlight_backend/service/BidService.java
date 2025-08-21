@@ -96,7 +96,15 @@ public class BidService {
         // 7. 새 입찰 저장
         Bid savedBid = bidRepository.save(newBid);
         
-        // 8. 경매 정보 업데이트
+        // 8. 사용자가 해당 경매에 처음 입찰하는 경우 참여 횟수 증가
+        if (currentHighestBid.isEmpty() || !currentHighestBid.get().getUser().getId().equals(userId)) {
+            user.participateInAuction();
+            userRepository.save(user);
+            log.info("경매 참여 횟수 증가: 사용자ID={}, 새로운 참여횟수={}, 등급={}", 
+                    userId, user.getParticipationCount(), user.getRank());
+        }
+        
+        // 9. 경매 정보 업데이트
         updateAuctionInfo(auction, request.getBidAmount());
         
         // 9. WebSocket으로 실시간 알림 전송

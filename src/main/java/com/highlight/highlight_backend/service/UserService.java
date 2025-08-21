@@ -8,6 +8,7 @@ import com.highlight.highlight_backend.dto.UserDetailResponseDto;
 import com.highlight.highlight_backend.dto.UserLoginRequestDto;
 import com.highlight.highlight_backend.dto.UserLoginResponseDto;
 import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
+import com.highlight.highlight_backend.dto.MyPageResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.UserErrorCode;
 import com.highlight.highlight_backend.exception.SmsErrorCode;
@@ -191,5 +192,21 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
+    }
+    
+    /**
+     * 마이페이지 정보 조회
+     * 
+     * @param userId 사용자 ID
+     * @return 마이페이지 정보
+     */
+    @Transactional(readOnly = true)
+    public MyPageResponseDto getMyPageInfo(Long userId) {
+        log.info("마이페이지 정보 조회: 사용자ID={}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        
+        return MyPageResponseDto.from(user);
     }
 }
