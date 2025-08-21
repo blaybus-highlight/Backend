@@ -439,4 +439,27 @@ public class WebSocketService {
         
         // log.info("WebSocket - 결제 완료 알림 전송 완료: {}", destination);
     }
+    
+    /**
+     * 즉시 구매 완료 알림 전송
+     * 
+     * @param auctionId 경매 ID
+     * @param buyItNowPrice 즉시 구매가
+     */
+    public void sendBuyItNowCompletedNotification(Long auctionId, BigDecimal buyItNowPrice) {
+        // log.info("WebSocket - 즉시 구매 완료 알림 전송: 경매={}, 즉시구매가={}", auctionId, buyItNowPrice);
+        
+        String message = String.format("즉시 구매가 완료되었습니다! 구매 금액: %s원", buyItNowPrice);
+        
+        WebSocketMessageDto webSocketMessage = WebSocketMessageDto.of(
+            WebSocketMessageType.BUY_IT_NOW_COMPLETED, 
+            auctionId, 
+            message
+        );
+        
+        String destination = "/topic/auction/" + auctionId;
+        messagingTemplate.convertAndSend(destination, webSocketMessage);
+        
+        // log.info("WebSocket - 즉시 구매 완료 알림 전송 완료: {}", destination);
+    }
 }

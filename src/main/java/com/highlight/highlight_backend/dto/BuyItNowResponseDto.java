@@ -1,24 +1,25 @@
 package com.highlight.highlight_backend.dto;
 
-import com.highlight.highlight_backend.domain.Auction;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 즉시구매 응답 DTO
+ * 즉시 구매 응답 DTO
  * 
- * 즉시구매 완료 후 반환되는 응답 데이터입니다.
- * 
- * @author 전우선
- * @since 2025.08.16
+ * @author 탁찬홍
+ * @since 2025.08.21
  */
 @Getter
 @Builder
-@Schema(description = "즉시구매 응답 DTO")
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "즉시 구매 응답 DTO")
 public class BuyItNowResponseDto {
     
     /**
@@ -28,60 +29,44 @@ public class BuyItNowResponseDto {
     private Long auctionId;
     
     /**
-     * 상품 ID
-     */
-    @Schema(description = "상품 ID", example = "1")
-    private Long productId;
-    
-    /**
      * 상품명
      */
-    @Schema(description = "상품명", example = "빈티지 의자")
+    @Schema(description = "상품명", example = "아이폰 14 프로")
     private String productName;
     
     /**
-     * 즉시구매가
+     * 즉시 구매가
      */
-    @Schema(description = "즉시구매가", example = "100000")
+    @Schema(description = "즉시 구매가", example = "100000")
     private BigDecimal buyItNowPrice;
     
     /**
-     * 구매자 ID
+     * 사용한 포인트
      */
-    @Schema(description = "구매자 ID", example = "1")
-    private Long buyerId;
+    @Schema(description = "사용한 포인트", example = "10000")
+    private BigDecimal usedPointAmount;
     
     /**
-     * 즉시구매 완료 시간
+     * 실제 결제 금액
      */
-    @Schema(description = "즉시구매 완료 시간")
-    private LocalDateTime purchaseCompletedAt;
+    @Schema(description = "실제 결제 금액", example = "90000")
+    private BigDecimal actualPaymentAmount;
     
     /**
-     * 경매 상태
+     * 포인트 적립 금액
      */
-    @Schema(description = "경매 상태", example = "COMPLETED")
-    private String auctionStatus;
+    @Schema(description = "결제 금액의 1% 포인트 적립", example = "900")
+    private BigDecimal pointReward;
     
     /**
-     * 결제 상태 (추후 결제 시스템 연동 시 사용)
+     * 결제 후 남은 포인트
      */
-    @Schema(description = "결제 상태", example = "COMPLETED")
-    private String paymentStatus;
+    @Schema(description = "결제 후 남은 포인트", example = "5900")
+    private BigDecimal remainingPoint;
     
     /**
-     * 경매 정보로부터 BuyItNowResponseDto 생성
+     * 구매 완료 시간
      */
-    public static BuyItNowResponseDto from(Auction auction, Long buyerId) {
-        return BuyItNowResponseDto.builder()
-                .auctionId(auction.getId())
-                .productId(auction.getProduct().getId())
-                .productName(auction.getProduct().getProductName())
-                .buyItNowPrice(auction.getBuyItNowPrice())
-                .buyerId(buyerId)
-                .purchaseCompletedAt(auction.getActualEndTime())
-                .auctionStatus(auction.getStatus().name())
-                .paymentStatus("COMPLETED") // 임시로 완료 상태
-                .build();
-    }
+    @Schema(description = "구매 완료 시간", example = "2025-08-19T16:30:00")
+    private LocalDateTime completedAt;
 }

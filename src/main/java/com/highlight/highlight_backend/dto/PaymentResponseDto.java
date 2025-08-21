@@ -65,6 +65,12 @@ public class PaymentResponseDto {
     private BigDecimal remainingPoint;
     
     /**
+     * 포인트 적립 금액
+     */
+    @Schema(description = "결제 금액의 1% 포인트 적립", example = "500")
+    private BigDecimal pointReward;
+    
+    /**
      * 결제 상태
      */
     @Schema(description = "결제 상태", example = "COMPLETED")

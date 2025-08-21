@@ -3,9 +3,12 @@ package com.highlight.highlight_backend.service;
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Bid;
 import com.highlight.highlight_backend.domain.User;
+import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
+import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.dto.PaymentPreviewDto;
 import com.highlight.highlight_backend.dto.PaymentRequestDto;
 import com.highlight.highlight_backend.dto.PaymentResponseDto;
+import com.highlight.highlight_backend.exception.AuctionErrorCode;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.PaymentErrorCode;
 import com.highlight.highlight_backend.exception.UserErrorCode;
@@ -93,7 +96,7 @@ public class PaymentService {
     }
     
     /**
-     * 결제 처리
+     * 결제 처리 (일반 낙찰)
      * 
      * @param request 결제 요청
      * @param userId 사용자 ID
@@ -152,19 +155,25 @@ public class PaymentService {
         // 7. 포인트 차감
         BigDecimal remainingPoint = user.getPoint().subtract(usePointAmount);
         user.setPoint(remainingPoint);
-        userRepository.save(user);
         
         // 8. 결제 처리 (실제 결제 API 호출은 여기서 구현)
         // TODO: 실제 결제 API 호출 로직 구현
-        log.info("결제 처리 시작: 경매ID={}, 사용자ID={}, 낙찰가={}, 사용포인트={}, 실제결제={}", 
+        log.info("일반 낙찰 결제 처리 시작: 경매ID={}, 사용자ID={}, 낙찰가={}, 사용포인트={}, 실제결제={}", 
                 request.getAuctionId(), userId, winningBidAmount, usePointAmount, actualPaymentAmount);
         
         // 9. 결제 완료 처리
         // TODO: Payment 엔티티에 결제 정보 저장
         
-        log.info("결제 처리 완료: 경매ID={}, 사용자ID={}", request.getAuctionId(), userId);
+        // 10. 결제 금액의 1% 포인트 적립
+        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
+        BigDecimal finalPoint = remainingPoint.add(pointReward);
+        user.setPoint(finalPoint);
+        userRepository.save(user);
         
-        // 10. WebSocket으로 결제 완료 알림 전송
+        log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 사용자ID={}, 포인트 적립={}", 
+                request.getAuctionId(), userId, pointReward);
+        
+        // 11. WebSocket으로 결제 완료 알림 전송
         webSocketService.sendPaymentCompletedNotification(request.getAuctionId(), actualPaymentAmount);
         
         return PaymentResponseDto.builder()
@@ -174,7 +183,8 @@ public class PaymentService {
             .winningBidAmount(winningBidAmount)
             .usedPointAmount(usePointAmount)
             .actualPaymentAmount(actualPaymentAmount)
-            .remainingPoint(remainingPoint)
+            .remainingPoint(finalPoint)
+            .pointReward(pointReward)
             .paymentStatus("COMPLETED")
             .completedAt(LocalDateTime.now())
             .build();
@@ -201,5 +211,86 @@ public class PaymentService {
         
         // 3. 결제 처리
         return processPayment(request, userId);
+    }
+    
+    /**
+     * 즉시 구매 처리
+     * 
+     * @param request 즉시 구매 요청
+     * @param userId 사용자 ID
+     * @return 즉시 구매 결과
+     */
+    @Transactional
+    public BuyItNowResponseDto processBuyItNow(BuyItNowRequestDto request, Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        
+        // 2. 경매 조회
+        Auction auction = auctionRepository.findByIdWithProduct(request.getAuctionId())
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
+        
+        // 3. 경매 상태 확인 (진행 중이어야 함)
+        if (auction.getStatus() != Auction.AuctionStatus.IN_PROGRESS) {
+            throw new BusinessException(AuctionErrorCode.AUCTION_NOT_IN_PROGRESS);
+        }
+        
+        // 4. 즉시 구매가 설정 여부 확인
+        if (auction.getBuyItNowPrice() == null || auction.getBuyItNowPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
+        }
+        
+        // 5. 포인트 사용 금액 검증
+        BigDecimal usePointAmount = request.getUsePointAmount();
+        if (usePointAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
+        }
+        
+        if (usePointAmount.compareTo(user.getPoint()) > 0) {
+            throw new BusinessException(PaymentErrorCode.INSUFFICIENT_POINT);
+        }
+        
+        if (usePointAmount.compareTo(auction.getBuyItNowPrice()) > 0) {
+            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
+        }
+        
+        // 6. 실제 결제 금액 계산
+        BigDecimal actualPaymentAmount = auction.getBuyItNowPrice().subtract(usePointAmount);
+        
+        // 7. 포인트 차감
+        BigDecimal remainingPoint = user.getPoint().subtract(usePointAmount);
+        user.setPoint(remainingPoint);
+        
+        // 8. 결제 처리 (실제 결제 API 호출은 여기서 구현)
+        // TODO: 실제 결제 API 호출 로직 구현
+        log.info("즉시 구매 처리 시작: 경매ID={}, 사용자ID={}, 즉시구매가={}, 사용포인트={}, 실제결제={}", 
+                request.getAuctionId(), userId, auction.getBuyItNowPrice(), usePointAmount, actualPaymentAmount);
+        
+        // 9. 경매 종료 처리
+        auction.setStatus(Auction.AuctionStatus.COMPLETED);
+        auction.setActualEndTime(LocalDateTime.now());
+        
+        // 10. 결제 금액의 1% 포인트 적립
+        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
+        BigDecimal finalPoint = remainingPoint.add(pointReward);
+        user.setPoint(finalPoint);
+        userRepository.save(user);
+        
+        log.info("즉시 구매 처리 완료: 경매ID={}, 사용자ID={}, 포인트 적립={}", 
+                request.getAuctionId(), userId, pointReward);
+        
+        // 11. WebSocket으로 즉시 구매 완료 알림 전송
+        webSocketService.sendBuyItNowCompletedNotification(request.getAuctionId(), auction.getBuyItNowPrice());
+        
+        return BuyItNowResponseDto.builder()
+            .auctionId(request.getAuctionId())
+            .productName(auction.getProduct().getProductName())
+            .buyItNowPrice(auction.getBuyItNowPrice())
+            .usedPointAmount(usePointAmount)
+            .actualPaymentAmount(actualPaymentAmount)
+            .pointReward(pointReward)
+            .remainingPoint(finalPoint)
+            .completedAt(LocalDateTime.now())
+            .build();
     }
 }
