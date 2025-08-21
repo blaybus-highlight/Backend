@@ -30,7 +30,7 @@ public class ProductCreateRequestDto {
      * 상품 소개 (50자 제한)
      */
     @NotBlank(message = "상품 소개는 필수입니다")
-    @Size(max = 50, message = "상품 소개는 50자를 초과할 수 없습니다")
+    @Size(max = 100, message = "상품 소개는 100자를 초과할 수 없습니다")
     private String shortDescription;
     
     /**

@@ -76,7 +76,7 @@ public class ProductService {
         
         // 2. 상품 소개 글자 수 검증
         if (StringUtils.hasText(request.getShortDescription()) && 
-            request.getShortDescription().length() > 60) {
+            request.getShortDescription().length() > 100) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         
@@ -139,7 +139,7 @@ public class ProductService {
         
         // 3. 상품 소개 글자 수 검증
         if (StringUtils.hasText(request.getShortDescription()) && 
-            request.getShortDescription().length() > 50) {
+            request.getShortDescription().length() > 100) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_DESCRIPTION_LENGTH);
         }
         

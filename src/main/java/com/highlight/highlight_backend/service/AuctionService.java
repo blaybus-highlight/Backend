@@ -50,6 +50,7 @@ public class AuctionService {
     private final WebSocketService webSocketService;
     private final BidRepository bidRepository;
     private final UserRepository userRepository;
+    private final AuctionSchedulerService auctionSchedulerService;
     
     /**
      * 경매 예약
@@ -108,13 +109,16 @@ public class AuctionService {
         
         Auction savedAuction = auctionRepository.save(auction);
 
-        // 9. 관리자 경매 보류 건수 증가
+        // 9. 경매 시작 스케줄링 설정
+        auctionSchedulerService.scheduleAuctionStart(savedAuction);
+
+        // 10. 관리자 경매 보류 건수 증가
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
         admin.setPending(admin.getPending() == null ? 1L : admin.getPending() + 1);
         adminRepository.save(admin);
         
-        log.info("경매 예약 완료: {} (ID: {})", product.getProductName(), savedAuction.getId());
+        log.info("경매 예약 완료: {} (ID: {}), 스케줄링 설정됨", product.getProductName(), savedAuction.getId());
         
         return AuctionResponseDto.from(savedAuction);
     }
@@ -143,6 +147,9 @@ public class AuctionService {
         if (!auction.canStart()) {
             throw new BusinessException(AuctionErrorCode.CANNOT_START_AUCTION);
         }
+
+        // 스케줄된 시작 작업이 있다면 취소
+        auctionSchedulerService.cancelScheduledStart(auctionId);
         
         // 4. 즉시 시작 vs 시간 입력 처리
         if (request.isImmediateStart()) {
@@ -204,6 +211,9 @@ public class AuctionService {
         if (!auction.canEnd()) {
             throw new BusinessException(AuctionErrorCode.CANNOT_END_AUCTION);
         }
+
+        // 스케줄된 시작 작업이 있다면 취소
+        auctionSchedulerService.cancelScheduledStart(auctionId);
         
         // 4. 낙찰자 조회 (정상 종료인 경우)
         Bid winnerBid = null;
@@ -263,7 +273,7 @@ public class AuctionService {
      * @param adminId 조회하는 관리자 ID
      * @return 경매 목록
      */
-    public Page<AuctionResponseDto> getAuctionList(Pageable pageable, Long adminId) {
+    public Page<AuctionResponseDto> getAdminAuctionList(Pageable pageable, Long adminId) {
         log.info("경매 목록 조회 요청 (관리자: {})", adminId);
         
         validateAuctionManagePermission(adminId);
@@ -291,18 +301,18 @@ public class AuctionService {
     }
     
     /**
-     * 진행 중인 경매 목록 조회
+     * 관리자의 전체 경매 목록 조회
      * 
      * @param pageable 페이징 정보
      * @param adminId 조회하는 관리자 ID
      * @return 진행 중인 경매 목록
      */
     public Page<AuctionResponseDto> getActiveAuctions(Pageable pageable, Long adminId) {
-        log.info("진행 중인 경매 목록 조회 요청 (관리자: {})", adminId);
+        log.info("관리자 전체 경매 목록 조회 요청 (관리자: {})", adminId);
         
         validateAuctionManagePermission(adminId);
         
-        return auctionRepository.findByStatus(Auction.AuctionStatus.IN_PROGRESS, pageable)
+        return auctionRepository.findByCreatedByOrderByCreatedAtDesc(adminId, pageable)
             .map(AuctionResponseDto::from);
     }
     
@@ -367,6 +377,9 @@ public class AuctionService {
         
         // 2. 즉시구매 가능 여부 검증
         validateBuyItNowEligibility(auction, userId);
+
+        // 스케줄된 시작 작업이 있다면 취소
+        auctionSchedulerService.cancelScheduledStart(auctionId);
         
         // 3. 즉시구매 처리
         Bid buyItNowBid = createBuyItNowBid(auction, userId);

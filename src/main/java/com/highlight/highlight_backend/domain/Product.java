@@ -42,7 +42,7 @@ public class Product {
     /**
      * 상품 소개 (25자 제한)
      */
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String shortDescription;
     
     /**

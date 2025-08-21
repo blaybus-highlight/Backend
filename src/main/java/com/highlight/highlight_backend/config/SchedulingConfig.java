@@ -1,8 +1,11 @@
 package com.highlight.highlight_backend.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * 스케줄링 및 비동기 처리 설정
@@ -14,5 +17,17 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAsync
 public class SchedulingConfig {
-    // Spring의 기본 스케줄러와 비동기 처리기를 활성화
+    
+    /**
+     * TaskScheduler 빈 설정
+     * 경매 스케줄링을 위한 스케줄러를 제공합니다.
+     */
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(10);
+        scheduler.setThreadNamePrefix("auction-scheduler-");
+        scheduler.initialize();
+        return scheduler;
+    }
 }

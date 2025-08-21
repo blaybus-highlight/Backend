@@ -270,7 +270,7 @@ public class AuctionController {
         Long adminId = (Long) authentication.getPrincipal();
         log.info("GET /api/auctions - 경매 목록 조회 요청 (관리자: {})", adminId);
         
-        Page<AuctionResponseDto> response = auctionService.getAuctionList(pageable, adminId);
+        Page<AuctionResponseDto> response = auctionService.getAdminAuctionList(pageable, adminId);
         
         return ResponseEntity.ok(
             ResponseDto.success(response, "경매 목록을 성공적으로 조회했습니다.")
