@@ -75,16 +75,18 @@ public class PaymentController {
         return ResponseEntity.ok(ResponseDto.success(preview));
     }
     
+
+    
     /**
-     * 결제 처리 (포인트 최대 활용)
+     * 결제 처리 (포인트 자동 사용)
      * 
      * @param auctionId 경매 ID
      * @return 결제 결과
      */
     @PostMapping("/process/{auctionId}")
     @Operation(
-        summary = "결제 처리 (포인트 최대 활용)", 
-        description = "포인트를 최대한 활용하여 결제를 처리합니다. 보유한 포인트를 모두 사용하여 실제 결제 금액을 최소화합니다."
+        summary = "결제 처리 (포인트 자동 사용)", 
+        description = "보유한 포인트를 자동으로 최대한 사용하여 결제를 처리합니다."
     )
     @ApiResponses({
         @ApiResponse(
@@ -98,58 +100,18 @@ public class PaymentController {
         @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
         @ApiResponse(responseCode = "409", description = "이미 결제 완료된 경매")
     })
-    public ResponseEntity<ResponseDto<PaymentResponseDto>> processPaymentWithMaxPoint(
+    public ResponseEntity<ResponseDto<PaymentResponseDto>> processPayment(
             @Parameter(description = "경매 ID", required = true, example = "1")
             @PathVariable Long auctionId,
             Authentication authentication) {
         
         Long currentUserId = getCurrentUserId(authentication);
-        log.info("일반 낙찰 결제 처리 요청 (포인트 최대 활용): 경매ID={}, 사용자ID={}", auctionId, currentUserId);
+        log.info("일반 낙찰 결제 처리 요청 (포인트 자동 사용): 경매ID={}, 사용자ID={}", auctionId, currentUserId);
         
-        PaymentResponseDto result = paymentService.processPaymentWithMaxPoint(auctionId, currentUserId);
+        PaymentResponseDto result = paymentService.processPayment(auctionId, currentUserId);
         
         log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 결제ID={}, 사용포인트={}, 실제결제={}", 
                 auctionId, result.getPaymentId(), result.getUsedPointAmount(), result.getActualPaymentAmount());
-        
-        return ResponseEntity.ok(ResponseDto.success(result));
-    }
-    
-    /**
-     * 결제 처리 (사용자 지정)
-     * 
-     * @param request 결제 요청
-     * @return 결제 결과
-     */
-    @PostMapping("/process")
-    @Operation(
-        summary = "결제 처리 (사용자 지정)", 
-        description = "사용자가 지정한 포인트 사용 금액으로 결제를 처리합니다."
-    )
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200", 
-            description = "결제 처리 성공",
-            content = @Content(schema = @Schema(implementation = PaymentResponseDto.class))
-        ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 (포인트 부족, 잘못된 금액 등)"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음 (낙찰자가 아님)"),
-        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
-        @ApiResponse(responseCode = "409", description = "이미 결제 완료된 경매")
-    })
-    public ResponseEntity<ResponseDto<PaymentResponseDto>> processPayment(
-            @Parameter(description = "결제 요청 정보", required = true)
-            @RequestBody PaymentRequestDto request,
-            Authentication authentication) {
-        
-        Long currentUserId = getCurrentUserId(authentication);
-        log.info("일반 낙찰 결제 처리 요청 (사용자 지정): 경매ID={}, 사용자ID={}, 사용포인트={}, 실제결제={}", 
-                request.getAuctionId(), currentUserId, request.getUsePointAmount(), request.getActualPaymentAmount());
-        
-        PaymentResponseDto result = paymentService.processPayment(request, currentUserId);
-        
-        log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 결제ID={}, 사용포인트={}, 실제결제={}", 
-                request.getAuctionId(), result.getPaymentId(), result.getUsedPointAmount(), result.getActualPaymentAmount());
         
         return ResponseEntity.ok(ResponseDto.success(result));
     }

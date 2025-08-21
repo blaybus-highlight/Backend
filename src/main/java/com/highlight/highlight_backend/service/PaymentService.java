@@ -98,18 +98,18 @@ public class PaymentService {
     /**
      * 결제 처리 (일반 낙찰)
      * 
-     * @param request 결제 요청
+     * @param auctionId 경매 ID
      * @param userId 사용자 ID
      * @return 결제 결과
      */
     @Transactional
-    public PaymentResponseDto processPayment(PaymentRequestDto request, Long userId) {
+    public PaymentResponseDto processPayment(Long auctionId, Long userId) {
         // 1. 사용자 조회
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 2. 경매 조회
-        Auction auction = auctionRepository.findByIdWithProduct(request.getAuctionId())
+        Auction auction = auctionRepository.findByIdWithProduct(auctionId)
             .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         
         // 3. 경매 종료 여부 확인
@@ -130,27 +130,19 @@ public class PaymentService {
         
         // 6. 결제 금액 검증
         BigDecimal winningBidAmount = winningBid.getBidAmount();
-        BigDecimal usePointAmount = request.getUsePointAmount();
-        BigDecimal actualPaymentAmount = request.getActualPaymentAmount();
         
-        // 포인트 사용 금액 검증
-        if (usePointAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
+        // 포인트 사용 금액 계산 (사용자가 보유한 포인트 전부 사용)
+        BigDecimal usePointAmount;
+        if (user.getPoint().compareTo(BigDecimal.ZERO) <= 0) {
+            // 포인트가 0이면 포인트 사용하지 않음
+            usePointAmount = BigDecimal.ZERO;
+        } else {
+            // 포인트를 보유하고 있으면 전부 사용 (낙찰가를 초과하지 않도록)
+            usePointAmount = user.getPoint().min(winningBidAmount);
         }
         
-        if (usePointAmount.compareTo(user.getPoint()) > 0) {
-            throw new BusinessException(PaymentErrorCode.INSUFFICIENT_POINT);
-        }
-        
-        if (usePointAmount.compareTo(winningBidAmount) > 0) {
-            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
-        }
-        
-        // 실제 결제 금액 검증
-        BigDecimal expectedPaymentAmount = winningBidAmount.subtract(usePointAmount);
-        if (actualPaymentAmount.compareTo(expectedPaymentAmount) != 0) {
-            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_AMOUNT);
-        }
+        // 실제 결제 금액 계산
+        BigDecimal actualPaymentAmount = winningBidAmount.subtract(usePointAmount);
         
         // 7. 포인트 차감
         BigDecimal remainingPoint = user.getPoint().subtract(usePointAmount);
@@ -159,7 +151,7 @@ public class PaymentService {
         // 8. 결제 처리 (실제 결제 API 호출은 여기서 구현)
         // TODO: 실제 결제 API 호출 로직 구현
         log.info("일반 낙찰 결제 처리 시작: 경매ID={}, 사용자ID={}, 낙찰가={}, 사용포인트={}, 실제결제={}", 
-                request.getAuctionId(), userId, winningBidAmount, usePointAmount, actualPaymentAmount);
+                auctionId, userId, winningBidAmount, usePointAmount, actualPaymentAmount);
         
         // 9. 결제 완료 처리
         // TODO: Payment 엔티티에 결제 정보 저장
@@ -171,14 +163,14 @@ public class PaymentService {
         userRepository.save(user);
         
         log.info("일반 낙찰 결제 처리 완료: 경매ID={}, 사용자ID={}, 포인트 적립={}", 
-                request.getAuctionId(), userId, pointReward);
+                auctionId, userId, pointReward);
         
         // 11. WebSocket으로 결제 완료 알림 전송
-        webSocketService.sendPaymentCompletedNotification(request.getAuctionId(), actualPaymentAmount);
+        webSocketService.sendPaymentCompletedNotification(auctionId, actualPaymentAmount);
         
         return PaymentResponseDto.builder()
             .paymentId(1L) // TODO: 실제 Payment ID로 변경
-            .auctionId(request.getAuctionId())
+            .auctionId(auctionId)
             .productName(auction.getProduct().getProductName())
             .winningBidAmount(winningBidAmount)
             .usedPointAmount(usePointAmount)
@@ -199,18 +191,8 @@ public class PaymentService {
      */
     @Transactional
     public PaymentResponseDto processPaymentWithMaxPoint(Long auctionId, Long userId) {
-        // 1. 결제 미리보기 조회
-        PaymentPreviewDto preview = getPaymentPreview(auctionId, userId);
-        
-        // 2. 최대 포인트 사용으로 결제 요청 생성
-        PaymentRequestDto request = new PaymentRequestDto(
-            auctionId,
-            preview.getMaxUsablePoint(), // 최대 사용 가능한 포인트
-            preview.getActualPaymentAmount() // 실제 결제 금액
-        );
-        
-        // 3. 결제 처리
-        return processPayment(request, userId);
+        // 결제 처리 (자동으로 최대 포인트 사용)
+        return processPayment(auctionId, userId);
     }
     
     /**
@@ -240,18 +222,14 @@ public class PaymentService {
             throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
         }
         
-        // 5. 포인트 사용 금액 검증
-        BigDecimal usePointAmount = request.getUsePointAmount();
-        if (usePointAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
-        }
-        
-        if (usePointAmount.compareTo(user.getPoint()) > 0) {
-            throw new BusinessException(PaymentErrorCode.INSUFFICIENT_POINT);
-        }
-        
-        if (usePointAmount.compareTo(auction.getBuyItNowPrice()) > 0) {
-            throw new BusinessException(PaymentErrorCode.INVALID_POINT_USAGE);
+        // 5. 포인트 사용 금액 계산 (사용자가 보유한 포인트 전부 사용)
+        BigDecimal usePointAmount;
+        if (user.getPoint().compareTo(BigDecimal.ZERO) <= 0) {
+            // 포인트가 0이면 포인트 사용하지 않음
+            usePointAmount = BigDecimal.ZERO;
+        } else {
+            // 포인트를 보유하고 있으면 전부 사용 (즉시구매가를 초과하지 않도록)
+            usePointAmount = user.getPoint().min(auction.getBuyItNowPrice());
         }
         
         // 6. 실제 결제 금액 계산
