@@ -52,7 +52,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "WHERE b.auction = :auction " +
            "AND b.status IN ('ACTIVE', 'WINNING') " +
            "ORDER BY b.bidAmount DESC, b.createdAt ASC")
-    Optional<Bid> findTopByAuctionOrderByBidAmountDesc(@Param("auction") Auction auction);
+    Optional<Bid> findCurrentHighestBidByAuction(@Param("auction") Auction auction);
     
     /**
      * 특정 경매의 최고 입찰가 조회

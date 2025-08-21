@@ -74,7 +74,7 @@ public class BidService {
         }
         
         // 5. 기존 최고 입찰 조회
-        Optional<Bid> currentHighestBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
+        Optional<Bid> currentHighestBid = bidRepository.findCurrentHighestBidByAuction(auction);
         
         // 5. 입찰 엔티티 생성
         Bid newBid = new Bid();
@@ -175,7 +175,7 @@ public class BidService {
         
         // 현재 최고 입찰자 조회
         String winnerNickname = null;
-        Optional<Bid> currentWinner = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
+        Optional<Bid> currentWinner = bidRepository.findCurrentHighestBidByAuction(auction);
         if (currentWinner.isPresent()) {
             winnerNickname = currentWinner.get().getUser().getNickname();
         }
@@ -351,7 +351,7 @@ public class BidService {
         }
         
         // 낙찰자 조회
-        Optional<Bid> winnerBidOpt = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
+        Optional<Bid> winnerBidOpt = bidRepository.findCurrentHighestBidByAuction(auction);
         
         if (winnerBidOpt.isEmpty()) {
             // 입찰 없이 종료된 경우 (이론적으로 불가능하지만 안전장치)

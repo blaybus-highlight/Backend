@@ -66,7 +66,7 @@ public class PaymentService {
         }
         
         // 4. 낙찰자 확인
-        Bid winningBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction)
+        Bid winningBid = bidRepository.findCurrentHighestBidByAuction(auction)
             .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         
         if (!winningBid.getUser().getId().equals(userId)) {
@@ -118,7 +118,7 @@ public class PaymentService {
         }
         
         // 4. 낙찰자 확인
-        Bid winningBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction)
+        Bid winningBid = bidRepository.findCurrentHighestBidByAuction(auction)
             .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         
         if (!winningBid.getUser().getId().equals(userId)) {

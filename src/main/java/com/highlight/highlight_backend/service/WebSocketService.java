@@ -84,7 +84,7 @@ public class WebSocketService {
         
         // 현재 최고 입찰자 조회
         String winnerNickname = null;
-        Optional<Bid> currentWinner = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction);
+        Optional<Bid> currentWinner = bidRepository.findCurrentHighestBidByAuction(auction);
         if (currentWinner.isPresent()) {
             winnerNickname = currentWinner.get().getUser().getNickname();
         }

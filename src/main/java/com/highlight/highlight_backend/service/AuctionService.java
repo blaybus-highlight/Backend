@@ -208,7 +208,7 @@ public class AuctionService {
         // 4. 낙찰자 조회 (정상 종료인 경우)
         Bid winnerBid = null;
         if (!request.isCancel()) {
-            winnerBid = bidRepository.findTopByAuctionOrderByBidAmountDesc(auction).orElse(null);
+            winnerBid = bidRepository.findCurrentHighestBidByAuction(auction).orElse(null);
             if (winnerBid != null) {
                 winnerBid.setAsWon(); // 낙찰 상태로 변경
                 bidRepository.save(winnerBid);
