@@ -56,8 +56,8 @@ public class PaymentService {
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 2. 경매 조회
-        Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Auction auction = auctionRepository.findById(auctionId)
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 경매 종료 여부 확인
         if (auction.getStatus() != Auction.AuctionStatus.COMPLETED) {
@@ -66,7 +66,7 @@ public class PaymentService {
         
         // 4. 낙찰자 확인
         Bid winningBid = bidRepository.findCurrentHighestBidByAuction(auction)
-            .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(PaymentErrorCode.AUCTION_NOT_WON));
         
         if (!winningBid.getUser().getId().equals(userId)) {
             throw new BusinessException(PaymentErrorCode.AUCTION_NOT_WON);
@@ -112,8 +112,8 @@ public class PaymentService {
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 2. 경매 조회
-        Auction auction = auctionRepository.findByIdWithProduct(auctionId)
-            .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Auction auction = auctionRepository.findById(auctionId)
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 경매 종료 여부 확인
         if (auction.getStatus() != Auction.AuctionStatus.COMPLETED) {
@@ -216,7 +216,7 @@ public class PaymentService {
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 2. 경매 조회
-        Auction auction = auctionRepository.findByIdWithProduct(request.getAuctionId())
+        Auction auction = auctionRepository.findById(request.getAuctionId())
             .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
         // 3. 경매 상태 확인 (진행 중이어야 함)

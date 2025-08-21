@@ -58,7 +58,7 @@ public class AuctionSchedulerService {
 
     @Transactional
     public void startAuction(Long auctionId) {
-        Auction auction = auctionRepository.findByIdWithProduct(auctionId).orElse(null);
+        Auction auction = auctionRepository.findById(auctionId).orElse(null);
         if (auction != null && auction.getStatus() == Auction.AuctionStatus.SCHEDULED) {
             // 경매 상태를 IN_PROGRESS로 변경
             auction.setStatus(Auction.AuctionStatus.IN_PROGRESS);
