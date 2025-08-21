@@ -117,46 +117,6 @@ public class PaymentController {
     }
     
     /**
-     * 즉시 구매 처리
-     * 
-     * @param request 즉시 구매 요청
-     * @param authentication 인증 정보
-     * @return 즉시 구매 결과
-     */
-    @PostMapping("/buy-it-now")
-    @Operation(
-        summary = "즉시 구매", 
-        description = "경매 상품을 즉시 구매합니다. 포인트를 사용하여 구매 금액을 할인받을 수 있습니다."
-    )
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200", 
-            description = "즉시 구매 성공",
-            content = @Content(schema = @Schema(implementation = BuyItNowResponseDto.class))
-        ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 (포인트 부족, 잘못된 금액 등)"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
-        @ApiResponse(responseCode = "409", description = "즉시 구매 불가능한 경매")
-    })
-    public ResponseEntity<ResponseDto<BuyItNowResponseDto>> processBuyItNow(
-            @Parameter(description = "즉시 구매 요청 정보", required = true)
-            @RequestBody BuyItNowRequestDto request,
-            Authentication authentication) {
-        
-        Long currentUserId = getCurrentUserId(authentication);
-        log.info("즉시 구매 요청: 경매ID={}, 사용자ID={}, 사용포인트={}", 
-                request.getAuctionId(), currentUserId, request.getUsePointAmount());
-        
-        BuyItNowResponseDto result = paymentService.processBuyItNow(request, currentUserId);
-        
-        log.info("즉시 구매 완료: 경매ID={}, 즉시구매가={}, 사용포인트={}, 실제결제={}", 
-                request.getAuctionId(), result.getBuyItNowPrice(), result.getUsedPointAmount(), result.getActualPaymentAmount());
-        
-        return ResponseEntity.ok(ResponseDto.success(result));
-    }
-    
-    /**
      * Authentication에서 현재 사용자 ID를 추출
      * 
      * @param authentication 인증 정보

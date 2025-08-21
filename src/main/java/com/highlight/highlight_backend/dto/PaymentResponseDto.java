@@ -47,6 +47,18 @@ public class PaymentResponseDto {
     private BigDecimal winningBidAmount;
     
     /**
+     * 배송비
+     */
+    @Schema(description = "배송비", example = "3000")
+    private BigDecimal shippingFee;
+    
+    /**
+     * 총 결제 금액 (낙찰가 + 배송비)
+     */
+    @Schema(description = "총 결제 금액", example = "63000")
+    private BigDecimal totalAmount;
+    
+    /**
      * 사용한 포인트
      */
     @Schema(description = "사용한 포인트", example = "10000")

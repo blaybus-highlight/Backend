@@ -40,6 +40,18 @@ public class PaymentPreviewDto {
     private BigDecimal winningBidAmount;
     
     /**
+     * 배송비
+     */
+    @Schema(description = "배송비", example = "3000")
+    private BigDecimal shippingFee;
+    
+    /**
+     * 총 결제 금액 (낙찰가 + 배송비)
+     */
+    @Schema(description = "총 결제 금액", example = "63000")
+    private BigDecimal totalAmount;
+    
+    /**
      * 사용자 보유 포인트
      */
     @Schema(description = "사용자 보유 포인트", example = "15000")
@@ -52,9 +64,9 @@ public class PaymentPreviewDto {
     private BigDecimal maxUsablePoint;
     
     /**
-     * 실제 결제될 금액 (낙찰가 - 사용 포인트)
+     * 실제 결제될 금액 (총 금액 - 사용 포인트)
      */
-    @Schema(description = "실제 결제될 금액", example = "45000")
+    @Schema(description = "실제 결제될 금액", example = "48000")
     private BigDecimal actualPaymentAmount;
     
     /**

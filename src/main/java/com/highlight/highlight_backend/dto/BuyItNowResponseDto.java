@@ -42,6 +42,18 @@ public class BuyItNowResponseDto {
     private BigDecimal buyItNowPrice;
     
     /**
+     * 배송비
+     */
+    @Schema(description = "배송비", example = "3000")
+    private BigDecimal shippingFee;
+    
+    /**
+     * 총 결제 금액 (즉시구매가 + 배송비)
+     */
+    @Schema(description = "총 결제 금액", example = "103000")
+    private BigDecimal totalAmount;
+    
+    /**
      * 사용한 포인트
      */
     @Schema(description = "사용한 포인트", example = "10000")
@@ -79,12 +91,17 @@ public class BuyItNowResponseDto {
      * @return BuyItNowResponseDto
      */
     public static BuyItNowResponseDto from(Auction auction, Long userId) {
+        BigDecimal shippingFee = auction.getShippingFee() != null ? auction.getShippingFee() : BigDecimal.ZERO;
+        BigDecimal totalAmount = auction.getBuyItNowPrice().add(shippingFee);
+        
         return BuyItNowResponseDto.builder()
             .auctionId(auction.getId())
             .productName(auction.getProduct().getProductName())
             .buyItNowPrice(auction.getBuyItNowPrice())
+            .shippingFee(shippingFee)
+            .totalAmount(totalAmount)
             .usedPointAmount(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
-            .actualPaymentAmount(auction.getBuyItNowPrice()) // 기본값, 실제로는 PaymentService에서 계산
+            .actualPaymentAmount(totalAmount) // 기본값, 실제로는 PaymentService에서 계산
             .pointReward(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
             .remainingPoint(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
             .completedAt(LocalDateTime.now())
