@@ -34,5 +34,6 @@ public class BuyItNowRequestDto {
      * 사용할 포인트 금액
      */
     @Schema(description = "사용할 포인트 금액 (0 이상)", example = "10000")
-    private BigDecimal usePointAmount = BigDecimal.ZERO;
+    @Builder.Default
+    private BigDecimal usePointAmount = BigDecimal.valueOf(0);
 }

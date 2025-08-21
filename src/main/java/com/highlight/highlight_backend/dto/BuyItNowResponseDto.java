@@ -1,5 +1,6 @@
 package com.highlight.highlight_backend.dto;
 
+import com.highlight.highlight_backend.domain.Auction;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,4 +70,24 @@ public class BuyItNowResponseDto {
      */
     @Schema(description = "구매 완료 시간", example = "2025-08-19T16:30:00")
     private LocalDateTime completedAt;
+    
+    /**
+     * Auction 엔티티로부터 BuyItNowResponseDto 생성
+     * 
+     * @param auction 경매 정보
+     * @param userId 사용자 ID
+     * @return BuyItNowResponseDto
+     */
+    public static BuyItNowResponseDto from(Auction auction, Long userId) {
+        return BuyItNowResponseDto.builder()
+            .auctionId(auction.getId())
+            .productName(auction.getProduct().getProductName())
+            .buyItNowPrice(auction.getBuyItNowPrice())
+            .usedPointAmount(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
+            .actualPaymentAmount(auction.getBuyItNowPrice()) // 기본값, 실제로는 PaymentService에서 계산
+            .pointReward(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
+            .remainingPoint(BigDecimal.ZERO) // 기본값, 실제로는 PaymentService에서 계산
+            .completedAt(LocalDateTime.now())
+            .build();
+    }
 }
