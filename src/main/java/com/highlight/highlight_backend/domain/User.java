@@ -40,14 +40,14 @@ public class User {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private BigDecimal point = 0; // 포인트
+    private BigDecimal point = BigDecimal.valueOf(0); // 포인트
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Rank rank = Rank.SEED; // 기본 등급은 SEED
 
     @Column(nullable = false)
-    private Long participationCount = 0; // 참여 횟수
+    private Long participationCount = 0L; // 참여 횟수
     
     /**
      * 휴대폰 인증 여부
