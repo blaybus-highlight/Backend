@@ -41,7 +41,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "WHERE b.auction = :auction " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.bidAmount DESC, b.createdAt ASC")
-    Page<Bid> findByAuctionOrderByBidAmountDesc(
+    Page<Bid> findBidsByAuctionOrderByBidAmountDesc(
             @Param("auction") Auction auction, 
             Pageable pageable);
     
@@ -97,7 +97,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "WHERE b.user = :user " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.createdAt DESC")
-    Page<Bid> findByUserOrderByCreatedAtDesc(
+    Page<Bid> findBidsByUserOrderByCreatedAtDesc(
             @Param("user") User user, 
             Pageable pageable);
     

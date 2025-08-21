@@ -133,7 +133,7 @@ public class BidService {
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
-        Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
+        Page<Bid> bids = bidRepository.findBidsByAuctionOrderByBidAmountDesc(auction, pageable);
         
         return bids.map(BidResponseDto::from);
     }
@@ -152,7 +152,7 @@ public class BidService {
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
         
-        Page<Bid> bids = bidRepository.findByAuctionOrderByBidAmountDesc(auction, pageable);
+        Page<Bid> bids = bidRepository.findBidsByAuctionOrderByBidAmountDesc(auction, pageable);
         
         return bids.map(bid -> BidResponseDto.fromWithUserInfo(bid, userId));
     }
@@ -196,7 +196,7 @@ public class BidService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
-        Page<Bid> bids = bidRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+        Page<Bid> bids = bidRepository.findBidsByUserOrderByCreatedAtDesc(user, pageable);
         
         return bids.map(BidResponseDto::fromMyBid);
     }
