@@ -3,6 +3,7 @@ package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.Auction;
 import com.highlight.highlight_backend.domain.Product;
+import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
 import com.highlight.highlight_backend.repository.AuctionRepository;
 import com.highlight.highlight_backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class AuctionSchedulerService {
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
     private final WebSocketService webSocketService;
+    private final AuctionService auctionService;
 
     private final Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
@@ -86,6 +88,30 @@ public class AuctionSchedulerService {
             log.info("{}개의 놓친 경매를 발견했습니다. 지금 시작합니다.", missedAuctions.size());
             for (Auction auction : missedAuctions) {
                 startAuction(auction.getId());
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    @Transactional
+    public void checkExpiredAuctions() {
+        log.debug("종료된 경매가 있는지 확인합니다...");
+        List<Auction> expiredAuctions = auctionRepository.findInProgressAuctionsReadyToEnd(LocalDateTime.now());
+        
+        if (!expiredAuctions.isEmpty()) {
+            log.info("{}개의 종료된 경매를 발견했습니다. 지금 종료합니다.", expiredAuctions.size());
+            for (Auction auction : expiredAuctions) {
+                try {
+                    AuctionEndRequestDto request = new AuctionEndRequestDto();
+                    request.setEndReason("경매 시간 만료로 인한 자동 종료");
+                    request.setImmediateEnd(true);
+                    request.setCancel(false);
+                    
+                    auctionService.endAuction(auction.getId(), request, 1L); // 시스템 자동 종료 (adminId = 1L)
+                    log.info("경매가 자동으로 종료되었습니다. 경매 ID: {}", auction.getId());
+                } catch (Exception e) {
+                    log.error("경매 자동 종료 중 오류 발생. 경매 ID: {}, 오류: {}", auction.getId(), e.getMessage(), e);
+                }
             }
         }
     }
