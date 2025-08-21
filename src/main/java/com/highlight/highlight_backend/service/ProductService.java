@@ -217,7 +217,7 @@ public class ProductService {
         
         validateProductManagePermission(adminId);
         
-        return productRepository.findByCreatedByOrderByCreatedAtDesc(adminId, pageable)
+        return productRepository.findByRegisteredByOrderByCreatedAtDesc(adminId, pageable)
             .map(ProductResponseDto::from);
     }
     

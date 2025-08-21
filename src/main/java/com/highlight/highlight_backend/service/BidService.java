@@ -67,7 +67,7 @@ public class BidService {
         validateBidRequest(auction, request, user);
         
         // 4. 동일 금액 입찰 체크 및 처리
-        Optional<Bid> existingSamePriceBid = bidRepository.findByAuctionAndBidAmount(auction, request.getBidAmount());
+        Optional<Bid> existingSamePriceBid = bidRepository.findBidByAuctionAndBidAmount(auction, request.getBidAmount());
         if (existingSamePriceBid.isPresent()) {
             // 동일한 금액으로 이미 입찰이 있는 경우 거부 (선도착 우선)
             throw new BusinessException(AuctionErrorCode.BID_AMOUNT_TOO_LOW);
@@ -330,7 +330,7 @@ public class BidService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         // 사용자의 해당 경매 입찰 내역 조회
-        Optional<Bid> userBidOpt = bidRepository.findTopByAuctionAndUserOrderByBidAmountDesc(auction, user);
+        Optional<Bid> userBidOpt = bidRepository.findTopBidByAuctionAndUserOrderByBidAmountDesc(auction, user);
         
         // 미참여한 경우
         if (userBidOpt.isEmpty()) {

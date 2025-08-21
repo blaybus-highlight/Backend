@@ -51,7 +51,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategory(String category, Pageable pageable);
 
 
-    Page<Product> findByCreatedByOrderByCreatedAtDesc(Long createdBy, Pageable pageable);
+    Page<Product> findByRegisteredByOrderByCreatedAtDesc(Long registeredBy, Pageable pageable);
     
     /**
      * 등록한 관리자로 조회

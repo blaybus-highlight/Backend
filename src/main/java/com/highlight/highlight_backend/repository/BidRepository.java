@@ -30,7 +30,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "WHERE b.auction = :auction " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.createdAt DESC")
-    Page<Bid> findByAuctionOrderByCreatedAtDesc(
+    Page<Bid> findBidsByAuctionOrderByCreatedAtDesc(
             @Param("auction") Auction auction, 
             Pageable pageable);
     
@@ -86,7 +86,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.auction = :auction " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.createdAt DESC")
-    List<Bid> findByUserAndAuctionOrderByCreatedAtDesc(
+    List<Bid> findBidsByUserAndAuctionOrderByCreatedAtDesc(
             @Param("user") User user, 
             @Param("auction") Auction auction);
     
@@ -119,7 +119,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "WHERE b.user = :user " +
            "AND b.auction = :auction " +
            "AND b.status != 'CANCELLED'")
-    boolean existsByUserAndAuction(@Param("user") User user, @Param("auction") Auction auction);
+    boolean existsBidByUserAndAuction(@Param("user") User user, @Param("auction") Auction auction);
     
     /**
      * 동일한 금액으로 입찰된 내역 조회 (선도착 시간 우선 처리용)
@@ -129,7 +129,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.bidAmount = :bidAmount " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.createdAt ASC")
-    Optional<Bid> findByAuctionAndBidAmount(@Param("auction") Auction auction, @Param("bidAmount") java.math.BigDecimal bidAmount);
+    Optional<Bid> findBidByAuctionAndBidAmount(@Param("auction") Auction auction, @Param("bidAmount") java.math.BigDecimal bidAmount);
     
     /**
      * 특정 사용자의 특정 경매에서 연속 패배 횟수 조회
@@ -154,7 +154,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
            "AND b.auction = :auction " +
            "AND b.status != 'CANCELLED' " +
            "ORDER BY b.bidAmount DESC")
-    Optional<Bid> findTopByAuctionAndUserOrderByBidAmountDesc(@Param("auction") Auction auction, @Param("user") User user);
+    Optional<Bid> findTopBidByAuctionAndUserOrderByBidAmountDesc(@Param("auction") Auction auction, @Param("user") User user);
     
     /**
      * 사용자별 경매 참여 횟수 기준 랭킹 조회
