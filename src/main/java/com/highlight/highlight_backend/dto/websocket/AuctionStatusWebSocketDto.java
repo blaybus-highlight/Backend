@@ -128,7 +128,7 @@ public class AuctionStatusWebSocketDto {
      * 경매 종료까지 남은 시간 계산 (초 단위)
      */
     private static Long calculateRemainingSeconds(Auction auction) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
         LocalDateTime endTime = auction.getScheduledEndTime();
         
         // 경매가 진행 중이 아니거나 이미 종료된 경우

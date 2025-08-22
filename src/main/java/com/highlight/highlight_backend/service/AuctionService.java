@@ -341,10 +341,11 @@ public class AuctionService {
      * @param endTime 종료 시간
      */
     private void validateAuctionTime(LocalDateTime startTime, LocalDateTime endTime) {
-        LocalDateTime now = LocalDateTime.now();
+        // 한국 시간 기준으로 현재 시간 가져오기
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
         
-        // 시작 시간이 현재 시간보다 이전일 수 없음
-        if (startTime.isBefore(now.minus(5, ChronoUnit.MINUTES))) { // 5분 여유
+        // 시작 시간이 현재 시간보다 이전일 수 없음 (5분 여유)
+        if (startTime.isBefore(now.minus(5, ChronoUnit.MINUTES))) {
             throw new BusinessException(AuctionErrorCode.INVALID_AUCTION_START_TIME);
         }
         

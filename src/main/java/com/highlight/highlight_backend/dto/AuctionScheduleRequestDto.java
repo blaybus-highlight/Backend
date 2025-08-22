@@ -78,14 +78,12 @@ public class AuctionScheduleRequestDto {
      * 경매 시작 예정 시간
      */
     @NotNull(message = "경매 시작 시간은 필수입니다")
-    @Future(message = "경매 시작 시간은 현재 시간 이후여야 합니다")
     private LocalDateTime scheduledStartTime;
 
     /**
      * 경매 종료 예정 시간
      */
     @NotNull(message = "경매 종료 시간은 필수입니다")
-    @Future(message = "경매 종료 시간은 현재 시간 이후여야 합니다")
     private LocalDateTime scheduledEndTime;
 
     /**

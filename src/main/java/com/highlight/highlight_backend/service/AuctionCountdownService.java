@@ -38,8 +38,8 @@ public class AuctionCountdownService {
             List<Auction> inProgressAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.IN_PROGRESS);
             
             for (Auction auction : inProgressAuctions) {
-                // 종료 시간이 지났는지 확인
-                if (LocalDateTime.now().isAfter(auction.getScheduledEndTime())) {
+                // 종료 시간이 지났는지 확인 (한국 시간 기준)
+                if (LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul")).isAfter(auction.getScheduledEndTime())) {
                     log.info("경매 종료 시간 도달: 경매ID={}", auction.getId());
                     continue; // 종료된 경매는 스킵 (AuctionService에서 별도 처리)
                 }
@@ -63,7 +63,7 @@ public class AuctionCountdownService {
     @Scheduled(fixedRate = 10000) // 10초마다 실행
     public void sendEndingSoonAlerts() {
         try {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
             LocalDateTime oneMinuteLater = now.plusMinutes(1);
             
             // 1분 내로 종료 예정인 경매 조회

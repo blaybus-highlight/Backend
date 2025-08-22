@@ -76,7 +76,7 @@ public class AuctionSpecs {
                 return null;
             }
             
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
             
             switch (status.toUpperCase()) {
                 case "IN_PROGRESS":
