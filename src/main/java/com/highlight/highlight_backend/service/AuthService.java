@@ -59,11 +59,22 @@ public class AuthService {
         // 3. 마지막 로그인 시간 업데이트
         admin.setLastLoginAt(LocalDateTime.now());
         adminRepository.save(admin);
-        
+
+        Admin.AdminRole role  = admin.getRole();
+        String accessToken = "";
+        String refreshToken = "";
+        if (role == Admin.AdminRole.ADMIN) {
+            accessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getEmail(), "ADMIN");
+            log.info("accessToken: {}", accessToken);
+            refreshToken = jwtUtil.generateRefreshToken(admin.getId(), admin.getEmail(), "ADMIN");
+        }
+        if (role == Admin.AdminRole.SUPER_ADMIN) {
+            accessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getEmail(), "SUPER_ADMIN");
+            log.info("accessToken: {}", accessToken);
+            refreshToken = jwtUtil.generateRefreshToken(admin.getId(), admin.getEmail(), "SUPER_ADMIN");
+        }
         // 4. JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getEmail(), "ADMIN");
-        log.info("accessToken: {}", accessToken);
-        String refreshToken = jwtUtil.generateRefreshToken(admin.getId(), admin.getEmail(), "ADMIN");
+
         
         log.info("관리자 로그인 성공: {} (ID: {})", admin.getAdminName(), admin.getAdminId());
         
