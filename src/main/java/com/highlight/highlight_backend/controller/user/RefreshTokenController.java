@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "마이페이지", description = "RefreshToken 으로 갱신 API")
 public class RefreshTokenController {
 
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     @PostMapping
     public ResponseEntity<ResponseDto<RefreshTokenResponseDto>> getRefreshToken(
