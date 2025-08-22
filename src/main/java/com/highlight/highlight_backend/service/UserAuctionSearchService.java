@@ -57,9 +57,6 @@ public class UserAuctionSearchService {
         if (isPremium != null) {
             spec = spec.and(AuctionSpecs.isPremium(isPremium));
         }
-        if (StringUtils.hasText(status)) {
-            spec = spec.and(AuctionSpecs.hasAuctionStatus(status));
-        }
 
         // 2. 정렬(Sort) 조건 적용
         Sort sort = getSort(sortCode);
