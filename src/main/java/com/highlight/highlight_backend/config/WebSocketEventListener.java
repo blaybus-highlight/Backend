@@ -33,6 +33,7 @@ public class WebSocketEventListener {
         String sessionId = headerAccessor.getSessionId();
         
         log.info("WebSocket 연결 성공 - 세션ID: {}", sessionId);
+        log.info("WebSocket 연결 헤더 정보: {}", headerAccessor.toNativeHeaderMap());
         
         // 연결 성공 메시지는 개별 경매별로 전송하므로 여기서는 로깅만 수행
     }

@@ -35,10 +35,11 @@ public class CorsConfig {
             "http://localhost:8085",        // Next.js 개발 서버
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",  // frontend 배포 도메인
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // frontend 배포 도메인 (포트 없이)
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3306",        // DB서버 배포
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // AWS 배포
-            "https://*.execute-api.*.amazonaws.com"  // API Gateway
+            "http://*.execute-api.*.amazonaws.com"  // API Gateway (HTTP만)
         ));
         
         // 허용할 HTTP 메서드
