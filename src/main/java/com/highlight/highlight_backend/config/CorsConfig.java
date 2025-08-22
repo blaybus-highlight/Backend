@@ -32,12 +32,12 @@ public class CorsConfig {
         // 허용할 Origin
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",        // React 개발 서버
-            "http://localhost:8085",        // Next.js 개발 서버
+            "http://localhost:80",          // 로컬 백엔드 (표준 포트)
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",  // frontend 배포 도메인
-            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (Swagger UI)
-            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3306",        // DB서버 배포
-            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // AWS 배포
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8080",   // 백엔드 서버 (표준 포트)
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (기존 포트)
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // AWS 배포 (포트 없이)
             "https://*.execute-api.*.amazonaws.com"  // API Gateway
         ));
         
