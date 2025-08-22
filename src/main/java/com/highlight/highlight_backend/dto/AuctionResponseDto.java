@@ -2,6 +2,7 @@ package com.highlight.highlight_backend.dto;
 
 import com.highlight.highlight_backend.domain.Auction;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @AllArgsConstructor
+@Builder
 public class AuctionResponseDto {
     
     /**
@@ -120,33 +122,33 @@ public class AuctionResponseDto {
      * Auction 엔티티로부터 DTO 생성
      */
     public static AuctionResponseDto from(Auction auction) {
-        ProductResponseDto productDto = auction.getProduct() != null ? 
-            ProductResponseDto.from(auction.getProduct()) : null;
-        
-        return new AuctionResponseDto(
-            auction.getId(),
-            productDto,
-            auction.getStatus(),
-            auction.getStatus().getDescription(),
-            auction.getScheduledStartTime(),
-            auction.getScheduledEndTime(),
-            auction.getActualStartTime(),
-            auction.getActualEndTime(),
-            auction.getCurrentHighestBid(),
-            auction.getBuyItNowPrice(),
-            auction.getStartPrice(),
-            auction.getTotalBidders(),
-            auction.getTotalBids(),
-            auction.getCreatedBy(),
-            auction.getStartedBy(),
-            auction.getEndedBy(),
-            auction.getEndReason(),
-            auction.getDescription(),
-            auction.getCreatedAt(),
-            auction.getUpdatedAt()
-        );
+        ProductResponseDto productDto = auction.getProduct() != null ?
+                ProductResponseDto.from(auction.getProduct()) : null;
+
+        return AuctionResponseDto.builder()
+                .id(auction.getId())
+                .product(productDto)
+                .status(auction.getStatus())
+                .statusDescription(auction.getStatus().getDescription())
+                .scheduledStartTime(auction.getScheduledStartTime())
+                .scheduledEndTime(auction.getScheduledEndTime())
+                .actualStartTime(auction.getActualStartTime())
+                .actualEndTime(auction.getActualEndTime())
+                .startPrice(auction.getStartPrice())
+                .currentHighestBid(auction.getCurrentHighestBid())
+                .buyItNowPrice(auction.getBuyItNowPrice())
+                .totalBidders(auction.getTotalBidders())
+                .totalBids(auction.getTotalBids())
+                .createdBy(auction.getCreatedBy())
+                .startedBy(auction.getStartedBy())
+                .endedBy(auction.getEndedBy())
+                .endReason(auction.getEndReason())
+                .description(auction.getDescription())
+                .createdAt(auction.getCreatedAt())
+                .updatedAt(auction.getUpdatedAt())
+                .build();
     }
-    
+
     /**
      * 상품 정보 없이 경매 기본 정보만 포함한 DTO 생성
      */
