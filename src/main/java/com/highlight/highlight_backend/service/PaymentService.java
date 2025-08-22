@@ -103,7 +103,7 @@ public class PaymentService {
     }
     
     /**
-     * 결제 처리 (일반 낙찰)
+     * 결제 처리  포인트 전부 사용 (일반 낙찰)
      * 
      * @param auctionId 경매 ID
      * @param userId 사용자 ID

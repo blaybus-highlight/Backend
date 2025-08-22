@@ -28,7 +28,9 @@ import java.util.Optional;
 public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpecificationExecutor<Auction> {
 
     List<Auction> findByStatusAndScheduledStartTimeBefore(Auction.AuctionStatus status, LocalDateTime time);
-    
+
+    @Query("select a FROM Auction a WHERE a.createdBy = :adminId")
+    List<Auction> findByAdminAuction(@Param("auctionId") Long adminId);
     /**
      * 상품 ID로 경매 조회
      * 

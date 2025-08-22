@@ -105,25 +105,6 @@ public class Admin {
     private boolean canManageInquiries = false;
 
     /**
-     * 현재 진행중인 경매 수
-     */
-    @Column(nullable = false)
-    private Long inProgress = 0L;
-
-    /**
-     * 보류중인 경매 수
-     */
-    @Column(nullable = false)
-    private Long pending = 0L;
-
-    /**
-     * 완료된 경매 수
-     */
-    @Column(nullable = false)
-    private Long completed = 0L;
-
-
-    /**
      * 마지막 로그인 시간
      */
     private LocalDateTime lastLoginAt;
