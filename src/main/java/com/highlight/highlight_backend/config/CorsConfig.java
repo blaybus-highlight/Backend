@@ -35,8 +35,8 @@ public class CorsConfig {
             "http://localhost:80",          // 로컬 백엔드 (표준 포트)
             "http://127.0.0.1:3000",        // 로컬호스트 별칭
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",  // frontend 배포 도메인
-            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8080",   // 백엔드 서버 (표준 포트)
-            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (기존 포트)
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8082",   // 백엔드 서버 (Docker 매핑 포트)
+            "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (내부 포트)
             "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // AWS 배포 (포트 없이)
             "https://*.execute-api.*.amazonaws.com"  // API Gateway
         ));
