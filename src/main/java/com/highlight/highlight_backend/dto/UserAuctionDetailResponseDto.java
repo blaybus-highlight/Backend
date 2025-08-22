@@ -39,6 +39,7 @@ public class UserAuctionDetailResponseDto {
     private String size;
     private Integer manufactureYear;
     private Boolean isPremium;
+    private String condition;
 
     private String sellerName;
     private String sellerDescription;
@@ -57,6 +58,7 @@ public class UserAuctionDetailResponseDto {
     private BigDecimal minimumBid;
     
     private BigDecimal point;  // 적립 될 포인트
+    private Long productCount;
 
 
     public static UserAuctionDetailResponseDto from(Auction auction) {
@@ -86,7 +88,9 @@ public class UserAuctionDetailResponseDto {
                 .currentHighestBid(auction.getCurrentHighestBid())
                 .buyItNowPrice(auction.getBuyItNowPrice())
                 .maxBid(auction.getMaxBid())
-                .minimumBid(auction.getMinimumBid());
+                .minimumBid(auction.getMinimumBid())
+                .condition(product.getCondition())
+                .productCount(product.getProductCount());
 
         if (seller != null) {
             builder.sellerName(seller.getSellerName())
