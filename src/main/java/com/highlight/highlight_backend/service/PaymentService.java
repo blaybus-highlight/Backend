@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 /**
@@ -169,9 +170,10 @@ public class PaymentService {
         
         // 10. 결제 금액의 1% 포인트 적립
         BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
-        BigDecimal finalPoint = remainingPoint.add(pointReward);
+        BigDecimal truncatedPoint = pointReward.setScale(0, RoundingMode.DOWN);
+        BigDecimal finalPoint = remainingPoint.add(truncatedPoint);
         user.setPoint(finalPoint);
-        
+
         // 11. 사용자 참여 횟수 증가 및 랭크 업데이트 (결제 완료 시)
         user.participateInAuction();
         userRepository.save(user);
@@ -237,8 +239,8 @@ public class PaymentService {
         if (auction.getBuyItNowPrice() == null || auction.getBuyItNowPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_NOT_AVAILABLE);
         }
-        
-                // 5. 즉시 구매를 위한 입찰 생성 (낙찰자로 설정)
+
+        // 5. 즉시 구매를 위한 입찰 생성 (낙찰자로 설정)
  
         Bid buyItNowBid = Bid.builder()
             .auction(auction)
@@ -248,10 +250,6 @@ public class PaymentService {
             .isBuyItNow(true)
             .build();
         bidRepository.save(buyItNowBid);
-        
-        // 6. 사용자 참여 횟수 증가 및 랭크 업데이트
-        user.participateInAuction();
-        userRepository.save(user);
         
         // 7. 경매 종료 처리
         auction.setStatus(Auction.AuctionStatus.COMPLETED);
