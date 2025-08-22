@@ -6,6 +6,7 @@ import com.highlight.highlight_backend.domain.Seller;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * @since 2025.08.15
  */
 @Getter
+@Setter
 @AllArgsConstructor
 @Builder
 public class UserAuctionDetailResponseDto {
@@ -53,6 +55,8 @@ public class UserAuctionDetailResponseDto {
     private BigDecimal buyItNowPrice;  // 즉시구매가
     private BigDecimal maxBid;
     private BigDecimal minimumBid;
+    
+    private BigDecimal point;  // 적립 될 포인트
 
 
     public static UserAuctionDetailResponseDto from(Auction auction) {

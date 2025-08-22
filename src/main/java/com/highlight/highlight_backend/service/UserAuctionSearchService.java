@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * 일반 User 인증없이 보여줄 정보를 처리하는 Service
  *
@@ -90,6 +93,20 @@ public class UserAuctionSearchService {
 
     public UserAuctionDetailResponseDto getProductsDetail(Long auctionId) {
         Auction auction = userAuctionRepository.findOne(auctionId);
-        return UserAuctionDetailResponseDto.from(auction);
+        BigDecimal currentPrice = auction.getCurrentHighestBid();
+        // 3. 적립될 포인트를 계산합니다. (기본값은 0으로 설정)
+        BigDecimal pointReward = BigDecimal.ZERO;
+
+        UserAuctionDetailResponseDto userAuctionDetailResponseDto = UserAuctionDetailResponseDto.from(auction);
+
+        // 현재 입찰가가 존재할 경우에만 계산을 수행합니다.
+        if (currentPrice != null) {
+            pointReward = currentPrice
+                    .multiply(new BigDecimal("0.01"))  // 1% 계산
+                    .setScale(0, RoundingMode.DOWN);   // 소수점 버림
+
+        }
+        userAuctionDetailResponseDto.setPoint(pointReward);
+        return userAuctionDetailResponseDto;
     }
 }
