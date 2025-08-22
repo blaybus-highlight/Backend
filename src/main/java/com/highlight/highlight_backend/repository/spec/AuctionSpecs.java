@@ -82,8 +82,8 @@ public class AuctionSpecs {
                 case "IN_PROGRESS":
                     // 진행중: 상태가 IN_PROGRESS이고 종료시간이 1시간 이후
                     return criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("status"), Auction.AuctionStatus.IN_PROGRESS),
-                        criteriaBuilder.greaterThan(root.get("scheduledEndTime"), now.plusHours(1))
+                        criteriaBuilder.equal(root.get("status"), Auction.AuctionStatus.IN_PROGRESS)
+
                     );
                     
                 case "SCHEDULED":
