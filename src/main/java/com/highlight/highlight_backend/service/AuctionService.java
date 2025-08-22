@@ -104,6 +104,7 @@ public class AuctionService {
         auction.setCreatedBy(adminId);
         auction.setBidUnit(request.getBidUnit());
         auction.setStartPrice(request.getStartPrice());         // 경매 시작가 설정
+        auction.setCurrentHighestBid(request.getStartPrice());
         auction.setMinimumBid(request.getMinimumBid());       // 최소 인상폭 설정
         auction.setMaxBid(request.getMaxBid());               // 최대 인상폭 설정
         auction.setShippingFee(request.getShippingFee());       // 배송비 설정
