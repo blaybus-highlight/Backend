@@ -1,5 +1,6 @@
 package com.highlight.highlight_backend.dto;
 
+import com.highlight.highlight_backend.dto.token.RefreshTokenResponseDto;
 import lombok.Getter;
 
 /**
@@ -83,5 +84,9 @@ public class ResponseDto<T> {
      */
     public static ResponseDto<Void> success(String message) {
         return new ResponseDto<>(true, null, message);
+    }
+
+    public static ResponseDto<RefreshTokenResponseDto> error(String s) {
+        return new ResponseDto<>(false, null, s);
     }
 }
