@@ -3,9 +3,8 @@ package com.highlight.highlight_backend.dto;
 import com.highlight.highlight_backend.domain.Product;
 import com.highlight.highlight_backend.domain.ProductImage;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +17,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
+@Builder
 public class ProductResponseDto {
     
     /**
@@ -134,35 +134,38 @@ public class ProductResponseDto {
      * Product 엔티티로부터 DTO 생성
      */
     public static ProductResponseDto from(Product product) {
+        // 이미지 리스트 변환 로직 (기존과 동일)
         List<ProductImageResponseDto> imageDtos = product.getImages().stream()
-            .map(ProductImageResponseDto::from)
-            .collect(Collectors.toList());
-        
-        String primaryImageUrl = product.getPrimaryImage() != null ? 
-            product.getPrimaryImage().getImageUrl() : null;
-        
-        return new ProductResponseDto(
-            product.getId(),
-            product.getProductName(),
-            product.getShortDescription(),
-            product.getHistory(),
-            product.getSize(),
-            product.getProductCount(),
-            product.getMaterial(),
-            product.getManufactureYear(),
-            product.getBrand(),
-            product.getExpectedEffects(),
-            product.getDetailedInfo(),
-            product.getStatus(),
-            product.getStatus().getDescription(),
-            product.getCategory(),
-            product.getRegisteredBy(),
-            imageDtos,
-            primaryImageUrl,
-            product.getIsPremium(),
-            product.getCreatedAt(),
-            product.getUpdatedAt()
-        );
+                .map(ProductImageResponseDto::from)
+                .collect(Collectors.toList());
+
+        // 대표 이미지 URL 추출 로직 (기존과 동일)
+        String primaryImageUrl = product.getPrimaryImage() != null ?
+                product.getPrimaryImage().getImageUrl() : null;
+
+        // 빌더 패턴을 사용하여 DTO 객체 생성
+        return ProductResponseDto.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .shortDescription(product.getShortDescription())
+                .history(product.getHistory())
+                .size(product.getSize())
+                .productCount(product.getProductCount())
+                .material(product.getMaterial())
+                .manufactureYear(product.getManufactureYear())
+                .brand(product.getBrand())
+                .expectedEffects(product.getExpectedEffects())
+                .detailedInfo(product.getDetailedInfo())
+                .status(product.getStatus())
+                .statusDescription(product.getStatus().getDescription())
+                .category(product.getCategory())
+                .registeredBy(product.getRegisteredBy())
+                .images(imageDtos)
+                .primaryImageUrl(primaryImageUrl)
+                .isPremium(product.getIsPremium())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
     }
     
     /**
