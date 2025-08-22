@@ -28,6 +28,7 @@ public class UserAuctionResponseDto {
     private String productName;  // 상품명
     private String brand; // 브렌드명
     // Auction 에서 가져올 정보
+    private BigDecimal startPrice;
     private BigDecimal currentPrice;   // 현재가
     private BigDecimal buyNowPrice;    // 즉시구매가
     private BigDecimal minimumBid;     // 최소 입찰가 (시작가)
@@ -54,6 +55,7 @@ public class UserAuctionResponseDto {
                 .productName(product.getProductName())
                 .brand(product.getBrand())
                 // Auction 정보
+                .startPrice(auction.getStartPrice())
                 .buyNowPrice(auction.getBuyItNowPrice())
                 .currentPrice(auction.getCurrentHighestBid())
                 .minimumBid(auction.getStartPrice())
