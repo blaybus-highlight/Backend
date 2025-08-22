@@ -64,12 +64,14 @@ public class AuctionSchedulerService {
             auction.setStatus(Auction.AuctionStatus.IN_PROGRESS);
             auctionRepository.save(auction);
             
-            // 상품 상태를 IN_AUCTION으로 변경
+            // 상품 상태를 IN_AUCTION으로 변경 (Product를 별도로 조회)
             if (auction.getProduct() != null) {
-                Product product = auction.getProduct();
-                product.setStatus(Product.ProductStatus.IN_AUCTION);
-                productRepository.save(product);
-                log.info("상품 상태가 IN_AUCTION으로 변경되었습니다. 상품 ID: {}", product.getId());
+                Product product = productRepository.findById(auction.getProduct().getId()).orElse(null);
+                if (product != null) {
+                    product.setStatus(Product.ProductStatus.IN_AUCTION);
+                    productRepository.save(product);
+                    log.info("상품 상태가 IN_AUCTION으로 변경되었습니다. 상품 ID: {}", product.getId());
+                }
             }
             
             webSocketService.sendAuctionStartedNotification(auction);
@@ -112,8 +114,12 @@ public class AuctionSchedulerService {
                     // 낙찰자 찾기
                     var winnerBid = bidRepository.findCurrentHighestBidByAuction(auction).orElse(null);
                     
-                    // WebSocket으로 경매 종료 알림 전송
-                    webSocketService.sendAuctionEndedNotification(auction, winnerBid);
+                    // WebSocket으로 경매 종료 알림 전송 (별도 트랜잭션에서 실행)
+                    try {
+                        webSocketService.sendAuctionEndedNotification(auction, winnerBid);
+                    } catch (Exception e) {
+                        log.error("WebSocket 알림 전송 중 오류 발생. 경매 ID: {}, 오류: {}", auction.getId(), e.getMessage());
+                    }
                     
                     log.info("경매가 자동으로 종료되었습니다. 경매 ID: {}", auction.getId());
                 } catch (Exception e) {
