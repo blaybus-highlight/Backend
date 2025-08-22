@@ -30,7 +30,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
     List<Auction> findByStatusAndScheduledStartTimeBefore(Auction.AuctionStatus status, LocalDateTime time);
 
     @Query("select a FROM Auction a WHERE a.createdBy = :adminId")
-    List<Auction> findByAdminAuction(@Param("auctionId") Long adminId);
+    List<Auction> findByAdminAuction(@Param("adminId") Long adminId);
     /**
      * 상품 ID로 경매 조회
      * 
