@@ -22,8 +22,9 @@ public class AuctionResponseDto {
     /**
      * 경매 ID
      */
-    private Long id;
-    
+    private Long auctionId;
+
+
     /**
      * 경매 상품 정보
      */
@@ -126,7 +127,7 @@ public class AuctionResponseDto {
                 ProductResponseDto.from(auction.getProduct()) : null;
 
         return AuctionResponseDto.builder()
-                .id(auction.getId())
+                .auctionId(auction.getId())
                 .product(productDto)
                 .status(auction.getStatus())
                 .statusDescription(auction.getStatus().getDescription())
