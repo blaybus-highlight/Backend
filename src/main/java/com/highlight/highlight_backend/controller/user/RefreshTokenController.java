@@ -57,7 +57,7 @@ public class RefreshTokenController {
 
                 responseDto.setAccessToken(newAccessToken);
                 responseDto.setRefreshToken(newRefreshToken);
-                responseDto.setAdminId(id);
+                responseDto.setAdminId(id.toString());
                 responseDto.setAdminName(email); // 또는 실제 사용자 이름
                 responseDto.setMessage("토큰 갱신 성공!");
 

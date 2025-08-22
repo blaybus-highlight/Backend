@@ -5,7 +5,7 @@ import lombok.Setter;
 @Setter
 public class RefreshTokenResponseDto {
 
-    private Long adminId;
+    private String adminId;
 
     private String adminName;
 
