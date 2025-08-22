@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -80,19 +82,23 @@ public class AuctionService {
             throw new BusinessException(AuctionErrorCode.INVALID_PRODUCT_STATUS_FOR_AUCTION);
         }
         
-        // 5. 경매 시간 검증
-        validateAuctionTime(request.getScheduledStartTime(), request.getScheduledEndTime());
+        // 5. UTC 시간을 한국 시간으로 변환
+        LocalDateTime kstStartTime = convertUTCToKST(request.getScheduledStartTime());
+        LocalDateTime kstEndTime = convertUTCToKST(request.getScheduledEndTime());
         
-        // 6. 즉시구매가 설정 시 재고 1개 검증
+        // 6. 경매 시간 검증
+        validateAuctionTime(kstStartTime, kstEndTime);
+        
+        // 7. 즉시구매가 설정 시 재고 1개 검증
         validateBuyItNowProductCount(product, request.getBuyItNowPrice());
         
-        // 7. 경매 엔티티 생성
+        // 8. 경매 엔티티 생성
         Auction auction = new Auction();
 
         auction.setProduct(product);
         auction.setStatus(Auction.AuctionStatus.SCHEDULED); // 초기 상태는 '예약됨'
-        auction.setScheduledStartTime(request.getScheduledStartTime());
-        auction.setScheduledEndTime(request.getScheduledEndTime());
+        auction.setScheduledStartTime(kstStartTime);
+        auction.setScheduledEndTime(kstEndTime);
         auction.setDescription(request.getDescription());
         auction.setBuyItNowPrice(request.getBuyItNowPrice());
         auction.setCreatedBy(adminId);
@@ -159,10 +165,12 @@ public class AuctionService {
                 auction.setScheduledEndTime(LocalDateTime.now().plusHours(1));
             }
         } else {
-            // 시간 입력: 입력된 시간으로 설정
-            validateAuctionTime(request.getScheduledStartTime(), request.getScheduledEndTime());
-            auction.setScheduledStartTime(request.getScheduledStartTime());
-            auction.setScheduledEndTime(request.getScheduledEndTime());
+            // 시간 입력: UTC 시간을 한국 시간으로 변환하여 설정
+            LocalDateTime kstStartTime = convertUTCToKST(request.getScheduledStartTime());
+            LocalDateTime kstEndTime = convertUTCToKST(request.getScheduledEndTime());
+            validateAuctionTime(kstStartTime, kstEndTime);
+            auction.setScheduledStartTime(kstStartTime);
+            auction.setScheduledEndTime(kstEndTime);
             auction.startAuction(adminId);
         }
         
@@ -332,6 +340,26 @@ public class AuctionService {
         }
         
         return admin;
+    }
+    
+    /**
+     * UTC 시간을 한국 시간(KST)으로 변환
+     * 
+     * @param utcTime UTC 시간 (예: 2025-08-22T06:30:00.000Z)
+     * @return 한국 시간
+     */
+    private LocalDateTime convertUTCToKST(LocalDateTime utcTime) {
+        if (utcTime == null) {
+            return null;
+        }
+        
+        // UTC로 가정하고 ZonedDateTime으로 변환
+        ZonedDateTime utcZoned = utcTime.atZone(ZoneId.of("UTC"));
+        
+        // 한국 시간대로 변환 (UTC+9)
+        ZonedDateTime kstZoned = utcZoned.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        
+        return kstZoned.toLocalDateTime();
     }
     
     /**

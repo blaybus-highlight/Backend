@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
  * @since 2025.08.13
  */
 @Getter
+@Setter
 @NoArgsConstructor
 public class AuctionScheduleRequestDto {
 
