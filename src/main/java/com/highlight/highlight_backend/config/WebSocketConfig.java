@@ -51,6 +51,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     "http://localhost:3001",        // Next.js 개발 서버  
                     "http://127.0.0.1:3000",        // 로컬호스트 별칭
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",   // 프론트엔드 배포 서버
+                    "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8080",   // 백엔드 서버 (원래 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8082",   // 백엔드 서버 (Docker 매핑 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (내부 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // 백엔드 서버 (포트 없이)
@@ -69,6 +70,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     "http://localhost:3001", 
                     "http://127.0.0.1:3000",
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",   // 프론트엔드 배포 서버
+                    "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8080",   // 백엔드 서버 (원래 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8082",   // 백엔드 서버 (Docker 매핑 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (기존 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // 백엔드 서버 (포트 없이)
@@ -87,6 +89,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     "http://localhost:3001", 
                     "http://127.0.0.1:3000",
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:3000",   // 프론트엔드 배포 서버
+                    "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8080",   // 백엔드 서버 (원래 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8082",   // 백엔드 서버 (Docker 매핑 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com:8085",   // 백엔드 서버 (기존 포트)
                     "http://ec2-52-78-128-131.ap-northeast-2.compute.amazonaws.com",        // 백엔드 서버 (포트 없이)
