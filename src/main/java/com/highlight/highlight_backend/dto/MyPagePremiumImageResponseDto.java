@@ -1,14 +1,23 @@
 package com.highlight.highlight_backend.dto;
 
-import com.highlight.highlight_backend.domain.ProductImage;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Setter
 @Getter
 public class MyPagePremiumImageResponseDto {
 
-    private List<ProductImage> premiumImages;
+    private String premiumImagesURL;
+
+    private String productName;
+
+    private BigDecimal productPrice;
+
+    public MyPagePremiumImageResponseDto(BigDecimal productPrice, String productName, String imageURL) {
+        this.productPrice = productPrice;
+        this.productName = productName;
+        this.premiumImagesURL = imageURL;
+    }
 }

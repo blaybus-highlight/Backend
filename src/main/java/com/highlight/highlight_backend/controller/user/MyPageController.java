@@ -76,14 +76,13 @@ public class MyPageController {
      * MyPage Premium 이미지 추출
      */
     @GetMapping("/images")
-    public ResponseEntity<ResponseDto<MyPagePremiumImageResponseDto>> getImages(
+    public ResponseEntity<ResponseDto<List<MyPagePremiumImageResponseDto>>>getImages(
             Authentication authentication
     ) {
         Long userId = getCurrentUserId(authentication);
 
-        List<ProductImage> images = userService.getMyPagePremiumImages(userId);
-        MyPagePremiumImageResponseDto response = new MyPagePremiumImageResponseDto();
-        response.setPremiumImages(images);
+        List<MyPagePremiumImageResponseDto> response = userService.getMyPagePremiumImages(userId);
+
 
         return ResponseEntity.ok(ResponseDto.success(response, "낙찰한 프리미엄 상품을 성공적으로 가져왔습니다."));
     }

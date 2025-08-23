@@ -1,22 +1,12 @@
 package com.highlight.highlight_backend.service;
 
-import com.highlight.highlight_backend.domain.PhoneVerification;
-import com.highlight.highlight_backend.domain.ProductImage;
-import com.highlight.highlight_backend.domain.User;
-import com.highlight.highlight_backend.dto.PhoneVerificationRequestCodeDto;
-import com.highlight.highlight_backend.dto.PhoneVerificationRequestDto;
-import com.highlight.highlight_backend.dto.UserDetailResponseDto;
-import com.highlight.highlight_backend.dto.UserLoginRequestDto;
-import com.highlight.highlight_backend.dto.UserLoginResponseDto;
-import com.highlight.highlight_backend.dto.UserSignUpRequestDto;
-import com.highlight.highlight_backend.dto.MyPageResponseDto;
+import com.highlight.highlight_backend.domain.*;
+import com.highlight.highlight_backend.dto.*;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.UserErrorCode;
 import com.highlight.highlight_backend.exception.SmsErrorCode;
-import com.highlight.highlight_backend.repository.PhoneVerificationRepository;
+import com.highlight.highlight_backend.repository.*;
 import com.highlight.highlight_backend.repository.user.UserRepository;
-import com.highlight.highlight_backend.repository.AuctionRepository;
-import com.highlight.highlight_backend.repository.ProductImageRepository;
 import com.highlight.highlight_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -46,7 +38,10 @@ public class UserService {
     private final ProductImageRepository productImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    
+
+    private final ProductRepository productRepository;
+    private final BidRepository bidRepository;
+
     @Value("${coolsms.api.key}")
     private String apiKey;
 
@@ -217,14 +212,14 @@ public class UserService {
     }
 
     /**
-     * 사용자가 낙찰한 프리미엄 상품들의 이미지 조회
+     * 사용자가 낙찰한 프리미엄 상품들의 정보 조회
      * 
      * @param userId 사용자 ID
-     * @return 프리미엄 상품 이미지 목록
+     * @return 프리미엄 상품 정보 목록
      */
     @Transactional(readOnly = true)
-    public List<ProductImage> getMyPagePremiumImages(Long userId) {
-        log.info("마이페이지 프리미엄 상품 이미지 조회: 사용자ID={}", userId);
+    public List<MyPagePremiumImageResponseDto> getMyPagePremiumImages(Long userId) {
+        log.info("마이페이지 프리미엄 상품 정보 조회: 사용자ID={}", userId);
         
         // 1. 사용자 존재 확인
         User user = userRepository.findById(userId)
@@ -238,12 +233,48 @@ public class UserService {
             return List.of();
         }
         
-        // 3. 프리미엄 상품들의 이미지들 조회 (Product 정보와 함께)
-        List<ProductImage> images = productImageRepository.findByProductIdInWithProduct(premiumProductIds);
+        // 3. 프리미엄 상품들의 정보 조회 (한 번에 조회하여 N+1 문제 방지)
+        List<MyPagePremiumImageResponseDto> list = new ArrayList<>();
+
+        for (Long productId : premiumProductIds) {
+            try {
+                // 상품 정보 조회
+                Product product = productRepository.findById(productId).orElse(null);
+                
+                if (product == null) {
+                    log.warn("상품을 찾을 수 없습니다: productId={}", productId);
+                    continue;
+                }
+                
+                // 낙찰 정보 조회 (해당 상품의 경매에서 사용자가 낙찰한 입찰)
+                Bid winningBid = bidRepository.findWinningBidByProductIdAndUserId(productId, userId)
+                        .orElse(null);
+                
+                if (winningBid == null) {
+                    log.warn("낙찰 정보를 찾을 수 없습니다: productId={}, userId={}", productId, userId);
+                    continue;
+                }
+                
+                // 대표 이미지 URL 조회
+                String imageURL = productImageRepository.findPrimaryImageUrlByProductId(productId);
+                
+                // DTO 생성 및 추가
+                MyPagePremiumImageResponseDto dto = new MyPagePremiumImageResponseDto(
+                        winningBid.getBidAmount(),
+                        product.getProductName(),
+                        imageURL != null ? imageURL : ""
+                );
+                
+                list.add(dto);
+                
+            } catch (Exception e) {
+                log.error("상품 정보 조회 중 오류 발생: productId={}, error={}", productId, e.getMessage());
+            }
+        }
         
-        log.info("프리미엄 상품 이미지 조회 완료: 사용자ID={}, 상품수={}, 이미지수={}", 
-                userId, premiumProductIds.size(), images.size());
+        log.info("프리미엄 상품 정보 조회 완료: 사용자ID={}, 상품수={}, 조회성공수={}",
+                userId, premiumProductIds.size(), list.size());
         
-        return images;
+        return list;
     }
 }

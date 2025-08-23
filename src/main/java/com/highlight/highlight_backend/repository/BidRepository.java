@@ -186,4 +186,21 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
      */
     @Query("SELECT COUNT(DISTINCT b.user) FROM Bid b WHERE b.status != 'CANCELLED'")
     Long countDistinctUsers();
+    
+    /**
+     * 특정 상품의 경매에서 사용자가 낙찰한 입찰 조회
+     * 
+     * @param productId 상품 ID
+     * @param userId 사용자 ID
+     * @return 낙찰 입찰 정보
+     */
+    @Query("SELECT b FROM Bid b " +
+           "JOIN b.auction a " +
+           "WHERE a.product.id = :productId " +
+           "AND b.user.id = :userId " +
+           "AND b.status = 'WINNING' " +
+           "AND a.status = 'COMPLETED'")
+    Optional<Bid> findWinningBidByProductIdAndUserId(
+            @Param("productId") Long productId, 
+            @Param("userId") Long userId);
 }

@@ -37,7 +37,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
      * @param productId 상품 ID
      * @return 해당 상품의 경매 정보
      */
-    Optional<Auction> findByProductId(Long productId);
+    Auction findByProductId(Long productId);
     
     /**
      * 경매 상태로 조회
