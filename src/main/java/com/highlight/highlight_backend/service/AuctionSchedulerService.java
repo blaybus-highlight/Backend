@@ -128,4 +128,27 @@ public class AuctionSchedulerService {
             }
         }
     }
+
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    @Transactional
+    public void updateProductStatusForCompletedAuctions() {
+        log.debug("완료된 경매의 상품 상태를 업데이트합니다...");
+        List<Auction> completedAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.COMPLETED);
+        
+        for (Auction auction : completedAuctions) {
+            try {
+                // 상품 상태를 AUCTION_COMPLETED로 변경
+                if (auction.getProduct() != null) {
+                    Product product = productRepository.findById(auction.getProduct().getId()).orElse(null);
+                    if (product != null && product.getStatus() != Product.ProductStatus.AUCTION_COMPLETED) {
+                        product.setStatus(Product.ProductStatus.AUCTION_COMPLETED);
+                        productRepository.save(product);
+                        log.info("상품 상태가 AUCTION_COMPLETED로 변경되었습니다. 상품 ID: {}, 경매 ID: {}", product.getId(), auction.getId());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("상품 상태 업데이트 중 오류 발생. 경매 ID: {}, 오류: {}", auction.getId(), e.getMessage(), e);
+            }
+        }
+    }
 }
