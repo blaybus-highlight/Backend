@@ -64,4 +64,13 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
      * @return 해당 상품들의 이미지 목록
      */
     List<ProductImage> findByProductIdIn(List<Long> productIds);
+    
+    /**
+     * 여러 상품 ID로 이미지 목록 조회 (Product 엔티티와 함께)
+     * 
+     * @param productIds 상품 ID 목록
+     * @return 해당 상품들의 이미지 목록 (Product 정보 포함)
+     */
+    @Query("SELECT pi FROM ProductImage pi LEFT JOIN FETCH pi.product WHERE pi.product.id IN :productIds")
+    List<ProductImage> findByProductIdInWithProduct(@Param("productIds") List<Long> productIds);
 }

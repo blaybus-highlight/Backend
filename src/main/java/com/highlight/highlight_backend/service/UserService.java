@@ -238,8 +238,8 @@ public class UserService {
             return List.of();
         }
         
-        // 3. 프리미엄 상품들의 이미지들 조회
-        List<ProductImage> images = productImageRepository.findByProductIdIn(premiumProductIds);
+        // 3. 프리미엄 상품들의 이미지들 조회 (Product 정보와 함께)
+        List<ProductImage> images = productImageRepository.findByProductIdInWithProduct(premiumProductIds);
         
         log.info("프리미엄 상품 이미지 조회 완료: 사용자ID={}, 상품수={}, 이미지수={}", 
                 userId, premiumProductIds.size(), images.size());
