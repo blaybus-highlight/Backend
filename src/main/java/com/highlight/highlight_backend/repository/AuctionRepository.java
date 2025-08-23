@@ -40,6 +40,24 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
     Auction findByProductId(Long productId);
     
     /**
+     * 상품 ID로 진행 중인 경매 조회
+     * 
+     * @param productId 상품 ID
+     * @return 해당 상품의 진행 중인 경매 정보
+     */
+    @Query("SELECT a FROM Auction a WHERE a.product.id = :productId AND a.status = 'IN_PROGRESS' ORDER BY a.createdAt DESC")
+    Optional<Auction> findActiveAuctionByProductId(@Param("productId") Long productId);
+    
+    /**
+     * 상품 ID로 진행 중이거나 예약된 경매 조회
+     * 
+     * @param productId 상품 ID
+     * @return 해당 상품의 진행 중이거나 예약된 경매 정보
+     */
+    @Query("SELECT a FROM Auction a WHERE a.product.id = :productId AND a.status IN ('IN_PROGRESS', 'SCHEDULED') ORDER BY a.createdAt DESC")
+    Optional<Auction> findActiveOrScheduledAuctionByProductId(@Param("productId") Long productId);
+    
+    /**
      * 경매 상태로 조회
      * 
      * @param status 경매 상태

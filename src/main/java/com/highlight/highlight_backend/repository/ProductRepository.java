@@ -138,4 +138,50 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                         @Param("category") Product.Category category,
                                         @Param("brand") String brand,
                                         Pageable pageable);
+    
+    /**
+     * 경매가 등록된 상품 중 관련 상품 추천 조회
+     * 동일 카테고리 또는 동일 브랜드 상품을 추천하되, 경매가 등록된 상품만 포함
+     * 
+     * @param excludeProductId 제외할 상품 ID (자기 자신)
+     * @param category 카테고리
+     * @param brand 브랜드
+     * @param pageable 페이징 정보
+     * @return 추천 상품 목록
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN FETCH p.images " +
+           "JOIN Auction a ON p.id = a.product.id " +
+           "WHERE p.id != :excludeProductId " +
+           "AND p.status = 'ACTIVE' " +
+           "AND (p.category = :category OR p.brand = :brand) " +
+           "ORDER BY " +
+           "CASE WHEN p.category = :category AND p.brand = :brand THEN 1 " +
+           "     WHEN p.category = :category THEN 2 " +
+           "     WHEN p.brand = :brand THEN 3 " +
+           "     ELSE 4 END, " +
+           "p.createdAt DESC")
+    List<Product> findRecommendedProductsWithAuction(@Param("excludeProductId") Long excludeProductId,
+                                                   @Param("category") Product.Category category,
+                                                   @Param("brand") String brand,
+                                                   Pageable pageable);
+    
+    /**
+     * 경매가 등록된 모든 활성 상품 조회 (카테고리/브랜드 제한 없음)
+     * 
+     * @param excludeProductId 제외할 상품 ID (자기 자신)
+     * @param pageable 페이징 정보
+     * @return 경매가 등록된 모든 활성 상품 목록
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN FETCH p.images " +
+           "JOIN Auction a ON p.id = a.product.id " +
+           "WHERE p.id != :excludeProductId " +
+           "AND p.status IN ('ACTIVE', 'IN_AUCTION') " +
+           "AND a.status IN ('IN_PROGRESS', 'SCHEDULED') " +
+           "ORDER BY p.createdAt DESC")
+    List<Product> findAllActiveProductsWithAuction(@Param("excludeProductId") Long excludeProductId,
+                                                 Pageable pageable);
+    
+
 }

@@ -346,7 +346,7 @@ public class ProductService {
      * @return 함께 본 상품 목록
      */
     public Page<ViewTogetherProductResponseDto> getViewedTogetherProducts(Long productId, int size) {
-        log.info("함께 본 상품 추천 조회: {} (개수: {})", productId, size);
+
         
         try {
             // 1. 기준 상품 존재 확인
@@ -372,7 +372,7 @@ public class ProductService {
                 .limit(size)
                 .toList();
                 
-            log.info("함께 본 상품 추천 조회 완료: {} -> {} 개", productId, finalRecommendations.size());
+
             
             // 5. Page 객체로 변환
             return new PageImpl<>(finalRecommendations, PageRequest.of(0, size), finalRecommendations.size());
@@ -397,18 +397,20 @@ public class ProductService {
         );
         
         if (!associations.isEmpty()) {
-            log.debug("연관도 테이블에서 {} 개의 추천 상품 발견", associations.size());
             return associations.stream()
+                .filter(association -> {
+                    // 경매가 등록된 상품만 필터링
+                    return auctionRepository.existsByProductId(association.getTargetProduct().getId());
+                })
                 .map(association -> {
                     Product targetProduct = association.getTargetProduct();
-                    Auction activeAuction = auctionRepository.findByProductId(targetProduct.getId());
+                    Auction activeAuction = auctionRepository.findActiveAuctionByProductId(targetProduct.getId()).orElse(null);
                     return ViewTogetherProductResponseDto.fromProductWithAuction(targetProduct, activeAuction, association.getAssociationScore());
                 })
                 .toList();
         }
         
         // 2. 연관도 테이블에 데이터가 없으면 실시간 계산
-        log.debug("연관도 테이블이 비어있음, 실시간 계산 시작");
         return calculateRealTimeAssociations(productId, size);
     }
 
@@ -453,18 +455,22 @@ public class ProductService {
                 .map(Map.Entry::getKey)
                 .toList();
                 
-            // 5. 상품 정보 조회 및 DTO 변환
+            // 5. 상품 정보 조회 및 DTO 변환 (경매가 등록된 상품만)
             List<ViewTogetherProductResponseDto> recommendations = new ArrayList<>();
             for (Long targetProductId : topProductIds) {
-                Product product = productRepository.findById(targetProductId).orElse(null);
+                Product product = productRepository.findByIdWithImages(targetProductId).orElse(null);
                 if (product != null && product.getStatus() == Product.ProductStatus.ACTIVE) {
-                    Auction activeAuction = auctionRepository.findByProductId(targetProductId);
-                    BigDecimal score = BigDecimal.valueOf(productScores.get(targetProductId));
-                    recommendations.add(ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, score));
+                    // 경매가 등록되어 있는지 확인
+                    boolean hasAuction = auctionRepository.existsByProductId(targetProductId);
+                    if (hasAuction) {
+                        Auction activeAuction = auctionRepository.findActiveAuctionByProductId(targetProductId).orElse(null);
+                        BigDecimal score = BigDecimal.valueOf(productScores.get(targetProductId));
+                        recommendations.add(ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, score));
+                    }
                 }
             }
             
-            log.debug("실시간 계산으로 {} 개의 추천 상품 생성", recommendations.size());
+
             return recommendations;
             
         } catch (Exception e) {
@@ -485,22 +491,89 @@ public class ProductService {
             .collect(Collectors.toSet());
         excludeIds.add(baseProduct.getId()); // 자기 자신도 제외
         
-        // 카테고리/브랜드 기반 관련 상품 조회
-        List<Product> fallbackProducts = productRepository.findRecommendedProducts(
+        // 카테고리/브랜드 기반 관련 상품 조회 (경매가 등록된 상품만 조회)
+        List<Product> fallbackProducts = productRepository.findRecommendedProductsWithAuction(
             baseProduct.getId(), 
             baseProduct.getCategory(), 
             baseProduct.getBrand(),
-            PageRequest.of(0, size * 2) // 여유있게 조회
+            PageRequest.of(0, size * 10) // 더 많은 상품 조회
         );
+                // 진행 중인 경매가 있는 상품 우선 선택, 부족하면 예약된 경매도 포함
+        List<ViewTogetherProductResponseDto> recommendations = new ArrayList<>();
+        List<ViewTogetherProductResponseDto> scheduledRecommendations = new ArrayList<>();
         
-        return fallbackProducts.stream()
-            .filter(product -> !excludeIds.contains(product.getId()))
-            .limit(size)
-            .map(product -> {
-                Auction activeAuction = auctionRepository.findByProductId(product.getId());
-                return ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, BigDecimal.ZERO);
-            })
-            .toList();
+        for (Product product : fallbackProducts) {
+            if (excludeIds.contains(product.getId())) {
+                continue;
+            }
+            
+            // 먼저 진행 중인 경매 확인
+            Auction activeAuction = auctionRepository.findActiveAuctionByProductId(product.getId()).orElse(null);
+            
+            if (activeAuction != null) {
+                // 진행 중인 경매가 있는 상품 우선 추가
+                ViewTogetherProductResponseDto dto = ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, BigDecimal.ZERO);
+                recommendations.add(dto);
+                
+                if (recommendations.size() >= size) {
+                    break;
+                }
+            } else {
+                // 진행 중인 경매가 없으면 예약된 경매 확인
+                Auction scheduledAuction = auctionRepository.findActiveOrScheduledAuctionByProductId(product.getId()).orElse(null);
+                if (scheduledAuction != null) {
+                    ViewTogetherProductResponseDto dto = ViewTogetherProductResponseDto.fromProductWithAuction(product, scheduledAuction, BigDecimal.ZERO);
+                    scheduledRecommendations.add(dto);
+                }
+            }
+        }
+        
+        // 진행 중인 경매가 부족하면 예약된 경매로 보충
+        if (recommendations.size() < size) {
+            int remaining = size - recommendations.size();
+            recommendations.addAll(scheduledRecommendations.stream().limit(remaining).toList());
+        }
+        
+        // 여전히 부족하면 모든 활성 경매 상품에서 추천
+        if (recommendations.size() < size) {
+            List<Product> allActiveProduct = productRepository.findAllActiveProductsWithAuction(
+                baseProduct.getId(), PageRequest.of(0, size * 5)
+            );
+            
+
+            
+            for (Product product : allActiveProduct) {
+                if (excludeIds.contains(product.getId()) || 
+                    recommendations.stream().anyMatch(r -> r.getId().equals(product.getId()))) {
+                    continue;
+                }
+                
+                Auction activeAuction = auctionRepository.findActiveAuctionByProductId(product.getId()).orElse(null);
+                if (activeAuction != null) {
+                    ViewTogetherProductResponseDto dto = ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, BigDecimal.ZERO);
+                    recommendations.add(dto);
+                    
+                    if (recommendations.size() >= size) {
+                        break;
+                    }
+                } else {
+                    Auction scheduledAuction = auctionRepository.findActiveOrScheduledAuctionByProductId(product.getId()).orElse(null);
+                    if (scheduledAuction != null) {
+                        ViewTogetherProductResponseDto dto = ViewTogetherProductResponseDto.fromProductWithAuction(product, scheduledAuction, BigDecimal.ZERO);
+                        recommendations.add(dto);
+                        
+                        if (recommendations.size() >= size) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        List<ViewTogetherProductResponseDto> finalRecommendations = recommendations.stream().limit(size).toList();
+        
+
+        return finalRecommendations;
     }
     
     /**
