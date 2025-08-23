@@ -135,6 +135,50 @@ public class User {
             }
         }
     }
+    public enum RankPercent {
+        SEED("0.01"),
+        Leaflet("0.02"),
+        Trunker("0.03"),
+        Flower("0.04");
+
+        private String description;
+
+        RankPercent(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public static RankPercent findByDescription(String description) {
+            // values()는 enum의 모든 상수를 배열로 반환합니다. (SEED, Leaflet, ...)
+            for (RankPercent rank : values()) {
+                if (rank.getDescription().equals(description)) {
+                    return rank; // 일치하는 값을 찾으면 해당 enum 상수를 반환
+                }
+            }
+            return null; // 일치하는 값이 없으면 null을 반환
+        }
+
+        /**
+         * 사용자 등급(Rank)에 따른 포인트 적립률 반환
+         */
+        public static RankPercent findByUserRank(Rank userRank) {
+            switch (userRank) {
+                case SEED:
+                    return SEED;
+                case Leaflet:
+                    return Leaflet;
+                case Trunker:
+                    return Trunker;
+                case Flower:
+                    return Flower;
+                default:
+                    return SEED; // 기본값
+            }
+        }
+    }
     
     /**
      * 경매 참여 시 호출되는 메서드

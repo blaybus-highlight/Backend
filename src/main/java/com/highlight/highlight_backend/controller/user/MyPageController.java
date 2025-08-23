@@ -1,5 +1,7 @@
 package com.highlight.highlight_backend.controller.user;
 
+import com.highlight.highlight_backend.domain.ProductImage;
+import com.highlight.highlight_backend.dto.MyPagePremiumImageResponseDto;
 import com.highlight.highlight_backend.dto.MyPageResponseDto;
 import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.UserService;
@@ -17,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 마이페이지 컨트롤러
@@ -67,7 +71,23 @@ public class MyPageController {
         
         return ResponseEntity.ok(ResponseDto.success(myPageInfo));
     }
-    
+
+    /**
+     * MyPage Premium 이미지 추출
+     */
+    @GetMapping("/images")
+    public ResponseEntity<ResponseDto<MyPagePremiumImageResponseDto>> getImages(
+            Authentication authentication
+    ) {
+        Long userId = getCurrentUserId(authentication);
+
+        List<ProductImage> images = userService.getMyPagePremiumImages(userId);
+        MyPagePremiumImageResponseDto response = new MyPagePremiumImageResponseDto();
+        response.setPremiumImages(images);
+
+        return ResponseEntity.ok(ResponseDto.success(response, "낙찰한 프리미엄 상품을 성공적으로 가져왔습니다."));
+    }
+
     /**
      * Authentication에서 현재 사용자 ID를 추출
      *

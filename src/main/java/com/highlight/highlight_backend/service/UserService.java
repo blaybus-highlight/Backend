@@ -1,6 +1,7 @@
 package com.highlight.highlight_backend.service;
 
 import com.highlight.highlight_backend.domain.PhoneVerification;
+import com.highlight.highlight_backend.domain.ProductImage;
 import com.highlight.highlight_backend.domain.User;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestCodeDto;
 import com.highlight.highlight_backend.dto.PhoneVerificationRequestDto;
@@ -14,6 +15,8 @@ import com.highlight.highlight_backend.exception.UserErrorCode;
 import com.highlight.highlight_backend.exception.SmsErrorCode;
 import com.highlight.highlight_backend.repository.PhoneVerificationRepository;
 import com.highlight.highlight_backend.repository.user.UserRepository;
+import com.highlight.highlight_backend.repository.AuctionRepository;
+import com.highlight.highlight_backend.repository.ProductImageRepository;
 import com.highlight.highlight_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -38,6 +42,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PhoneVerificationRepository phoneVerificationRepository;
+    private final AuctionRepository auctionRepository;
+    private final ProductImageRepository productImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     
@@ -208,5 +214,36 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         return MyPageResponseDto.from(user);
+    }
+
+    /**
+     * 사용자가 낙찰한 프리미엄 상품들의 이미지 조회
+     * 
+     * @param userId 사용자 ID
+     * @return 프리미엄 상품 이미지 목록
+     */
+    @Transactional(readOnly = true)
+    public List<ProductImage> getMyPagePremiumImages(Long userId) {
+        log.info("마이페이지 프리미엄 상품 이미지 조회: 사용자ID={}", userId);
+        
+        // 1. 사용자 존재 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        
+        // 2. 사용자가 낙찰한 경매들 중 프리미엄 상품들 조회
+        List<Long> premiumProductIds = auctionRepository.findPremiumProductIdsByUserId(userId);
+        
+        if (premiumProductIds.isEmpty()) {
+            log.info("사용자가 낙찰한 프리미엄 상품이 없습니다: 사용자ID={}", userId);
+            return List.of();
+        }
+        
+        // 3. 프리미엄 상품들의 이미지들 조회
+        List<ProductImage> images = productImageRepository.findByProductIdIn(premiumProductIds);
+        
+        log.info("프리미엄 상품 이미지 조회 완료: 사용자ID={}, 상품수={}, 이미지수={}", 
+                userId, premiumProductIds.size(), images.size());
+        
+        return images;
     }
 }

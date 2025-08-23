@@ -164,4 +164,18 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
         LocalDateTime startTime, 
         LocalDateTime endTime
     );
+    
+    /**
+     * 사용자가 낙찰한 프리미엄 상품들의 ID 조회
+     * 
+     * @param userId 사용자 ID
+     * @return 프리미엄 상품 ID 목록
+     */
+    @Query("SELECT DISTINCT a.product.id FROM Auction a " +
+           "JOIN Bid b ON a.id = b.auction.id " +
+           "WHERE b.user.id = :userId " +
+           "AND b.status = 'WINNING' " +
+           "AND a.status = 'COMPLETED' " +
+           "AND a.product.isPremium = true")
+    List<Long> findPremiumProductIdsByUserId(@Param("userId") Long userId);
 }

@@ -168,8 +168,9 @@ public class PaymentService {
         // 9. 결제 완료 처리
         // TODO: Payment 엔티티에 결제 정보 저장
         
-        // 10. 결제 금액의 1% 포인트 적립
-        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
+        // 10. 결제 금액의 등급별 포인트 적립
+        User.RankPercent rankPercent = User.RankPercent.findByUserRank(user.getRank());
+        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal(rankPercent.getDescription()));
         BigDecimal truncatedPoint = pointReward.setScale(0, RoundingMode.DOWN);
         BigDecimal finalPoint = remainingPoint.add(truncatedPoint);
         user.setPoint(finalPoint);
@@ -199,6 +200,7 @@ public class PaymentService {
             .completedAt(LocalDateTime.now())
             .build();
     }
+
     
     /**
      * 포인트를 최대한 활용한 결제 처리
