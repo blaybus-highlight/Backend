@@ -170,9 +170,12 @@ public class PaymentService {
         
         // 10. 결제 금액의 등급별 포인트 적립
         User.RankPercent rankPercent = User.RankPercent.findByUserRank(user.getRank());
-        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal(rankPercent.getDescription()));
+        BigDecimal percent = new BigDecimal(rankPercent.getDescription());
+
+        BigDecimal pointReward = actualPaymentAmount.multiply(percent);
         BigDecimal truncatedPoint = pointReward.setScale(0, RoundingMode.DOWN);
         BigDecimal finalPoint = remainingPoint.add(truncatedPoint);
+
         user.setPoint(finalPoint);
 
         // 11. 사용자 참여 횟수 증가 및 랭크 업데이트 (결제 완료 시)

@@ -139,7 +139,7 @@ public class User {
         SEED("0.01"),
         Leaflet("0.02"),
         Trunker("0.03"),
-        Flower("0.04");
+        Flower("0.05");
 
         private String description;
 
