@@ -55,8 +55,8 @@ public class ViewTogetherProductResponseDto {
     /**
      * 시작 가격
      */
-    @Schema(description = "시작 가격", example = "50000")
-    private BigDecimal startPrice;
+    @Schema(description = "현재 가격", example = "50000")
+    private BigDecimal currentHighestBid;
 
     /**
      * 즉시 구매 가격
@@ -111,7 +111,7 @@ public class ViewTogetherProductResponseDto {
                 .category(targetProduct.getCategory() != null ? targetProduct.getCategory().name() : null)
                 .primaryImageUrl(targetProduct.getPrimaryImage() != null ? 
                     targetProduct.getPrimaryImage().getImageUrl() : null)
-                .startPrice(activeAuction != null ? activeAuction.getStartPrice() : null)
+                .currentHighestBid(activeAuction != null ? activeAuction.getCurrentHighestBid() : null)
                 .buyNowPrice(activeAuction != null ? activeAuction.getBuyItNowPrice() : null)
                 .brand(targetProduct.getBrand())
                 .auctionStatus(getAuctionStatusForFrontend(activeAuction))
@@ -137,12 +137,37 @@ public class ViewTogetherProductResponseDto {
                 .category(product.getCategory() != null ? product.getCategory().name() : null)
                 .primaryImageUrl(product.getPrimaryImage() != null ? 
                     product.getPrimaryImage().getImageUrl() : null)
-                .startPrice(activeAuction != null ? activeAuction.getStartPrice() : null)
+                .currentHighestBid(activeAuction != null ? activeAuction.getCurrentHighestBid() : null)
                 .buyNowPrice(activeAuction != null ? activeAuction.getBuyItNowPrice() : null)
                 .brand(product.getBrand())
                 .auctionStatus(getAuctionStatusForFrontend(activeAuction))
                 .endTime(activeAuction != null ? activeAuction.getScheduledEndTime() : null)
                 .bidCount(activeAuction != null ? activeAuction.getTotalBids() : 0)
+                .associationScore(associationScore)
+                .build();
+    }
+
+    /**
+     * Product, Auction, 연관도 점수로부터 DTO 생성
+     * 
+     * @param product 상품 엔티티
+     * @param auction 경매 엔티티 (null 가능)
+     * @param associationScore 연관도 점수
+     * @return ViewTogetherProductResponseDto
+     */
+    public static ViewTogetherProductResponseDto fromProductWithAuction(Product product, Auction auction, BigDecimal associationScore) {
+        return ViewTogetherProductResponseDto.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .category(product.getCategory() != null ? product.getCategory().name() : null)
+                .primaryImageUrl(product.getPrimaryImage() != null ? 
+                    product.getPrimaryImage().getImageUrl() : null)
+                .currentHighestBid(auction != null ? auction.getCurrentHighestBid() : null)
+                .buyNowPrice(auction != null ? auction.getBuyItNowPrice() : null)
+                .brand(product.getBrand())
+                .auctionStatus(getAuctionStatusForFrontend(auction))
+                .endTime(auction != null ? auction.getScheduledEndTime() : null)
+                .bidCount(auction != null ? auction.getTotalBids() : 0)
                 .associationScore(associationScore)
                 .build();
     }

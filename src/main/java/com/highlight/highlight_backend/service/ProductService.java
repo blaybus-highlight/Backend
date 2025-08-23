@@ -1,9 +1,6 @@
 package com.highlight.highlight_backend.service;
 
-import com.highlight.highlight_backend.domain.Admin;
-import com.highlight.highlight_backend.domain.Product;
-import com.highlight.highlight_backend.domain.ProductImage;
-import com.highlight.highlight_backend.domain.UserProductView;
+import com.highlight.highlight_backend.domain.*;
 import com.highlight.highlight_backend.dto.ProductCreateRequestDto;
 import com.highlight.highlight_backend.dto.ProductResponseDto;
 import com.highlight.highlight_backend.dto.ProductUpdateRequestDto;
@@ -11,11 +8,7 @@ import com.highlight.highlight_backend.dto.ViewTogetherProductResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
 import com.highlight.highlight_backend.exception.ProductErrorCode;
 import com.highlight.highlight_backend.exception.AdminErrorCode;
-import com.highlight.highlight_backend.repository.AdminRepository;
-import com.highlight.highlight_backend.repository.ProductImageRepository;
-import com.highlight.highlight_backend.repository.ProductRepository;
-import com.highlight.highlight_backend.repository.UserProductViewRepository;
-import com.highlight.highlight_backend.repository.ProductAssociationRepository;
+import com.highlight.highlight_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -59,6 +52,7 @@ public class ProductService {
     private final S3Service s3Service;
     private final UserProductViewRepository userProductViewRepository;
     private final ProductAssociationRepository productAssociationRepository;
+    private final AuctionRepository auctionRepository;
     
     /**
      * 상품 등록
@@ -405,7 +399,11 @@ public class ProductService {
         if (!associations.isEmpty()) {
             log.debug("연관도 테이블에서 {} 개의 추천 상품 발견", associations.size());
             return associations.stream()
-                .map(ViewTogetherProductResponseDto::fromAssociation)
+                .map(association -> {
+                    Product targetProduct = association.getTargetProduct();
+                    Auction activeAuction = auctionRepository.findByProductId(targetProduct.getId());
+                    return ViewTogetherProductResponseDto.fromProductWithAuction(targetProduct, activeAuction, association.getAssociationScore());
+                })
                 .toList();
         }
         
@@ -460,8 +458,9 @@ public class ProductService {
             for (Long targetProductId : topProductIds) {
                 Product product = productRepository.findById(targetProductId).orElse(null);
                 if (product != null && product.getStatus() == Product.ProductStatus.ACTIVE) {
+                    Auction activeAuction = auctionRepository.findByProductId(targetProductId);
                     BigDecimal score = BigDecimal.valueOf(productScores.get(targetProductId));
-                    recommendations.add(ViewTogetherProductResponseDto.fromProduct(product, score));
+                    recommendations.add(ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, score));
                 }
             }
             
@@ -497,7 +496,10 @@ public class ProductService {
         return fallbackProducts.stream()
             .filter(product -> !excludeIds.contains(product.getId()))
             .limit(size)
-            .map(product -> ViewTogetherProductResponseDto.fromProduct(product, BigDecimal.ZERO))
+            .map(product -> {
+                Auction activeAuction = auctionRepository.findByProductId(product.getId());
+                return ViewTogetherProductResponseDto.fromProductWithAuction(product, activeAuction, BigDecimal.ZERO);
+            })
             .toList();
     }
     
