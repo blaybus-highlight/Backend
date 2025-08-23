@@ -169,7 +169,11 @@ public class PaymentService {
         // TODO: Payment 엔티티에 결제 정보 저장
         
         // 10. 결제 금액의 1% 포인트 적립
-        BigDecimal pointReward = actualPaymentAmount.multiply(new BigDecimal("0.01"));
+        User.Rank rank  = user.getRank();
+        User.RankPercent rankPercent = User.RankPercent.findByUserRank(rank);
+        String percent = rankPercent.getDescription();
+        BigDecimal userPercent = new BigDecimal(percent);
+        BigDecimal pointReward = actualPaymentAmount.multiply(userPercent);
         BigDecimal truncatedPoint = pointReward.setScale(0, RoundingMode.DOWN);
         BigDecimal finalPoint = remainingPoint.add(truncatedPoint);
 
