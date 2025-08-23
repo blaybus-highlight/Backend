@@ -28,6 +28,7 @@ public class UserAuctionDetailResponseDto {
     private Long auctionId;
     private String productName;
     private String shortDescription;  // 짧은 소개
+    private String brand;
     private String history;  // 히스토리
     private String expectedEffects;  // 기대효과
     private String detailedInfo;  // 상세정보
@@ -90,7 +91,8 @@ public class UserAuctionDetailResponseDto {
                 .maxBid(auction.getMaxBid())
                 .minimumBid(auction.getMinimumBid())
                 .condition(product.getCondition())
-                .productCount(product.getProductCount());
+                .productCount(product.getProductCount())
+                .brand(product.getBrand());
 
         if (seller != null) {
             builder.sellerName(seller.getSellerName())
