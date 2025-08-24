@@ -47,7 +47,11 @@ public enum AuctionErrorCode implements ErrorCode {
     /** 즉시구매는 재고 1개 상품만 가능 */
     BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM(HttpStatus.BAD_REQUEST, "AUCTION_016", "즉시구매는 재고가 1개인 상품만 가능합니다."),
     /** 입찰가가 너무 낮음 */
-    BID_AMOUNT_TOO_LOW(HttpStatus.BAD_REQUEST, "AUCTION_017", "입찰가가 너무 낮습니다.");
+    BID_AMOUNT_TOO_LOW(HttpStatus.BAD_REQUEST, "AUCTION_017", "입찰가가 너무 낮습니다."),
+    /** 진행 중인 경매는 수정할 수 없음 */
+    CANNOT_MODIFY_IN_PROGRESS_AUCTION(HttpStatus.BAD_REQUEST, "AUCTION_018", "진행 중인 경매는 수정할 수 없습니다."),
+    /** 종료된 경매는 수정할 수 없음 */
+    CANNOT_MODIFY_ENDED_AUCTION(HttpStatus.BAD_REQUEST, "AUCTION_019", "종료된 경매는 수정할 수 없습니다.");
     
     private final HttpStatus httpStatus;
     private final String code;

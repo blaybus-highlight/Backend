@@ -1,6 +1,13 @@
 package com.highlight.highlight_backend.controller;
 
-import com.highlight.highlight_backend.dto.*;
+import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
+import com.highlight.highlight_backend.dto.AuctionResponseDto;
+import com.highlight.highlight_backend.dto.AuctionScheduleRequestDto;
+import com.highlight.highlight_backend.dto.AuctionStartRequestDto;
+import com.highlight.highlight_backend.dto.AuctionUpdateRequestDto;
+import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
+import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
+import com.highlight.highlight_backend.dto.ResponseDto;
 import com.highlight.highlight_backend.service.AuctionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -323,4 +330,50 @@ public class AuctionController {
             ResponseDto.success(response, "경매 정보를 성공적으로 조회했습니다.")
         );
     }
+
+    /**
+     * 경매 수정
+     * 
+     * @param auctionId 수정할 경매 ID
+     * @param request 경매 수정 요청 데이터
+     * @param authentication 현재 로그인한 관리자 정보
+     * @return 수정된 경매 정보
+     */
+    @PutMapping("/{auctionId}")
+    @Operation(
+        summary = "경매 수정", 
+        description = "예약된 경매의 정보를 수정합니다. 진행 중이거나 종료된 경매는 수정할 수 없습니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "경매 수정 성공",
+            content = @Content(schema = @Schema(implementation = ResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (시간, 가격 등)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 부족"),
+        @ApiResponse(responseCode = "404", description = "경매를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "수정할 수 없는 경매 상태"),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<ResponseDto<AuctionResponseDto>> updateAuction(
+            @Parameter(description = "수정할 경매의 고유 ID", required = true, example = "1")
+            @PathVariable Long auctionId,
+            @Parameter(description = "경매 수정 요청 데이터", required = true)
+            @Valid @RequestBody AuctionUpdateRequestDto request,
+            Authentication authentication) {
+        
+        Long adminId = (Long) authentication.getPrincipal();
+        log.info("PUT /api/auctions/{} - 경매 수정 요청 (관리자: {})", 
+                auctionId, adminId);
+        
+        AuctionResponseDto response = auctionService.updateAuction(auctionId, request, adminId);
+        
+        return ResponseEntity.ok(
+            ResponseDto.success(response, "경매가 성공적으로 수정되었습니다.")
+        );
+    }
+
+    
 }

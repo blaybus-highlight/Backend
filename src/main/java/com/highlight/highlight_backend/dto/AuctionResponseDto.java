@@ -73,6 +73,31 @@ public class AuctionResponseDto {
      * 즉시구매가
      */
     private BigDecimal buyItNowPrice;
+
+    /**
+     * 최소 인상폭
+     */
+    private BigDecimal minimumBid;
+
+    /**
+     * 최대 인상폭
+     */
+    private BigDecimal maxBid;
+
+    /**
+     * 입찰 단위
+     */
+    private BigDecimal bidUnit;
+
+    /**
+     * 배송비
+     */
+    private BigDecimal shippingFee;
+
+    /**
+     * 직접 픽업 가능 여부
+     */
+    private Boolean isPickupAvailable;
     
     /**
      * 총 입찰 참여자 수
@@ -138,6 +163,11 @@ public class AuctionResponseDto {
                 .startPrice(auction.getStartPrice())
                 .currentHighestBid(auction.getCurrentHighestBid())
                 .buyItNowPrice(auction.getBuyItNowPrice())
+                .minimumBid(auction.getMinimumBid())
+                .maxBid(auction.getMaxBid())
+                .bidUnit(auction.getBidUnit())
+                .shippingFee(auction.getShippingFee())
+                .isPickupAvailable(auction.getIsPickupAvailable())
                 .totalBidders(auction.getTotalBidders())
                 .totalBids(auction.getTotalBids())
                 .createdBy(auction.getCreatedBy())
@@ -163,9 +193,14 @@ public class AuctionResponseDto {
             auction.getScheduledEndTime(),
             auction.getActualStartTime(),
             auction.getActualEndTime(),
+            auction.getStartPrice(),
             auction.getCurrentHighestBid(),
             auction.getBuyItNowPrice(),
-            auction.getStartPrice(),
+            auction.getMinimumBid(),
+            auction.getMaxBid(),
+            auction.getBidUnit(),
+            auction.getShippingFee(),
+            auction.getIsPickupAvailable(),
             auction.getTotalBidders(),
             auction.getTotalBids(),
             auction.getCreatedBy(),

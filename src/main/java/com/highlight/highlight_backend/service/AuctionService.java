@@ -7,6 +7,7 @@ import com.highlight.highlight_backend.dto.AuctionEndRequestDto;
 import com.highlight.highlight_backend.dto.AuctionResponseDto;
 import com.highlight.highlight_backend.dto.AuctionScheduleRequestDto;
 import com.highlight.highlight_backend.dto.AuctionStartRequestDto;
+import com.highlight.highlight_backend.dto.AuctionUpdateRequestDto;
 import com.highlight.highlight_backend.dto.BuyItNowRequestDto;
 import com.highlight.highlight_backend.dto.BuyItNowResponseDto;
 import com.highlight.highlight_backend.exception.BusinessException;
@@ -490,5 +491,115 @@ public class AuctionService {
                 throw new BusinessException(AuctionErrorCode.BUY_IT_NOW_ONLY_FOR_SINGLE_ITEM);
             }
         }
+    }
+
+    /**
+     * 경매 수정
+     * 
+     * @param auctionId 수정할 경매 ID
+     * @param request 경매 수정 요청 데이터
+     * @param adminId 수정하는 관리자 ID
+     * @return 수정된 경매 정보
+     */
+    @Transactional
+    public AuctionResponseDto updateAuction(Long auctionId, AuctionUpdateRequestDto request, Long adminId) {
+        log.info("경매 수정 요청: 경매 {} (관리자: {})", auctionId, adminId);
+        
+        // 1. 관리자 권한 확인
+        validateAuctionManagePermission(adminId);
+        
+        // 2. 경매 조회 및 검증
+        Auction auction = auctionRepository.findByIdWithProduct(auctionId)
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
+        
+        // 3. 경매 상태 검증 (진행 중인 경매는 수정 불가)
+        if (auction.getStatus() == Auction.AuctionStatus.IN_PROGRESS) {
+            throw new BusinessException(AuctionErrorCode.CANNOT_MODIFY_IN_PROGRESS_AUCTION);
+        }
+        
+        // 4. 경매가 완료되었거나 취소된 경우 수정 불가
+        if (auction.getStatus() == Auction.AuctionStatus.COMPLETED || 
+            auction.getStatus() == Auction.AuctionStatus.CANCELLED ||
+            auction.getStatus() == Auction.AuctionStatus.FAILED) {
+            throw new BusinessException(AuctionErrorCode.CANNOT_MODIFY_ENDED_AUCTION);
+        }
+        
+        // 5. 시간 정보 수정
+        if (request.getScheduledStartTime() != null) {
+            LocalDateTime kstStartTime = convertUTCToKST(request.getScheduledStartTime());
+            auction.setScheduledStartTime(kstStartTime);
+        }
+        
+        if (request.getScheduledEndTime() != null) {
+            LocalDateTime kstEndTime = convertUTCToKST(request.getScheduledEndTime());
+            auction.setScheduledEndTime(kstEndTime);
+        }
+        
+        // 6. 시작/종료 시간이 모두 설정된 경우 시간 검증
+        if (auction.getScheduledStartTime() != null && auction.getScheduledEndTime() != null) {
+            validateAuctionTime(auction.getScheduledStartTime(), auction.getScheduledEndTime());
+        }
+        
+        // 7. 상품 변경 (선택사항)
+        if (request.getProductId() != null && !request.getProductId().equals(auction.getProduct().getId())) {
+            // 새로운 상품 조회 및 검증
+            Product newProduct = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
+            
+            // 새 상품이 이미 경매에 등록되어 있는지 확인
+            if (auctionRepository.existsByProductId(request.getProductId())) {
+                throw new BusinessException(AuctionErrorCode.PRODUCT_ALREADY_IN_AUCTION);
+            }
+            
+            // 새 상품 상태 확인 (ACTIVE 상태만 경매 가능)
+            if (newProduct.getStatus() != Product.ProductStatus.ACTIVE) {
+                throw new BusinessException(AuctionErrorCode.INVALID_PRODUCT_STATUS_FOR_AUCTION);
+            }
+            
+            auction.setProduct(newProduct);
+        }
+        
+        // 8. 가격 정보 수정
+        if (request.getStartPrice() != null) {
+            auction.setStartPrice(request.getStartPrice());
+        }
+        
+        if (request.getBidUnit() != null) {
+            auction.setBidUnit(request.getBidUnit());
+        }
+        
+        if (request.getMaxBid() != null) {
+            auction.setMaxBid(request.getMaxBid());
+        }
+        
+        if (request.getMinimumBid() != null) {
+            auction.setMinimumBid(request.getMinimumBid());
+        }
+        
+        if (request.getBuyItNowPrice() != null) {
+            // 즉시구매가 설정 시 재고 1개 검증
+            validateBuyItNowProductCount(auction.getProduct(), request.getBuyItNowPrice());
+            auction.setBuyItNowPrice(request.getBuyItNowPrice());
+        }
+        
+        if (request.getShippingFee() != null) {
+            auction.setShippingFee(request.getShippingFee());
+        }
+        
+        if (request.getIsPickupAvailable() != null) {
+            auction.setIsPickupAvailable(request.getIsPickupAvailable());
+        }
+        
+        // 9. 설명 수정
+        if (request.getDescription() != null) {
+            auction.setDescription(request.getDescription());
+        }
+        
+        // 9. 경매 저장
+        Auction updatedAuction = auctionRepository.save(auction);
+        
+        log.info("경매 수정 완료: 경매 {} (관리자: {})", auctionId, adminId);
+        
+        return AuctionResponseDto.from(updatedAuction);
     }
 }
