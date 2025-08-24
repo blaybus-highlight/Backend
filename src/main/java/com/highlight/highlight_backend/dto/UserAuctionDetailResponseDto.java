@@ -53,6 +53,7 @@ public class UserAuctionDetailResponseDto {
     private LocalDateTime scheduledStartTime;  // 경매 시작 시간
     private LocalDateTime scheduledEndTime;  // 경매 종료 시간
 
+    private BigDecimal startPrice;
     private BigDecimal currentHighestBid;  // 현재가
     private BigDecimal buyItNowPrice;  // 즉시구매가
     private BigDecimal maxBid;
@@ -92,6 +93,7 @@ public class UserAuctionDetailResponseDto {
                 .minimumBid(auction.getMinimumBid())
                 .condition(product.getCondition())
                 .productCount(product.getProductCount())
+                .startPrice(auction.getStartPrice())
                 .brand(product.getBrand());
 
         if (seller != null) {
