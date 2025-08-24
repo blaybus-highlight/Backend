@@ -34,6 +34,7 @@ public class UserAuctionResponseDto {
     private BigDecimal minimumBid;     // 최소 입찰가 (시작가)
     private Integer bidCount;      // 입찰 수
     private LocalDateTime endTime; // 종료 시간
+    private LocalDateTime startTime;
     private String auctionStatus;  // 현재 경매 상태
 
     /**
@@ -61,6 +62,7 @@ public class UserAuctionResponseDto {
                 .minimumBid(auction.getStartPrice())
                 .bidCount(auction.getTotalBids())
                 .endTime(auction.getScheduledEndTime())
+                .startTime(auction.getScheduledStartTime())
                 .auctionStatus(auction.getStatus().name()) // Enum 값을 문자열로 변환
                 .build();
     }
