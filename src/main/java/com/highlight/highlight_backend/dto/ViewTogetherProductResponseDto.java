@@ -32,8 +32,14 @@ public class ViewTogetherProductResponseDto {
      * 상품 ID
      */
     @Schema(description = "상품 ID", example = "1")
-    private Long id;
+    private Long productId;
 
+    /**
+     * 경매 ID
+     */
+    @Schema(description = "경매 ID", example = "1")
+    private Long auctionId;
+    
     /**
      * 상품명
      */
@@ -104,9 +110,10 @@ public class ViewTogetherProductResponseDto {
     public static ViewTogetherProductResponseDto fromAssociation(ProductAssociation association) {
         Product targetProduct = association.getTargetProduct();
         Auction activeAuction = getActiveAuction(targetProduct);
-        
+
         return ViewTogetherProductResponseDto.builder()
-                .id(targetProduct.getId())
+                .productId(targetProduct.getId())
+                .auctionId(activeAuction.getId())
                 .productName(targetProduct.getProductName())
                 .category(targetProduct.getCategory() != null ? targetProduct.getCategory().name() : null)
                 .primaryImageUrl(targetProduct.getPrimaryImage() != null ? 
@@ -132,7 +139,8 @@ public class ViewTogetherProductResponseDto {
         Auction activeAuction = getActiveAuction(product);
         
         return ViewTogetherProductResponseDto.builder()
-                .id(product.getId())
+                .productId(product.getId())
+                .auctionId(activeAuction.getId())
                 .productName(product.getProductName())
                 .category(product.getCategory() != null ? product.getCategory().name() : null)
                 .primaryImageUrl(product.getPrimaryImage() != null ? 
@@ -157,7 +165,8 @@ public class ViewTogetherProductResponseDto {
      */
     public static ViewTogetherProductResponseDto fromProductWithAuction(Product product, Auction auction, BigDecimal associationScore) {
         return ViewTogetherProductResponseDto.builder()
-                .id(product.getId())
+                .productId(product.getId())
+                .auctionId(auction.getId())
                 .productName(product.getProductName())
                 .category(product.getCategory() != null ? product.getCategory().name() : null)
                 .primaryImageUrl(product.getPrimaryImage() != null ? 
