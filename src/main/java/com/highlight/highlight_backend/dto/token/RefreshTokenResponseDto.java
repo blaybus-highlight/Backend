@@ -1,8 +1,10 @@
 package com.highlight.highlight_backend.dto.token;
 
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 public class RefreshTokenResponseDto {
 
     private String adminId;
