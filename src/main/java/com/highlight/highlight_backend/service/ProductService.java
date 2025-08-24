@@ -487,7 +487,7 @@ public class ProductService {
         
         // 이미 추천된 상품 ID 목록
         Set<Long> excludeIds = existingRecommendations.stream()
-            .map(ViewTogetherProductResponseDto::getId)
+            .map(ViewTogetherProductResponseDto::getProductId)
             .collect(Collectors.toSet());
         excludeIds.add(baseProduct.getId()); // 자기 자신도 제외
         
@@ -544,7 +544,7 @@ public class ProductService {
             
             for (Product product : allActiveProduct) {
                 if (excludeIds.contains(product.getId()) || 
-                    recommendations.stream().anyMatch(r -> r.getId().equals(product.getId()))) {
+                    recommendations.stream().anyMatch(r -> r.getProductId().equals(product.getId()))) {
                     continue;
                 }
                 
