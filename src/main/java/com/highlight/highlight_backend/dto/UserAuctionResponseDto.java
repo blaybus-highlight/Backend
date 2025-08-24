@@ -23,7 +23,8 @@ import java.util.List;
 public class UserAuctionResponseDto {
 
     // Product 에서 가져올 정보
-    private Long id;  // 상품 ID
+    private Long productId;  // 상품 ID
+    private Long auctionId;  // 경매 ID
     private String thumbnailUrl; // 썸네일 이미지 URL
     private String productName;  // 상품명
     private String brand; // 브렌드명
@@ -51,7 +52,8 @@ public class UserAuctionResponseDto {
 
         return UserAuctionResponseDto.builder()
                 // Product 정보
-                .id(auction.getId())
+                .auctionId(auction.getId())
+                .productId(product.getId()) 
                 .thumbnailUrl(thumbnailUrl)
                 .productName(product.getProductName())
                 .brand(product.getBrand())
