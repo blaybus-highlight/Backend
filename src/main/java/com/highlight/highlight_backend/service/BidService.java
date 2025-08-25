@@ -121,14 +121,14 @@ public class BidService {
     }
     
     /**
-     * 경매 입찰 내역 조회 (익명 처리)
+     * 경매 입찰 내역 조회 (익명 처리) - 사용자별 최신 입찰만 반환
      * 
      * @param auctionId 경매 ID
      * @param pageable 페이징 정보
-     * @return 입찰 내역 목록
+     * @return 입찰 내역 목록 (사용자별 최신 입찰)
      */
     public Page<BidResponseDto> getAuctionBids(Long auctionId, Pageable pageable) {
-        log.info("경매 입찰 내역 조회 (익명): 경매ID={}", auctionId);
+        log.info("경매 입찰 내역 조회 (익명, 사용자별 최신): 경매ID={}", auctionId);
         
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
@@ -139,15 +139,33 @@ public class BidService {
     }
     
     /**
-     * 경매 입찰 내역 조회 (본인 입찰 강조)
+     * 경매 전체 입찰 내역 조회 (관리자용)
+     * 
+     * @param auctionId 경매 ID
+     * @param pageable 페이징 정보
+     * @return 모든 입찰 내역 목록
+     */
+    public Page<BidResponseDto> getAllAuctionBids(Long auctionId, Pageable pageable) {
+        log.info("경매 전체 입찰 내역 조회 (관리자): 경매ID={}", auctionId);
+        
+        Auction auction = auctionRepository.findById(auctionId)
+            .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
+        
+        Page<Bid> bids = bidRepository.findAllBidsByAuctionOrderByBidAmountDesc(auction, pageable);
+        
+        return bids.map(BidResponseDto::from);
+    }
+    
+    /**
+     * 경매 입찰 내역 조회 (본인 입찰 강조) - 사용자별 최신 입찰만 반환
      * 
      * @param auctionId 경매 ID
      * @param userId 현재 사용자 ID
      * @param pageable 페이징 정보
-     * @return 입찰 내역 목록 (본인 입찰 강조)
+     * @return 입찰 내역 목록 (사용자별 최신 입찰, 본인 입찰 강조)
      */
     public Page<BidResponseDto> getAuctionBidsWithUser(Long auctionId, Long userId, Pageable pageable) {
-        log.info("경매 입찰 내역 조회 (본인 강조): 경매ID={}, 사용자ID={}", auctionId, userId);
+        log.info("경매 입찰 내역 조회 (본인 강조, 사용자별 최신): 경매ID={}, 사용자ID={}", auctionId, userId);
         
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new BusinessException(AuctionErrorCode.AUCTION_NOT_FOUND));
@@ -243,8 +261,12 @@ public class BidService {
             throw new BusinessException(AuthErrorCode.ACCESS_DENIED);
         }
         
-        // 4. 상세 정보 반환
-        return WinBidDetailResponseDto.from(bid);
+        // 4. 상세 정보 반환 (사용자별 최신 입찰 기준 통계 적용)
+        Auction auction = bid.getAuction();
+        Integer calculatedTotalBids = bidRepository.countBidsByAuction(auction).intValue();
+        Integer calculatedTotalBidders = bidRepository.countDistinctBiddersByAuction(auction).intValue();
+        
+        return WinBidDetailResponseDto.fromWithCalculatedStats(bid, calculatedTotalBids, calculatedTotalBidders);
     }
     
     /**
@@ -302,11 +324,13 @@ public class BidService {
      */
     private void updateAuctionInfo(Auction auction, BigDecimal newBidAmount) {
         auction.setCurrentHighestBid(newBidAmount);
-        auction.setTotalBids(auction.getTotalBids() + 1);
         
-        // 입찰자 수 업데이트 (실제로는 더 정확한 계산 필요)
+        // 사용자별 최신 입찰 기준으로 정확한 통계 계산
         Long totalBidders = bidRepository.countDistinctBiddersByAuction(auction);
+        Long totalBids = bidRepository.countBidsByAuction(auction);
+        
         auction.setTotalBidders(totalBidders.intValue());
+        auction.setTotalBids(totalBids.intValue());
         
         auctionRepository.save(auction);
     }
